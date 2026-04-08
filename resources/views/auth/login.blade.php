@@ -41,24 +41,34 @@ async function login() {
 
     const data = await res.json();
 
-    console.log('LOGIN RESPONSE:', data); // debug
+if (!res.ok) {
+    alert(data.message);
+    return; // 🔥 STOP DI SINI
+}
 
-    if (res.ok) {
-        // ✅ SIMPAN TOKEN (INI YANG KAMU LUPA)
-        localStorage.setItem('token', data.token);
+const user = data.user;
 
-        // optional
-        localStorage.setItem('user', JSON.stringify(data.user));
+localStorage.setItem('token', data.token);
+localStorage.setItem('user', JSON.stringify(user));
+// 🔥 PIC
+if (user.role === 'pic') {
+    window.location.href = '/dashboard-pic';
+}
 
-        // redirect
-        if (data.system_type === 'full') {
-            window.location.href = '/dashboard-full';
-        } else {
-            window.location.href = '/dashboard-lite';
-        }
+// 🔥 ADMIN / SUPER ADMIN
+else if (user.role === 'admin' || user.role === 'super_admin') {
+
+    if (user.system_type === 'full') {
+        window.location.href = '/dashboard-full';
     } else {
-        alert(data.message);
+        window.location.href = '/dashboard-lite';
     }
+}
+
+// 🔥 TUKANG
+else if (user.role === 'tukang') {
+    window.location.href = '/dashboard-tukang';
+}
 }
 </script>
 </body>

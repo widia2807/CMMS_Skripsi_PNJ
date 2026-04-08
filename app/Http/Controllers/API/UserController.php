@@ -7,13 +7,18 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
  public function store(Request $request)
 {
     $auth = auth()->user(); // 🔥 WAJIB
-
+    if (!$auth) {
+        return response()->json([
+            'message' => 'Unauthenticated'
+        ], 401);
+    }
     $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:users,email',
@@ -34,12 +39,18 @@ class UserController extends Controller
         'branch_id' => $request->branch_id,
 
         'role' => $request->role,
-        'status' => 'active',
+        'status' => 'inactive',
 
         // 🔥 WAJIB GANTI PASSWORD
         'must_change_password' => true
     ]);
-
+Mail::raw(
+    "Halo {$newUser->name},\n\nAkun kamu telah dibuat.\nEmail: {$newUser->email}\nPassword: 123456\n\nSilakan login dan ganti password kamu.",
+    function ($message) use ($newUser) {
+        $message->to($newUser->email)
+                ->subject('Akun CMMS Kamu Telah Dibuat');
+    }
+);
     ActivityLog::create([
         'description' => 'Menambahkan user ' . $newUser->name
     ]);
@@ -54,9 +65,13 @@ public function activate($id)
 {
     $user = User::findOrFail($id);
 
-    $user->update([
-        'status' => 'active'
-    ]);
+    if ($user->role === 'super_admin') {
+        return response()->json([
+            'message' => 'Super admin tidak bisa diubah'
+        ], 403);
+    }
+
+    $user->update(['status' => 'active']);
 
     return response()->json([
         'message' => 'User diaktifkan'
@@ -67,16 +82,37 @@ public function index()
 {
     $auth = auth()->user();
 
+    if (!$auth) {
+        return response()->json(['message' => 'Unauthenticated'], 401);
+    }
+
     $users = User::where('company_id', $auth->company_id)
         ->with('branch')
         ->get();
 
     return response()->json($users);
 }
+
 public function update(Request $request, $id)
 {
     $user = User::findOrFail($id);
 
+    // 🚫 protect super admin
+    if ($user->role === 'super_admin') {
+        return response()->json([
+            'message' => 'Super admin tidak bisa diubah'
+        ], 403);
+    }
+
+    // ✅ VALIDATION WAJIB DI SINI
+    $request->validate([
+        'name' => 'required',
+        'email' => 'required|email|unique:users,email,' . $id,
+        'role' => 'required|in:admin,pic,technician',
+        'branch_id' => 'nullable'
+    ]);
+
+    // ✅ UPDATE
     $user->update([
         'name' => $request->name,
         'email' => $request->email,
@@ -84,25 +120,29 @@ public function update(Request $request, $id)
         'branch_id' => $request->branch_id
     ]);
 
-    return response()->json(['message' => 'User updated']);
+    return response()->json([
+        'message' => 'User updated'
+    ]);
 }
 
-public function toggle($id)
-{
-    $user = User::findOrFail($id);
-
-    $user->status = $user->status === 'active'
-        ? 'inactive'
-        : 'active';
-
-    $user->save();
-
-    return response()->json(['message' => 'User updated']);
-}
 
 public function destroy($id)
 {
-    User::findOrFail($id)->delete();
+    // 🔒 HARUS PALING ATAS
+    if (auth()->user()->role !== 'super_admin') {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $user = User::findOrFail($id);
+
+    // proteksi tambahan (jaga2)
+    if ($user->role === 'super_admin') {
+        return response()->json([
+            'message' => 'Super admin tidak bisa dihapus'
+        ], 403);
+    }
+
+    $user->delete();
 
     return response()->json(['message' => 'User deleted']);
 }
@@ -110,7 +150,9 @@ public function destroy($id)
 public function resetPassword($id)
 {
     $user = User::findOrFail($id);
-
+    if (!in_array(auth()->user()->role, ['admin', 'super_admin'])) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
     $user->update([
         'password' => Hash::make('123456'),
         'must_change_password' => true
@@ -118,6 +160,25 @@ public function resetPassword($id)
 
     return response()->json([
         'message' => 'Password direset ke 123456'
+    ]);
+}
+
+public function disable($id)
+{
+    $user = User::findOrFail($id);
+
+    if ($user->role === 'super_admin') {
+        return response()->json([
+            'message' => 'Super admin tidak bisa diubah'
+        ], 403);
+    }
+
+    $user->update([
+        'status' => 'inactive'
+    ]);
+
+    return response()->json([
+        'message' => 'User dinonaktifkan'
     ]);
 }
 }

@@ -120,38 +120,93 @@
 <script>
 const token = localStorage.getItem('token');
 
+if (!token) {
+    alert('Kamu belum login!');
+    window.location.href = '/login';
+} else {
+    loadUsers();
+    loadBranch();
+}
+
 // ================= LOAD USERS =================
 async function loadUsers() {
     const res = await fetch('/api/users', {
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }
-    });
+    headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + token
+    }
+});
+
+if (!res.ok) {
+    console.error('Status:', res.status);
+    const text = await res.text();
+    console.error(text);
+    return;
+}
 
     const data = await res.json();
 
     let html = '';
 
     data.forEach(user => {
+
+        // ================= STATUS =================
+        const statusBadge = user.status === 'active'
+            ? '<span class="text-green-600 font-semibold">Active</span>'
+            : '<span class="text-red-500 font-semibold">Inactive</span>';
+
+        // ================= ACTION BUTTON =================
+       let actionButtons = '';
+
+if (user.role === 'super_admin') {
+
+    // ✅ hanya reset
+    actionButtons += `
+    <button onclick="resetPassword(${user.id})"
+        class="bg-blue-500 px-2 py-1 text-white rounded text-xs">
+        Reset
+    </button>`;
+
+} else {
+
+    // Activate / Disable
+    if (user.status === 'inactive') {
+        actionButtons += `
+        <button onclick="activateUser(${user.id})"
+            class="bg-green-600 px-2 py-1 text-white rounded text-xs">
+            Activate
+        </button>`;
+    } else {
+        actionButtons += `
+        <button onclick="disableUser(${user.id})"
+            class="bg-yellow-500 px-2 py-1 text-white rounded text-xs">
+            Disable
+        </button>`;
+    }
+
+    // Reset
+    actionButtons += `
+    <button onclick="resetPassword(${user.id})"
+        class="bg-blue-500 px-2 py-1 text-white rounded text-xs">
+        Reset
+    </button>`;
+
+    // Delete
+    actionButtons += `
+    <button onclick="deleteUser(${user.id})"
+        class="bg-red-500 px-2 py-1 text-white rounded text-xs">
+        Delete
+    </button>`;
+}
+
         html += `
-        <tr>
+        <tr class="border-b hover:bg-gray-50">
             <td class="p-2">${user.name}</td>
             <td class="p-2">${user.email}</td>
-            <td class="p-2">${user.role}</td>
+            <td class="p-2 capitalize">${user.role}</td>
             <td class="p-2">${user.branch?.name ?? '-'}</td>
-
-            <td class="p-2">
-                ${user.status === 'active'
-                    ? '<span class="text-green-600">Active</span>'
-                    : '<span class="text-red-500">Inactive</span>'}
-            </td>
-
-            <td class="p-2 flex gap-2">
-                <button onclick="toggleUser(${user.id})" class="bg-yellow-500 px-2 text-white rounded">Toggle</button>
-                <button onclick="resetPassword(${user.id})" class="bg-blue-500 px-2 text-white rounded">Reset</button>
-                <button onclick="deleteUser(${user.id})" class="bg-red-500 px-2 text-white rounded">Delete</button>
-            </td>
+            <td class="p-2">${statusBadge}</td>
+            <td class="p-2 flex gap-2 flex-wrap">${actionButtons}</td>
         </tr>`;
     });
 
@@ -199,9 +254,22 @@ async function saveUser() {
     loadUsers();
 }
 
-// ================= TOGGLE =================
-async function toggleUser(id) {
-    await fetch(`/api/users/${id}/toggle`, {
+// ================= ACTIVATE =================
+async function activateUser(id) {
+    await fetch(`/api/users/${id}/activate`, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    });
+
+    loadUsers();
+}
+
+// ================= DISABLE =================
+async function disableUser(id) {
+    await fetch(`/api/users/${id}/disable`, {
         method: 'PUT',
         headers: {
             'Accept': 'application/json',
@@ -214,7 +282,7 @@ async function toggleUser(id) {
 
 // ================= DELETE =================
 async function deleteUser(id) {
-    if (!confirm('Hapus user?')) return;
+    if (!confirm('Yakin hapus user ini?')) return;
 
     await fetch(`/api/users/${id}`, {
         method: 'DELETE',
@@ -229,6 +297,8 @@ async function deleteUser(id) {
 
 // ================= RESET PASSWORD =================
 async function resetPassword(id) {
+    if (!confirm('Reset password ke default (123456)?')) return;
+
     await fetch(`/api/users/${id}/reset-password`, {
         method: 'PUT',
         headers: {
@@ -237,7 +307,7 @@ async function resetPassword(id) {
         }
     });
 
-    alert('Password direset ke 123456');
+    alert('Password berhasil direset!');
 }
 
 // ================= MODAL =================
@@ -249,10 +319,12 @@ function closeModal() {
     document.getElementById('modal').classList.add('hidden');
 }
 
+// ================= NAVIGATION =================
 function goTo(url){
     window.location.href = url;
 }
 
+// ================= SIDEBAR =================
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
@@ -260,11 +332,10 @@ function toggleSidebar() {
     sidebar.classList.toggle('-translate-x-full');
     overlay.classList.toggle('hidden');
 }
-// INIT
-loadUsers();
-loadBranch();
-feather.replace();
 
+// ================= INIT =================
+
+feather.replace();
 </script>
 
 </body>

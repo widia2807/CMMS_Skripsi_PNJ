@@ -36,10 +36,10 @@
         class="w-full mb-6 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
 
     <!-- BUTTON -->
-    <button onclick="register()"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-semibold transition">
-        Register
-    </button>
+    <button type="button" onclick="register()"
+    class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-semibold transition">
+    Register
+</button>
 
     <!-- FOOTER -->
     <p class="text-center text-sm text-gray-500 mt-4">

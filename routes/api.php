@@ -7,6 +7,8 @@ use App\Http\Controllers\API\CompanyController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\ImportController;
+use App\Http\Controllers\API\RequestController;
+use App\Http\Controllers\API\PIC\DashboardController as PICDashboardController;
 
 // PUBLIC ROUTE
 Route::post('/register', [AuthController::class,'register']);
@@ -34,18 +36,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/branches-active', [BranchController::class, 'active']);
     Route::put('/branches/{id}', [BranchController::class, 'update']);
     Route::delete('/branches/{id}', [BranchController::class, 'destroy']);
-
+    
     // USER
    Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
-
+    Route::put('/users/{id}/activate', [UserController::class, 'activate']);
     Route::put('/users/{id}/toggle', [UserController::class, 'toggle']);
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
 
     // IMPORT
     Route::post('/import-branches', [ImportController::class, 'importBranches']);
+// PIC
+    Route::get('/requests', [RequestController::class, 'index']);
+    Route::post('/requests', [RequestController::class, 'store']);
+    Route::get('/requests/{id}', [RequestController::class, 'show']);
 
+    Route::middleware('auth:sanctum')->get('/pic/dashboard', [DashboardController::class, 'index']);
 });
 
