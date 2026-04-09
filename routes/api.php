@@ -8,7 +8,8 @@ use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\ImportController;
 use App\Http\Controllers\API\RequestController;
-use App\Http\Controllers\API\PIC\DashboardController as PICDashboardController;
+use App\Http\Controllers\API\LiteDashboardController;
+use App\Http\Controllers\PIC\DashboardController as PICDashboardController;
 
 // PUBLIC ROUTE
 Route::post('/register', [AuthController::class,'register']);
@@ -19,13 +20,13 @@ Route::get('/test', function(){
 });
 
   // DASHBOARD
-    Route::get('/dashboard', [DashboardController::class, 'index']);
-    Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
-
+   
 // 🔐 PROTECTED ROUTE
 Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/lite/dashboard', [LiteDashboardController::class, 'index']);
+         Route::get('/dashboard', [DashboardController::class, 'index']);
+        Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
 
-  
     // COMPANY
     Route::put('/company', [CompanyController::class, 'update']);
 
@@ -52,7 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/requests', [RequestController::class, 'index']);
     Route::post('/requests', [RequestController::class, 'store']);
     Route::get('/requests/{id}', [RequestController::class, 'show']);
-
-    Route::middleware('auth:sanctum')->get('/pic/dashboard', [DashboardController::class, 'index']);
+    Route::get('/pic/dashboard', [PICDashboardController::class, 'index']);
+    Route::get('/sub-categories/{category}', [RequestController::class, 'getSubCategory']);
+    Route::get('/pic/activity', [DashboardController::class, 'activity']);
 });
 

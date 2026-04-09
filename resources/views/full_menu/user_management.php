@@ -23,8 +23,8 @@
 
         <ul class="space-y-3 text-sm">
 
-            <li onclick="goTo('/dashboard-full')"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
+           <li onclick="goToDashboard()"
+                class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
                 <i data-feather="home"></i> Dashboard
             </li>
 
@@ -118,16 +118,35 @@
 </div>
 
 <script>
+    
 const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user'));
 
-if (!token) {
-    alert('Kamu belum login!');
+// Proteksi login
+if (!user || !token) {
     window.location.href = '/login';
-} else {
-    loadUsers();
-    loadBranch();
 }
 
+// Block user lite
+if (user && user.system_type === 'lite') {
+    window.location.href = '/dashboard-lite';
+}
+
+// ✅ INIT - ini yang hilang sebelumnya!
+loadUsers();
+loadBranch();
+
+
+
+function goToDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (user.system_type === 'lite') {
+        window.location.href = '/dashboard-lite';
+    } else {
+        window.location.href = '/dashboard-full';
+    }
+}
 // ================= LOAD USERS =================
 async function loadUsers() {
     const res = await fetch('/api/users', {

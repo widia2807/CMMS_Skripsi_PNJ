@@ -179,6 +179,13 @@ async function loadDashboard() {
         });
 
         const data = await res.json();
+        console.log('Response:', data);
+
+        // 🔥 TAMBAH INI
+        if (!res.ok) {
+            console.error('API Error:', data.message);
+            return;
+        }
 
         document.getElementById('totalPengajuan').innerText = data.total ?? 0;
         document.getElementById('onProgress').innerText = data.progress ?? 0;
@@ -188,12 +195,20 @@ async function loadDashboard() {
         console.error('Gagal load dashboard:', error);
     }
 }
-
 // LOAD ACTIVITY
 async function loadActivity() {
     try {
-        const res = await fetch('/api/pic/activity');
+        const res = await fetch('/api/pic/activity', {
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+        });
+
         const data = await res.json();
+
+        // Guard: make sure data is an array before forEach
+        if (!res.ok || !Array.isArray(data)) {
+            console.error('Unexpected response:', data);
+            return;
+        }
 
         const container = document.getElementById('recentActivity');
         container.innerHTML = '';

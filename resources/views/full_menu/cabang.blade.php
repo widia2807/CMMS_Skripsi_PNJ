@@ -22,10 +22,10 @@
 
         <ul class="space-y-3 text-sm">
 
-            <li onclick="goTo('/dashboard-full')"
-                class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="home"></i> Dashboard
-            </li>
+            <li onclick="goToDashboard()"
+            class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
+            <i data-feather="home"></i> Dashboard
+        </li>
 
             <li onclick="goTo('/cabang')"
                 class="menu-item bg-gray-800 p-2 rounded flex items-center gap-3 cursor-pointer transition duration-200">
@@ -136,10 +136,36 @@
 
 <script>
  const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user'));
+
+// Proteksi login
+if (!user || !token) {
+    window.location.href = '/login';
+}
+
+// Block user lite
+if (user && user.system_type === 'lite') {
+    window.location.href = '/dashboard-lite';
+}
+
+// ✅ INIT - ini yang hilang sebelumnya!
+loadUsers();
+loadBranch();
+
+
+ 
 function goTo(url) {
     window.location.href = url;
 }
+function goToDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
 
+    if (user.system_type === 'lite') {
+        window.location.href = '/dashboard-lite';
+    } else {
+        window.location.href = '/dashboard-full';
+    }
+}
 // MODAL
 function openModal() {
     document.getElementById('modal').classList.remove('hidden');
