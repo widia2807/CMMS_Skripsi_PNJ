@@ -29,7 +29,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // COMPANY
     Route::put('/company', [CompanyController::class, 'update']);
+      Route::get('/branches', [BranchController::class, 'index']);
 
+    // hanya FULL (admin)
+    Route::post('/branches', [BranchController::class, 'store'])
+        ->middleware('check.system:full');
     // BRANCH
     Route::get('/branches', [BranchController::class, 'index']);
     Route::post('/branches', [BranchController::class, 'store']);
@@ -56,5 +60,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pic/dashboard', [PICDashboardController::class, 'index']);
     Route::get('/sub-categories/{category}', [RequestController::class, 'getSubCategory']);
     Route::get('/pic/activity', [DashboardController::class, 'activity']);
-});
+
+    //request admin ga
+    Route::put('/requests/{id}/approve', [RequestController::class, 'approve']);
+    Route::put('/requests/{id}/reject', [RequestController::class, 'reject']);
+    Route::get('/requests/{id}', [RequestController::class, 'show']);
+    }); 
 

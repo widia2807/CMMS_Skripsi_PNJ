@@ -7,44 +7,10 @@
 </head>
 
 <body class="bg-gray-100">
-
+@include('components.sidebar')
 <div class="flex h-screen">
 
-    <!-- SIDEBAR -->
-    <div id="sidebar"
-     class="fixed z-50 inset-y-0 left-0 w-64 bg-gray-900 text-white p-5 transform -translate-x-full md:translate-x-0 transition duration-300">
-        <button onclick="toggleSidebar()"
-            class="absolute top-4 right-4 text-white md:hidden">
-            ✖
-        </button>
-        <h2 class="text-xl font-bold mb-10">CMMS</h2>
-
-        <ul class="space-y-3 text-sm">
-
-            <li onclick="goTo('/dashboard-full')"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="home"></i> Dashboard
-            </li>
-
-              <li onclick="goTo('/cabang')"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="briefcase"></i> Cabang
-            </li>
-
-           <li onclick="goTo('/users')"
-                class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="users"></i> User Management
-            </li>
-            
-            <li class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="file-text"></i> Laporan
-            </li>
-
-            <li class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="settings"></i> Settings
-            </li>
-</ul>
-    </div>
+   
     <div id="overlay"
      class="fixed inset-0 bg-black opacity-40 hidden md:hidden"
      onclick="toggleSidebar()">
@@ -160,7 +126,24 @@ function closeWelcome() {
 function goTo(url) {
     window.location.href = url;
 }
+function goTo(url) {
+    window.location.href = url;
+}
 
+function goToDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (user?.system_type === 'lite') {
+        window.location.href = '/dashboard-lite';
+    } else {
+        window.location.href = '/dashboard-full';
+    }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = '/login';
+}
 function closeActivity() {
     document.getElementById('activityCard').style.display = 'none';
 }
@@ -172,7 +155,7 @@ function toggleSidebar() {
     overlay.classList.toggle('hidden');
 }
 
-feather.replace()
+
 
 // ACTIVE MENU
 const menuItems = document.querySelectorAll('.menu-item');
@@ -227,6 +210,7 @@ async function loadDashboard() {
 
 // JALANKAN SETELAH PAGE READY
 document.addEventListener('DOMContentLoaded', () => {
+    feather.replace();
     loadDashboard();
     loadActivity();
 });

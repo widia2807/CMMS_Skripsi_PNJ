@@ -8,45 +8,9 @@
 
 
 <body class="bg-gray-100">
-
+@include('components.sidebar')
 <div class="flex h-screen">
 
-    <!-- SIDEBAR -->
-   <div id="sidebar"
-     class="fixed z-50 inset-y-0 left-0 w-64 bg-gray-900 text-white p-5 transform -translate-x-full md:translate-x-0 transition duration-300">
-
-        <button onclick="toggleSidebar()" class="absolute top-4 right-4 text-white md:hidden">
-            ✖
-        </button>
-
-        <h2 class="text-xl font-bold mb-10">CMMS</h2>
-
-        <ul class="space-y-3 text-sm">
-
-           <li onclick="goToDashboard()"
-                class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="home"></i> Dashboard
-            </li>
-
-            <li onclick="goTo('/cabang')"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="briefcase"></i> Cabang
-            </li>
-
-            <li onclick="goTo('/users')"
-                class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="users"></i> User Management
-            </li>
-            
-            <li class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="file-text"></i> Laporan
-            </li>
-
-            <li class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="settings"></i> Settings
-            </li>
-        </ul>
-    </div>
 <!-- OVERLAY -->
     <div id="overlay"
      class="fixed inset-0 bg-black opacity-40 hidden md:hidden"
@@ -103,13 +67,17 @@
         <input id="email" placeholder="Email" class="w-full border p-2 mb-2">
 
         <select id="role" class="w-full border p-2 mb-2">
-            <option value="admin">Admin</option>
+            <option value="admin">Admin GA</option>
             <option value="pic">PIC</option>
             <option value="technician">Technician</option>
         </select>
 
-        <select id="branch" class="w-full border p-2 mb-4"></select>
-
+        <select id="branchType" onchange="handleBranchType()" class="w-full border p-2 mb-2">
+    <option value="">-- pilih tipe lokasi --</option>
+    <option value="ho">HO</option>
+    <option value="branch">Cabang</option>
+</select>
+<select id="branch" class="w-full border p-2 mb-2 hidden"></select>
         <button onclick="saveUser()" class="bg-blue-600 text-white w-full p-2 rounded">
             Simpan
         </button>
@@ -127,25 +95,45 @@ if (!user || !token) {
     window.location.href = '/login';
 }
 
-// Block user lite
-if (user && user.system_type === 'lite') {
-    window.location.href = '/dashboard-lite';
+function isLite() {
+    return user?.system_type === 'lite';
 }
 
-// ✅ INIT - ini yang hilang sebelumnya!
 loadUsers();
 loadBranch();
 
+function handleBranchType() {
+    const type = document.getElementById('branchType').value;
+    const branchSelect = document.getElementById('branch');
 
+    if (type === 'branch') {
+        branchSelect.classList.remove('hidden');
+        loadBranch('branch');
+    } else if (type === 'ho') {
+        branchSelect.classList.remove('hidden');
+        loadBranch('ho'); // 🔥 INI YANG KURANG
+    } else {
+        branchSelect.classList.add('hidden');
+    }
+}
+
+function goTo(url) {
+    window.location.href = url;
+}
 
 function goToDashboard() {
     const user = JSON.parse(localStorage.getItem('user'));
 
-    if (user.system_type === 'lite') {
+    if (user?.system_type === 'lite') {
         window.location.href = '/dashboard-lite';
     } else {
         window.location.href = '/dashboard-full';
     }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = '/login';
 }
 // ================= LOAD USERS =================
 async function loadUsers() {
@@ -232,8 +220,7 @@ if (user.role === 'super_admin') {
     document.getElementById('userTable').innerHTML = html;
 }
 
-// ================= LOAD BRANCH =================
-async function loadBranch() {
+async function loadBranch(filterType = null) {
     const res = await fetch('/api/branches', {
         headers: {
             'Accept': 'application/json',
@@ -246,18 +233,42 @@ async function loadBranch() {
     let options = '<option value="">-- pilih cabang --</option>';
 
     data.forEach(b => {
-        options += `<option value="${b.id}">${b.name}</option>`;
+
+        if (filterType && b.type !== filterType) return;
+
+        options += `<option value="${b.id}">
+            ${b.name} (${b.type === 'ho' ? 'HO' : 'Cabang'})
+        </option>`;
     });
 
     document.getElementById('branch').innerHTML = options;
 }
 
-// ================= SAVE USER =================
 async function saveUser() {
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
     const role = document.getElementById('role').value;
+    const type = document.getElementById('branchType').value;
     const branch_id = document.getElementById('branch').value;
+
+    let finalBranch = null;
+
+    if (type === 'branch') {
+        finalBranch = branch_id;
+    }
+
+    if (type === 'ho') {
+        // ambil HO otomatis
+        const res = await fetch('/api/branches', {
+    headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + token
+    }
+});
+        const data = await res.json();
+        const ho = data.find(b => b.type === 'ho');
+        finalBranch = ho?.id;
+    }
 
     await fetch('/api/users', {
         method: 'POST',
@@ -266,14 +277,17 @@ async function saveUser() {
             'Accept': 'application/json',
             'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ name, email, role, branch_id })
+        body: JSON.stringify({
+            name,
+            email,
+            role,
+            branch_id: finalBranch
+        })
     });
 
     closeModal();
     loadUsers();
 }
-
-// ================= ACTIVATE =================
 async function activateUser(id) {
     await fetch(`/api/users/${id}/activate`, {
         method: 'PUT',

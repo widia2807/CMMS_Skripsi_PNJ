@@ -31,7 +31,7 @@ async function login() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json' // 🔥 wajib
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
             email: document.getElementById('email').value,
@@ -41,34 +41,39 @@ async function login() {
 
     const data = await res.json();
 
-if (!res.ok) {
-    alert(data.message);
-    return; // 🔥 STOP DI SINI
-}
-
-const user = data.user;
-
-localStorage.setItem('token', data.token);
-localStorage.setItem('user', JSON.stringify(user));
-// 🔥 PIC
-if (user.role === 'pic') {
-    window.location.href = '/dashboard-pic';
-}
-
-// 🔥 ADMIN / SUPER ADMIN
-else if (user.role === 'admin' || user.role === 'super_admin') {
-
-    if (user.system_type === 'full') {
-        window.location.href = '/dashboard-full';
-    } else {
-        window.location.href = '/dashboard-lite';
+    if (!res.ok) {
+        alert(data.message);
+        return;
     }
-}
 
-// 🔥 TUKANG
-else if (user.role === 'tukang') {
-    window.location.href = '/dashboard-tukang';
-}
+    const user = data.user;
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(user));
+
+    // 🔥 SUPER ADMIN
+    if (user.role === 'super_admin') {
+        window.location.href = '/dashboard-full';
+    }
+
+    // 🔥 ADMIN GA
+    else if (user.role === 'admin') {
+        if (user.system_type === 'lite') {
+            window.location.href = '/dashboard-lite';
+        } else {
+            window.location.href = '/dashboard-admin'; // 🔥 INI YANG BENAR
+        }
+    }
+
+    // 🔥 PIC
+    else if (user.role === 'pic') {
+        window.location.href = '/dashboard-pic';
+    }
+
+    // 🔥 TUKANG
+    else if (user.role === 'tukang') {
+        window.location.href = '/dashboard-tukang';
+    }
 }
 </script>
 </body>

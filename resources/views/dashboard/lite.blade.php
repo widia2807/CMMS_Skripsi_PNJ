@@ -8,79 +8,9 @@
 </head>
 
 <body class="bg-gray-100">
-
+@include('components.sidebar')
 <div class="flex h-screen">
 
-
-<!-- SIDEBAR -->
-<div id="sidebar"
- class="fixed z-50 inset-y-0 left-0 w-64 bg-gray-900 text-white p-5 transform -translate-x-full md:translate-x-0 transition duration-300">
-    
-    <button onclick="toggleSidebar()"
-        class="absolute top-4 right-4 text-white md:hidden">✖</button>
-
-    <h2 class="text-xl font-bold mb-10">CMMS - Admin GA</h2>
-
-    <ul class="space-y-3 text-sm">
-
-       <ul class="space-y-3 text-sm">
-
-<!-- DASHBOARD -->
-<li onclick="goTo('/dashboard-ga')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-    <i data-feather="home"></i> Dashboard
-</li>
-
-<!-- PERBAIKAN -->
-<li onclick="goTo('/request-list')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-    <i data-feather="tool"></i> Perbaikan Gedung
-</li>
-
-<!-- MAINTENANCE -->
-<li onclick="goTo('/maintenance')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-    <i data-feather="calendar"></i> Maintenance
-</li>
-
-<!-- TUKANG -->
-<li onclick="goTo('/technicians')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-    <i data-feather="users"></i> Tukang
-</li>
-
-<!-- PEMINJAMAN -->
-<li onclick="goTo('/borrow-tools')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-    <i data-feather="package"></i> Peminjaman Alat
-</li>
-
-<!-- SPK -->
-<li onclick="goTo('/spk')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-    <i data-feather="file-text"></i> SPK
-</li>
-
-<!-- LAPORAN -->
-<li onclick="goTo('/reports')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-    <i data-feather="bar-chart"></i> Laporan
-</li>
-
-<!-- USER -->
-<li onclick="goTo('/users')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-    <i data-feather="user"></i> User
-</li>
-
-  <li onclick="goTo('/cabang')"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="briefcase"></i> Cabang
-            </li>
-
-<!-- LOGOUT -->
-<li onclick="logout()" class="flex items-center gap-3 p-2 hover:bg-red-600 cursor-pointer mt-6">
-    <i data-feather="log-out"></i> Logout
-</li>
-
-
-</ul>
-
-
-    </ul>
-</div>
 
 <!-- OVERLAY -->
 <div id="overlay"
@@ -160,11 +90,26 @@ function goTo(url) {
     window.location.href = url;
 }
 
+function goTo(url) {
+    window.location.href = url;
+}
+
+function goToDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (user?.role === 'pic') {
+        window.location.href = '/dashboard-pic';
+    } else if (user?.system_type === 'lite') {
+        window.location.href = '/dashboard-lite';
+    } else {
+        window.location.href = '/dashboard-full';
+    }
+}
+
 function logout() {
     localStorage.clear();
     window.location.href = '/login';
 }
-
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('-translate-x-full');
     document.getElementById('overlay').classList.toggle('hidden');
@@ -203,12 +148,10 @@ if (!token) {
     }
 }
 
-// INIT
 document.addEventListener('DOMContentLoaded', () => {
     loadLiteDashboard();
+    localStorage.getItem('user')
 });
-
-feather.replace();
 </script>
 
 </body>

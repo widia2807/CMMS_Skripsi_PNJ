@@ -7,39 +7,8 @@
 </head>
 
 <body class="bg-gray-100">
-
+@include('components.sidebar')
 <div class="flex h-screen">
-
-    <!-- SIDEBAR (COPY SAME) -->
-    <div id="sidebar"
-     class="fixed z-50 inset-y-0 left-0 w-64 bg-gray-900 text-white p-5 transform -translate-x-full md:translate-x-0 transition duration-300">
-
-        <button onclick="toggleSidebar()" class="absolute top-4 right-4 text-white md:hidden">✖</button>
-
-        <h2 class="text-xl font-bold mb-10">CMMS - PIC</h2>
-
-        <ul class="space-y-3 text-sm">
-            <li onclick="goTo('/dashboard-pic')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="home"></i> Dashboard
-            </li>
-
-            <li class="flex items-center gap-3 p-2 bg-gray-800 rounded">
-                <i data-feather="tool"></i> Ajukan Perbaikan
-            </li>
-
-            <li onclick="goTo('/status')" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="list"></i> Status Pekerjaan
-            </li>
-
-            <li id="menu-spk" class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="file-text"></i> SPK
-            </li>
-
-            <li onclick="logout()" class="flex items-center gap-3 p-2 hover:bg-red-600 cursor-pointer mt-6">
-                <i data-feather="log-out"></i> Logout
-            </li>
-        </ul>
-    </div>
 
     <!-- MAIN -->
     <div class="flex-1 md:ml-64">
@@ -102,9 +71,13 @@
 <script>
     
 const user = JSON.parse(localStorage.getItem('user'));
-document.getElementById('userInfo').innerText = user.name;
 
+if (!user) {
+    window.location.href = '/login';
+}
 
+document.getElementById('userInfo').innerText =
+    user.name + ' (' + user.role + ')';
 async function updateSubCategory() {
     const category = document.getElementById('category').value;
     const sub = document.getElementById('sub_category');
@@ -177,13 +150,28 @@ async function submitRequest() {
 }
 
 // NAV
-function goTo(url){ window.location.href = url; }
+function goTo(url){
+    window.location.href = url;
+}
+function goToDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (user?.role === 'pic') {
+        window.location.href = '/dashboard-pic';
+    } else if (user?.system_type === 'lite') {
+        window.location.href = '/dashboard-lite';
+    } else {
+        window.location.href = '/dashboard-full';
+    }
+}
 function logout(){ localStorage.clear(); window.location.href='/login'; }
 function toggleSidebar(){
     document.getElementById('sidebar').classList.toggle('-translate-x-full');
 }
 
-feather.replace();
+document.addEventListener('DOMContentLoaded', () => {
+    feather.replace();
+});
 
 </script>
 

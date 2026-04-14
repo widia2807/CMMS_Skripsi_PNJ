@@ -7,46 +7,10 @@
 </head>
 
 <body class="bg-gray-100">
+@include('components.sidebar')
 
 <div class="flex h-screen">
 
-    <!-- SIDEBAR -->
-    <div id="sidebar"
-     class="fixed z-50 inset-y-0 left-0 w-64 bg-gray-900 text-white p-5 transform -translate-x-full md:translate-x-0 transition duration-300">
-
-        <button onclick="toggleSidebar()" class="absolute top-4 right-4 text-white md:hidden">
-            ✖
-        </button>
-
-        <h2 class="text-xl font-bold mb-10">CMMS</h2>
-
-        <ul class="space-y-3 text-sm">
-
-            <li onclick="goToDashboard()"
-            class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-            <i data-feather="home"></i> Dashboard
-        </li>
-
-            <li onclick="goTo('/cabang')"
-                class="menu-item bg-gray-800 p-2 rounded flex items-center gap-3 cursor-pointer transition duration-200">
-                <i data-feather="briefcase"></i> Cabang
-            </li>
-
-            <li onclick="goTo('/users')"
-                class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="users"></i> User Management
-            </li>
-
-            <li class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="file-text"></i> Laporan
-            </li>
-
-            <li class="menu-item p-2 rounded flex items-center gap-3 cursor-pointer hover:bg-gray-800 transition duration-200">
-                <i data-feather="settings"></i> Settings
-            </li>
-
-        </ul>
-    </div>
 
     <!-- OVERLAY -->
     <div id="overlay"
@@ -138,33 +102,38 @@
  const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user'));
 
+if (!user) {
+    window.location.href = '/login';
+}
+
+
 // Proteksi login
 if (!user || !token) {
     window.location.href = '/login';
 }
 
-// Block user lite
-if (user && user.system_type === 'lite') {
-    window.location.href = '/dashboard-lite';
+function isLite() {
+    return user?.system_type === 'lite';
 }
 
-// ✅ INIT - ini yang hilang sebelumnya!
-loadUsers();
-loadBranch();
-
-
- 
 function goTo(url) {
     window.location.href = url;
 }
+
+
 function goToDashboard() {
     const user = JSON.parse(localStorage.getItem('user'));
 
-    if (user.system_type === 'lite') {
+    if (user?.system_type === 'lite') {
         window.location.href = '/dashboard-lite';
     } else {
         window.location.href = '/dashboard-full';
     }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = '/login';
 }
 // MODAL
 function openModal() {

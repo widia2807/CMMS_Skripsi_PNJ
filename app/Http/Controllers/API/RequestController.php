@@ -49,25 +49,44 @@ public function index()
 {
     $user = auth()->user();
 
-    $data = RequestModel::where('branch_id', $user->branch_id)
-        ->latest()
-        ->get();
+    if (!$user) {
+        return response()->json([
+            'message' => 'Unauthenticated'
+        ], 401);
+    }
 
-    return response()->json($data);
+    if ($user->role === 'pic') {
+        return RequestModel::where('user_id', $user->id)->get();
+    }
+
+    return RequestModel::latest()->get(); // 🔥 aman
 }
 
 public function show($id)
 {
     $user = auth()->user();
 
-    $req = RequestModel::where('id', $id)
-        ->where('branch_id', $user->branch_id)
-        ->first();
+    $req = RequestModel::find($id);
 
     if (!$req) {
         return response()->json([
             'message' => 'Data tidak ditemukan'
         ], 404);
+    }
+
+    // kalau PIC → hanya lihat miliknya
+    if ($user->role === 'pic' && $req->user_id !== $user->id) {
+        return response()->json([
+            'message' => 'Tidak punya akses'
+        ], 403);
+    }
+
+    // kalau admin → boleh lihat semua di cabang
+    if (in_array($user->role, ['admin_ga','super_admin']) &&
+        $req->branch_id !== $user->branch_id) {
+        return response()->json([
+            'message' => 'Beda cabang'
+        ], 403);
     }
 
     return response()->json($req);
@@ -94,5 +113,90 @@ public function getSubCategory($category)
     return response()->json($data);
 }
 
+public function approve(Request $request, $id)
+{
+    $user = auth()->user();
 
+    if (!in_array($user->role, ['admin_ga','super_admin'])) {
+        return response()->json([
+            'message' => 'Tidak punya akses'
+        ], 403);
+    }
+
+    $request->validate([
+        'urgency' => 'required|in:low,medium,high'
+    ]);
+
+    $req = RequestModel::where('id', $id)
+        ->where('branch_id', $user->branch_id)
+        ->firstOrFail();
+
+    if ($req->status !== 'pending') {
+        return response()->json([
+            'message' => 'Sudah diproses'
+        ], 400);
+    }
+
+    $req->status = 'approved';
+    $req->urgency = $request->urgency;
+    $req->approved_at = now();
+    $req->reject_reason = null;
+    $req->save();
+
+    return response()->json([
+        'message' => 'Request approved'
+    ]);
+}
+
+public function reject(Request $request, $id)
+{
+    $user = auth()->user();
+
+    if (!in_array($user->role, ['admin_ga','super_admin'])) {
+        return response()->json([
+            'message' => 'Tidak punya akses'
+        ], 403);
+    }
+
+    $request->validate([
+        'reason' => 'required|string'
+    ]);
+
+    $req = RequestModel::findOrFail($id);
+
+    $req->status = 'rejected';
+    $req->reject_reason = $request->reason;
+    $req->save();
+
+    return response()->json([
+        'message' => 'Request rejected'
+    ]);
+}
+
+public function assign(Request $request, $id)
+{
+    $user = auth()->user();
+
+    if (!in_array($user->role, ['admin_ga','super_admin'])) {
+        return response()->json([
+            'message' => 'Tidak punya akses'
+        ], 403);
+    }
+
+    $request->validate([
+        'technician' => 'required|string'
+    ]);
+
+    $req = RequestModel::where('id', $id)
+        ->where('branch_id', $user->branch_id)
+        ->firstOrFail();
+
+    $req->technician = $request->technician;
+    $req->status = 'assigned';
+    $req->save();
+
+    return response()->json([
+        'message' => 'Tukang berhasil ditentukan'
+    ]);
+}
 }

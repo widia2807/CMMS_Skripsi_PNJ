@@ -7,48 +7,8 @@
 </head>
 
 <body class="bg-gray-100">
-
+@include('components.sidebar')
 <div class="flex h-screen">
-
-    <!-- SIDEBAR -->
-    <div id="sidebar"
-     class="fixed z-50 inset-y-0 left-0 w-64 bg-gray-900 text-white p-5 transform -translate-x-full md:translate-x-0 transition duration-300">
-        
-        <button onclick="toggleSidebar()"
-            class="absolute top-4 right-4 text-white md:hidden">
-            ✖
-        </button>
-
-        <h2 class="text-xl font-bold mb-10">CMMS - PIC</h2>
-
-        <ul class="space-y-3 text-sm">
-
-            <li onclick="goTo('/dashboard-pic')"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="home"></i> Dashboard
-            </li>
-
-            <li onclick="goTo('/request')"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="tool"></i> Ajukan Perbaikan
-            </li>
-
-            <li onclick="goTo('/status')"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="list"></i> Status Pekerjaan
-            </li>
-
-            <li id="menu-spk"
-                class="flex items-center gap-3 p-2 hover:bg-gray-800 cursor-pointer">
-                <i data-feather="file-text"></i> SPK
-            </li>
-
-            <li onclick="logout()"
-                class="flex items-center gap-3 p-2 hover:bg-red-600 cursor-pointer mt-6">
-                <i data-feather="log-out"></i> Logout
-            </li>
-        </ul>
-    </div>
 
     <!-- OVERLAY -->
     <div id="overlay"
@@ -132,13 +92,8 @@
 <script>
 const user = JSON.parse(localStorage.getItem('user'));
 
-// USER INFO
-document.getElementById('userInfo').innerText =
-    user.name + ' (' + user.system_type + ')';
-
-// 🔥 MODE LITE → HIDE SPK
-if (user.system_type === 'lite') {
-    document.getElementById('menu-spk').style.display = 'none';
+if (!user) {
+    window.location.href = '/login';
 }
 
 // FUNCTION
@@ -167,7 +122,7 @@ function toggleSidebar() {
     overlay.classList.toggle('hidden');
 }
 
-feather.replace();
+
 
 // LOAD DASHBOARD PIC
 async function loadDashboard() {
@@ -226,7 +181,8 @@ async function loadActivity() {
 
 // INIT
 document.addEventListener('DOMContentLoaded', () => {
-    loadDashboard();
+feather.replace();   
+loadDashboard();
     loadActivity();
 });
 </script>
