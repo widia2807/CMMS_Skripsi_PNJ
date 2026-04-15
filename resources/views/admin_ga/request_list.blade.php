@@ -13,7 +13,15 @@
     <!-- FONT -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
-
+<style>
+@keyframes scaleIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.animate-scaleIn {
+    animation: scaleIn 0.2s ease;
+}
+</style>
 <body class="bg-gray-50 font-[Inter]">
 
 @include('components.sidebar')
@@ -71,6 +79,47 @@
         class="absolute top-5 right-5 text-white text-3xl">✕</button>
 </div>
 
+<div id="approveModal" 
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[90%] max-w-sm rounded-2xl p-5 shadow-xl animate-scaleIn">
+
+        <h3 class="font-semibold text-gray-800 mb-4 text-center">
+            Pilih Tingkat Urgensi
+        </h3>
+
+        <div class="space-y-3">
+
+            <!-- LOW -->
+            <button onclick="submitApprove('low')" 
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl border hover:bg-gray-100 transition">
+                <span class="font-medium">Santai</span>
+                <span class="text-xs text-gray-400">Low</span>
+            </button>
+
+            <!-- MEDIUM -->
+            <button onclick="submitApprove('medium')" 
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-yellow-400 text-white hover:bg-yellow-500 transition">
+                <span class="font-medium">Segera</span>
+                <span class="text-xs opacity-80">Medium</span>
+            </button>
+
+            <!-- HIGH -->
+            <button onclick="submitApprove('high')" 
+                class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition">
+                <span class="font-medium">Prioritas</span>
+                <span class="text-xs opacity-80">High</span>
+            </button>
+
+        </div>
+
+        <button onclick="closeApproveModal()" 
+            class="mt-4 w-full text-gray-500 text-sm hover:underline">
+            Batal
+        </button>
+
+    </div>
+</div>
 <script>
 
 const token = localStorage.getItem('token');
@@ -266,6 +315,37 @@ document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadRequests();
 });
+
+let selectedId = null;
+
+function approve(id) {
+    selectedId = id;
+
+    const modal = document.getElementById('approveModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex'); 
+}
+
+function closeApproveModal() {
+    const modal = document.getElementById('approveModal');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+}
+
+async function submitApprove(level) {
+    await fetch(`/api/requests/${selectedId}/approve`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ urgency: level })
+    });
+
+    closeApproveModal();
+    loadRequests();
+    closeDetail();
+}
 
 </script>
 

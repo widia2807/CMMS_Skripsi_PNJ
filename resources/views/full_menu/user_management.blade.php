@@ -58,27 +58,55 @@
 
 </div>
 <!-- MODAL -->
-<div id="modal" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center">
-    <div class="bg-white p-6 rounded w-96">
+<div id="modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
 
-        <h2 class="mb-3 font-semibold">Tambah User</h2>
+    <div class="bg-white w-[90%] max-w-md rounded-2xl p-6 shadow-xl animate-scaleIn max-h-[90vh] overflow-y-auto">
 
-        <input id="name" placeholder="Nama" class="w-full border p-2 mb-2">
-        <input id="email" placeholder="Email" class="w-full border p-2 mb-2">
+        <!-- HEADER -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-gray-800">Tambah User</h2>
+            <button onclick="closeModal()" class="text-xl">✕</button>
+        </div>
 
-        <select id="role" class="w-full border p-2 mb-2">
-            <option value="admin">Admin GA</option>
-            <option value="pic">PIC</option>
-            <option value="technician">Technician</option>
-        </select>
+        <!-- FORM -->
+        <div class="space-y-3">
 
-        <select id="branchType" onchange="handleBranchType()" class="w-full border p-2 mb-2">
-    <option value="">-- pilih tipe lokasi --</option>
-    <option value="ho">HO</option>
-    <option value="branch">Cabang</option>
-</select>
-<select id="branch" class="w-full border p-2 mb-2 hidden"></select>
-        <button onclick="saveUser()" class="bg-blue-600 text-white w-full p-2 rounded">
+            <input id="name" placeholder="Nama" 
+                class="w-full border p-2 rounded">
+
+            <input id="email" placeholder="Email" 
+                class="w-full border p-2 rounded">
+
+            <select id="role" onchange="handleRole()" 
+                class="w-full border p-2 rounded">
+                <option value="admin">Admin GA</option>
+                <option value="pic">PIC</option>
+                <option value="technician">Technician</option>
+            </select>
+
+            <!-- KATEGORI -->
+            <div id="categoryWrapper" class="hidden">
+                <label class="text-xs text-gray-500">Spesialisasi</label>
+                <select id="category" class="w-full border p-2 rounded"></select>
+            </div>
+
+            <!-- BRANCH -->
+            <div id="branchWrapper">
+                <select id="branchType" onchange="handleBranchType()" 
+                    class="w-full border p-2 rounded">
+                    <option value="">-- pilih tipe lokasi --</option>
+                    <option value="ho">HO</option>
+                    <option value="branch">Cabang</option>
+                </select>
+
+                <select id="branch" class="w-full border p-2 rounded hidden"></select>
+            </div>
+
+        </div>
+
+        <!-- BUTTON -->
+        <button onclick="saveUser()" 
+            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white w-full p-2 rounded-lg">
             Simpan
         </button>
 
@@ -250,7 +278,7 @@ async function saveUser() {
     const role = document.getElementById('role').value;
     const type = document.getElementById('branchType').value;
     const branch_id = document.getElementById('branch').value;
-
+    const category_id = document.getElementById('category').value;
     let finalBranch = null;
 
     if (type === 'branch') {
@@ -281,7 +309,8 @@ async function saveUser() {
             name,
             email,
             role,
-            branch_id: finalBranch
+            branch_id: role === 'technician' ? null : finalBranch,
+            category_id: role === 'technician' ? category_id : null
         })
     });
 
@@ -342,7 +371,38 @@ async function resetPassword(id) {
 
     alert('Password berhasil direset!');
 }
+function handleRole() {
+    const role = document.getElementById('role').value;
 
+    const categoryWrapper = document.getElementById('categoryWrapper');
+    const branchWrapper = document.getElementById('branchWrapper');
+
+    if (role === 'technician') {
+        categoryWrapper.classList.remove('hidden');
+        branchWrapper.classList.add('hidden');
+        loadCategories();
+    } else {
+        categoryWrapper.classList.add('hidden');
+        branchWrapper.classList.remove('hidden');
+    }
+}
+async function loadCategories() {
+    const res = await fetch('/api/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
+
+    const data = await res.json();
+
+    let options = '<option value="">-- pilih spesialisasi --</option>';
+
+    data.forEach(cat => {
+        options += `<option value="${cat.id}">${cat.name}</option>`;
+    });
+
+    document.getElementById('category').innerHTML = options;
+}
 // ================= MODAL =================
 function openModal() {
     document.getElementById('modal').classList.remove('hidden');

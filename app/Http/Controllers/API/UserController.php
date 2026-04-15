@@ -13,7 +13,7 @@ class UserController extends Controller
 {
  public function store(Request $request)
 {
-    $auth = auth()->user(); // 🔥 WAJIB
+    $auth = auth()->user(); 
     if (!$auth) {
         return response()->json([
             'message' => 'Unauthenticated'
@@ -23,27 +23,26 @@ class UserController extends Controller
         'name' => 'required',
         'email' => 'required|email|unique:users,email',
         'role' => 'required|in:admin,pic,technician',
-        'branch_id' => 'nullable'
+        'branch_id' => 'nullable',
+        'category_id' => 'nullable'
     ]);
 
     $newUser = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
+    'name' => $request->name,
+    'email' => $request->email,
+    'password' => Hash::make('123456'),
 
-        // 🔥 DEFAULT PASSWORD
-        'password' => Hash::make('123456'),
+    'mode' => 'company',
+    'system_type' => $auth->system_type,
+    'company_id' => $auth->company_id,
 
-        'mode' => 'company',
-        'system_type' => $auth->system_type,
-        'company_id' => $auth->company_id,
-        'branch_id' => $request->branch_id,
+    'branch_id' => $request->role === 'technician' ? null : $request->branch_id,
+    'category_id' => $request->role === 'technician' ? $request->category_id : null,
 
-        'role' => $request->role,
-        'status' => 'inactive',
-
-        // 🔥 WAJIB GANTI PASSWORD
-        'must_change_password' => true
-    ]);
+    'role' => $request->role,
+    'status' => 'inactive',
+    'must_change_password' => true
+]);
 Mail::raw(
     "Halo {$newUser->name},\n\nAkun kamu telah dibuat.\nEmail: {$newUser->email}\nPassword: 123456\n\nSilakan login dan ganti password kamu.",
     function ($message) use ($newUser) {
@@ -109,7 +108,8 @@ public function update(Request $request, $id)
         'name' => 'required',
         'email' => 'required|email|unique:users,email,' . $id,
         'role' => 'required|in:admin,pic,technician',
-        'branch_id' => 'nullable'
+        'branch_id' => 'nullable',
+        'category_id' => 'nullable'
     ]);
 
     // ✅ UPDATE
@@ -117,7 +117,8 @@ public function update(Request $request, $id)
         'name' => $request->name,
         'email' => $request->email,
         'role' => $request->role,
-        'branch_id' => $request->branch_id
+        'branch_id' => $request->branch_id,
+        'category_id' => 'nullable'
     ]);
 
     return response()->json([

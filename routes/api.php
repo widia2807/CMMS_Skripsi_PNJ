@@ -10,7 +10,7 @@ use App\Http\Controllers\API\ImportController;
 use App\Http\Controllers\API\RequestController;
 use App\Http\Controllers\API\LiteDashboardController;
 use App\Http\Controllers\PIC\DashboardController as PICDashboardController;
-
+use App\Models\Category;
 // PUBLIC ROUTE
 Route::post('/register', [AuthController::class,'register']);
 Route::post('/login', [AuthController::class,'login']);
@@ -19,7 +19,7 @@ Route::get('/test', function(){
     return 'API OK';
 });
 
-  // DASHBOARD
+ 
    
 // 🔐 PROTECTED ROUTE
 Route::middleware('auth:sanctum')->group(function () {
@@ -34,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // hanya FULL (admin)
     Route::post('/branches', [BranchController::class, 'store'])
         ->middleware('check.system:full');
+    Route::get('/categories', function () {
+    return Category::all();
+})->middleware('auth:sanctum');
     // BRANCH
     Route::get('/branches', [BranchController::class, 'index']);
     Route::post('/branches', [BranchController::class, 'store']);
