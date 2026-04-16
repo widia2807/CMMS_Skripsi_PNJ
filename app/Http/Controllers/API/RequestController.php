@@ -29,7 +29,7 @@ class RequestController extends Controller
 
     // tambahan data otomatis
     $data['user_id'] = $user->id;
-    $data['branch_id'] = $user->branch_id; // 🔥 penting biar gak campur cabang
+    $data['branch_id'] = $user->branch_id; 
     $data['status'] = 'pending';
 
     // upload foto
@@ -117,42 +117,67 @@ public function approve(Request $request, $id)
 {
     $user = auth()->user();
 
-    if (!in_array($user->role, ['admin_ga','super_admin'])) {
-        return response()->json([
-            'message' => 'Tidak punya akses'
-        ], 403);
+    if ($user->role !== 'admin') {
+        return response()->json(['message' => 'Tidak punya akses'], 403);
     }
 
     $request->validate([
-        'urgency' => 'required|in:low,medium,high'
+        'urgency' => 'required|in:low,medium,high',
+        'technician_id' => 'nullable|exists:users,id'
     ]);
 
-    $req = RequestModel::where('id', $id)
-        ->where('branch_id', $user->branch_id)
-        ->firstOrFail();
+    // 🔥 ADMIN = global (tidak pakai branch)
+    $req = RequestModel::find($id);
+
+    if (!$req) {
+        return response()->json(['message' => 'Data tidak ditemukan'], 404);
+    }
 
     if ($req->status !== 'pending') {
-        return response()->json([
-            'message' => 'Sudah diproses'
-        ], 400);
+        return response()->json(['message' => 'Sudah diproses'], 400);
     }
 
     $req->status = 'approved';
     $req->urgency = $request->urgency;
-    $req->approved_at = now();
-    $req->reject_reason = null;
+    $req->technician_id = $request->technician_id ?? null;
+
+    // OPTIONAL (kalau belum ada kolomnya, jangan dipakai)
+    // $req->approved_at = now();
+
     $req->save();
 
-    return response()->json([
-        'message' => 'Request approved'
+    return response()->json(['message' => 'Berhasil approve']);
+}
+
+public function assignTechnician(Request $request, $id)
+{
+    $user = auth()->user();
+
+    if ($user->role !== 'admin') {
+        return response()->json(['message' => 'Tidak punya akses'], 403);
+    }
+
+    $request->validate([
+        'technician_id' => 'required|exists:users,id'
     ]);
+
+    $req = RequestModel::find($id);
+
+    if (!$req) {
+        return response()->json(['message' => 'Data tidak ditemukan'], 404);
+    }
+
+    $req->technician_id = $request->technician_id;
+    $req->save();
+
+    return response()->json(['message' => 'Tukang berhasil ditentukan']);
 }
 
 public function reject(Request $request, $id)
 {
     $user = auth()->user();
 
-    if (!in_array($user->role, ['admin_ga','super_admin'])) {
+    if (!in_array($user->role, ['admin'])) {
         return response()->json([
             'message' => 'Tidak punya akses'
         ], 403);

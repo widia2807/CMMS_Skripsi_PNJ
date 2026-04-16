@@ -120,10 +120,45 @@
 
     </div>
 </div>
+
+<!-- ASSIGN TECHNICIAN MODAL -->
+<div id="assignModal" 
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[90%] max-w-sm rounded-2xl p-5 shadow-xl animate-scaleIn">
+
+        <h3 class="font-semibold text-gray-800 mb-4 text-center">
+            Pilih Tukang
+        </h3>
+
+        <select id="technicianSelect" 
+            class="w-full border p-2 rounded mb-4">
+            <option value="">Loading...</option>
+        </select>
+
+        <button onclick="submitAssign()" 
+            class="w-full bg-blue-600 text-white py-2 rounded-lg">
+            Assign
+        </button>
+
+        <button onclick="closeAssignModal()" 
+            class="mt-3 w-full text-gray-500 text-sm hover:underline">
+            Batal
+        </button>
+
+    </div>
+
+</div>
+
 <script>
 
+let selectedCategory = null;
+let selectedId = null;
 const token = localStorage.getItem('token');
-
+if (!token) {
+    alert('Session habis, silakan login ulang');
+    window.location.href = '/login';
+}
 async function loadRequests() {
     const res = await fetch('/api/requests', {
         headers: {
@@ -132,7 +167,10 @@ async function loadRequests() {
     });
 
     const data = await res.json();
-
+if (!res.ok) {
+    alert('Gagal load data');
+    return;
+}
     let html = '';
 
     data.forEach(item => {
@@ -170,7 +208,7 @@ async function loadRequests() {
                 </button>
 
                 ${item.status === 'pending' ? `
-                    <button onclick="approve(${item.id})"
+                    <button onclick="approve(${item.id}, '${item.category}')"
                         class="flex-1 bg-green-500 hover:bg-green-600 text-white py-1 rounded text-xs">
                         Approve
                     </button>
@@ -236,7 +274,7 @@ async function detail(id) {
     if (data.status === 'pending') {
         actionHTML = `
             <div class="flex gap-2">
-                <button onclick="approve(${data.id})"
+                <button onclick="approve(${data.id}, '${data.category}')"
                     class="flex-1 bg-green-500 text-white py-2 rounded">
                     Approve
                 </button>
@@ -247,6 +285,15 @@ async function detail(id) {
             </div>
         `;
     }
+
+    if (data.status === 'approved' && !data.technician_id) {
+    actionHTML += `
+        <button onclick="openAssignFromDetail(${data.id}, '${data.category}')"
+            class="w-full bg-blue-500 text-white py-2 rounded">
+            Tentukan Tukang
+        </button>
+    `;
+}
 
     document.getElementById('detailAction').innerHTML = actionHTML;
 
@@ -260,29 +307,63 @@ function closeDetail() {
     document.getElementById('overlay').classList.add('hidden');
 }
 
-async function approve(id) {
-    const urgency = prompt("1. rendah\n2. sedang\n3. tinggi");
 
-    if (!urgency) return;
+async function openAssignModal() {
+    const modal = document.getElementById('assignModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
 
-    let urgencyValue = '';
+    const res = await fetch(`/api/technicians?category=${selectedCategory}`, {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    });
 
-    if (urgency == '1') urgencyValue = 'low';
-    else if (urgency == '2') urgencyValue = 'medium';
-    else if (urgency == '3') urgencyValue = 'high';
-    else return alert('Input salah');
+    const data = await res.json();
 
-    await fetch(`/api/requests/${id}/approve`, {
-        method: 'PUT',
+    let html = '<option value="">Pilih Tukang</option>';
+
+    data.forEach(t => {
+        html += `<option value="${t.id}">${t.name}</option>`;
+    });
+
+    document.getElementById('technicianSelect').innerHTML = html;
+}
+
+async function submitAssign() {
+    const techId = document.getElementById('technicianSelect').value;
+
+    if (!techId) return alert('Pilih tukang dulu!');
+
+    const res = await fetch(`/api/requests/${selectedId}/assign-technician`, {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
         },
-        body: JSON.stringify({ urgency: urgencyValue })
+        body: JSON.stringify({ technician_id: techId })
     });
 
-    loadRequests();
+    const data = await res.json();
+    if (!res.ok) {
+    alert(data.message || 'Terjadi error');
+    return;
+}
+
+    alert('Tukang berhasil ditentukan!');
+    closeAssignModal();
     closeDetail();
+    loadRequests();
+}
+function openAssignFromDetail(id, category) {
+    selectedId = id;
+    selectedCategory = category;
+    openAssignModal();
+}
+function closeAssignModal() {
+    const modal = document.getElementById('assignModal');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
 }
 
 async function reject(id) {
@@ -316,10 +397,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRequests();
 });
 
-let selectedId = null;
 
-function approve(id) {
+
+function approve(id, category) {
     selectedId = id;
+    selectedCategory = category;
 
     const modal = document.getElementById('approveModal');
     modal.classList.remove('hidden');
@@ -333,8 +415,8 @@ function closeApproveModal() {
 }
 
 async function submitApprove(level) {
-    await fetch(`/api/requests/${selectedId}/approve`, {
-        method: 'PUT',
+    const res = await fetch(`/api/requests/${selectedId}/approve`, {
+        method: 'POST', 
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + token
@@ -342,11 +424,23 @@ async function submitApprove(level) {
         body: JSON.stringify({ urgency: level })
     });
 
-    closeApproveModal();
-    loadRequests();
-    closeDetail();
-}
+    const data = await res.json(); 
 
+    if (!res.ok) {
+        alert(data.message || 'Gagal approve');
+        return;
+    }
+
+    closeApproveModal();
+
+    if (level === 'high') {
+        openAssignModal();
+    } else {
+        alert('Berhasil approve! Tukang bisa ditentukan nanti.');
+        loadRequests();
+        closeDetail();
+    }
+}
 </script>
 
 </body>

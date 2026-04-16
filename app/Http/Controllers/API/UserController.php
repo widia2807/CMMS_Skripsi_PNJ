@@ -86,7 +86,7 @@ public function index()
     }
 
     $users = User::where('company_id', $auth->company_id)
-        ->with('branch')
+        ->with('branch', 'category')
         ->get();
 
     return response()->json($users);

@@ -71,8 +71,8 @@ async function login() {
     }
 
     // 🔥 TUKANG
-    else if (user.role === 'tukang') {
-        window.location.href = '/dashboard-tukang';
+    else if (user.role === 'technician') {
+        window.location.href = '/dashboard-technician';
     }
 }
 </script>

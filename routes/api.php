@@ -9,6 +9,8 @@ use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\ImportController;
 use App\Http\Controllers\API\RequestController;
 use App\Http\Controllers\API\LiteDashboardController;
+use App\Http\Controllers\API\TechnicianController;
+use App\Http\Controllers\API\TechnicianDashboardController;
 use App\Http\Controllers\PIC\DashboardController as PICDashboardController;
 use App\Models\Category;
 // PUBLIC ROUTE
@@ -65,8 +67,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pic/activity', [DashboardController::class, 'activity']);
 
     //request admin ga
-    Route::put('/requests/{id}/approve', [RequestController::class, 'approve']);
+    Route::post('/requests/{id}/approve', [RequestController::class, 'approve']);
     Route::put('/requests/{id}/reject', [RequestController::class, 'reject']);
     Route::get('/requests/{id}', [RequestController::class, 'show']);
+
+    // tukang
+    Route::get('/dashboard-technician', [TechnicianDashboardController::class, 'index']);
+    Route::get('/technicians', [TechnicianDashboardController::class, 'technicians']);
+    Route::post('/assign-technician/{id}', [TechnicianDashboardController::class, 'assignTechnician']);
+    Route::get('/technician/jobs', [TechnicianDashboardController::class, 'jobs']); 
+    Route::post('/technician/schedule/{id}', [TechnicianDashboardController::class, 'schedule']);
+    Route::post('/technician/start/{id}', [TechnicianDashboardController::class, 'startJob']);
+    Route::post('/technician/complete/{id}', [TechnicianDashboardController::class, 'completeJob']);
+    Route::post('/technician/inspect/{id}', [TechnicianDashboardController::class, 'inspectJob']);
+    Route::post('/technician/material/{id}', [TechnicianDashboardController::class, 'requestMaterial']);
+    Route::post('/requests/{id}/assign-technician', [RequestController::class, 'assignTechnician']);
     }); 
 

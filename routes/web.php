@@ -5,10 +5,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/login', fn() => view('auth.login'));
 Route::get('/register', fn() => view('auth.register'));
 
-Route::get('/dashboard-lite', fn() => view('dashboard.lite', [
-    'user' => auth()->user()
-]));
-
 Route::get('/dashboard-pic', fn() => view('dashboard.dashboard-pic', [
     'user' => auth()->user()
 ]));
@@ -28,6 +24,11 @@ Route::get('/maintenance', function () {
     return view('maintenance');
 });
 
+Route::get('/tukang/pekerjaan', function () {
+    return view('tukang.pekerjaan');
+});
+ 
+//dashboard 
 Route::get('/dashboard-admin', function () {
     return view('dashboard.dashboard_admin_ga');
 });
@@ -44,3 +45,12 @@ Route::get('/dashboard-full', function () {
     ]);
 });
 
+Route::get('/dashboard-technician', function () {
+    return view('dashboard.dashboard_technician', [
+        'user' => auth()->user()
+    ]);
+});
+
+Route::get('/dashboard-lite', fn() => view('dashboard.lite', [
+    'user' => auth()->user()
+]));

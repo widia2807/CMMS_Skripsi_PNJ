@@ -59,6 +59,13 @@
             <span>Cabang</span>
         </li>
 
+        <li id="menu-pekerjaan" 
+            class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" 
+            onclick="goTo('/tukang/pekerjaan')">
+            <i data-feather="tool" class="w-5 h-5"></i>
+            <span>Pekerjaan Saya</span>
+        </li> 
+
         <!-- PIC -->
         <li id="menu-pic" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/request')">
             <i data-feather="tool" class="w-5 h-5"></i>
@@ -116,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ],
 
     technician: [
-        'menu-status'
+        'menu-pekerjaan'
     ]
 };
 

@@ -167,28 +167,6 @@ menuItems.forEach(item => {
     });
 });
 
-// LOAD ACTIVITY
-async function loadActivity() {
-    try {
-        const res = await fetch('/api/dashboard/activity');
-        const data = await res.json();
-
-        const container = document.getElementById('recentActivity');
-
-        if (!container) return; // biar gak error kalau elemen gak ada
-
-        container.innerHTML = '';
-
-        data.forEach(item => {
-            const li = document.createElement('li');
-            li.innerHTML = `✔ ${item.description}`;
-            container.appendChild(li);
-        });
-
-    } catch (error) {
-        console.error('Gagal load activity:', error);
-    }
-}
 
 // LOAD DASHBOARD
 async function loadDashboard() {
@@ -206,9 +184,59 @@ async function loadDashboard() {
     }
 }
 
+// LOAD ACTIVITY
+async function loadDashboard() {
+    try {
+        const token = localStorage.getItem('token');
 
+        const res = await fetch('/api/dashboard', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
 
-// JALANKAN SETELAH PAGE READY
+        const data = await res.json();
+
+        document.getElementById('totalCabang').innerText = data.total_cabang ?? 0;
+        document.getElementById('totalUser').innerText = data.total_user ?? 0;
+        document.getElementById('pendingUser').innerText = data.pending_user ?? 0;
+        document.getElementById('activeUser').innerText = data.active_user ?? 0;
+
+    } catch (error) {
+        console.error('Gagal load dashboard:', error);
+    }
+}
+
+async function loadActivity() {
+    try {
+        const token = localStorage.getItem('token');
+
+        const res = await fetch('/api/dashboard/activity', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        const data = await res.json();
+
+        if (!Array.isArray(data)) return;
+
+        const container = document.getElementById('recentActivity');
+        container.innerHTML = '';
+
+        data.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `✔ ${item.description}`;
+            container.appendChild(li);
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadDashboard();

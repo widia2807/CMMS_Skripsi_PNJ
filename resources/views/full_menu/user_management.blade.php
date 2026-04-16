@@ -44,6 +44,7 @@
                             <th class="p-3 text-left">Nama</th>
                             <th class="p-3 text-left">Email</th>
                             <th class="p-3 text-left">Role</th>
+                            <th class="p-3 text-left">Spesialisasi</th>
                             <th class="p-3 text-left">Cabang</th>
                             <th class="p-3 text-left">Status</th>
                             <th class="p-3 text-left">Action</th>
@@ -239,6 +240,7 @@ if (user.role === 'super_admin') {
             <td class="p-2">${user.name}</td>
             <td class="p-2">${user.email}</td>
             <td class="p-2 capitalize">${user.role}</td>
+            <td class="p-2">${user.category?.name ?? '-'}</td>
             <td class="p-2">${user.branch?.name ?? '-'}</td>
             <td class="p-2">${statusBadge}</td>
             <td class="p-2 flex gap-2 flex-wrap">${actionButtons}</td>
@@ -273,32 +275,72 @@ async function loadBranch(filterType = null) {
 }
 
 async function saveUser() {
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
     const role = document.getElementById('role').value;
     const type = document.getElementById('branchType').value;
     const branch_id = document.getElementById('branch').value;
     const category_id = document.getElementById('category').value;
+
     let finalBranch = null;
 
+    // ================= VALIDASI =================
+    if (!name || !email || !role) {
+        alert('Semua field wajib diisi!');
+        return;
+    }
+
+    if (name.length < 6) {
+        alert('Nama minimal 6 karakter!');
+        return;
+    }
+
+    if (/^[.\-]+$/.test(name)) {
+        alert('Nama tidak valid!');
+        return;
+    }
+
+    if (!email.includes('@')) {
+        alert('Email tidak valid!');
+        return;
+    }
+
+    if (role === 'technician' && !category_id) {
+        alert('Spesialisasi wajib dipilih!');
+        return;
+    }
+
+    if (role !== 'technician') {
+        if (!type) {
+            alert('Tipe lokasi wajib dipilih!');
+            return;
+        }
+
+        if (type === 'branch' && !branch_id) {
+            alert('Cabang wajib dipilih!');
+            return;
+        }
+    }
+
+    // ================= LOGIC =================
     if (type === 'branch') {
-        finalBranch = branch_id;
+        finalBranch = Number(branch_id);
     }
 
     if (type === 'ho') {
-        // ambil HO otomatis
-        const res = await fetch('/api/branches', {
-    headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ' + token
-    }
-});
-        const data = await res.json();
-        const ho = data.find(b => b.type === 'ho');
+        const resBranch = await fetch('/api/branches', {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        const dataBranch = await resBranch.json();
+        const ho = dataBranch.find(b => b.type === 'ho');
         finalBranch = ho?.id;
     }
-
-    await fetch('/api/users', {
+    console.log('CATEGORY ID:', category_id);
+    const res = await fetch('/api/users', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -310,9 +352,17 @@ async function saveUser() {
             email,
             role,
             branch_id: role === 'technician' ? null : finalBranch,
-            category_id: role === 'technician' ? category_id : null
+            category_id: role === 'technician' ? Number(category_id) : null
         })
     });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        console.error('VALIDATION ERROR:', data);
+        alert(JSON.stringify(data.errors)); // 🔥 ini penting
+        return;
+    }
 
     closeModal();
     loadUsers();
