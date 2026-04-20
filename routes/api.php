@@ -65,12 +65,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pic/dashboard', [PICDashboardController::class, 'index']);
     Route::get('/sub-categories/{category}', [RequestController::class, 'getSubCategory']);
     Route::get('/pic/activity', [DashboardController::class, 'activity']);
+    Route::get('/materials', [RequestController::class, 'materialRequests']);
+Route::post('/materials/{id}/approve', [RequestController::class, 'approveMaterial']);
 
     //request admin ga
     Route::post('/requests/{id}/approve', [RequestController::class, 'approve']);
     Route::put('/requests/{id}/reject', [RequestController::class, 'reject']);
     Route::get('/requests/{id}', [RequestController::class, 'show']);
-
+    Route::get('/materials', [RequestController::class, 'materialRequests']);
+Route::post('/materials/approve-all/{id}', [RequestController::class, 'approveAllMaterial']);
     // tukang
     Route::get('/dashboard-technician', [TechnicianDashboardController::class, 'index']);
     Route::get('/technicians', [TechnicianDashboardController::class, 'technicians']);

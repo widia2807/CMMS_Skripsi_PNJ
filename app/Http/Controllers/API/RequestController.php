@@ -22,7 +22,7 @@ class RequestController extends Controller
     $data = $request->validate([
         'title' => 'required|string|max:255',
         'description' => 'required|string',
-        'category' => 'required|in:kelistrikan,sipil',
+        'category_id' => 'required|exists:categories,id',
         'sub_category' => 'required|string',
         'photo' => 'nullable|image|max:2048'
     ]);
@@ -55,18 +55,40 @@ public function index()
         ], 401);
     }
 
+    
     if ($user->role === 'pic') {
-        return RequestModel::where('user_id', $user->id)->get();
+        $data = RequestModel::with('categoryRelation')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+    } 
+    
+    else {
+        $data = RequestModel::with('categoryRelation')
+            ->latest()
+            ->get();
     }
 
-    return RequestModel::latest()->get(); // 🔥 aman
+    
+    return $data->map(function ($req) {
+        return [
+            'id' => $req->id,
+            'title' => $req->title,
+            'description' => $req->description,
+            'status' => $req->status,
+            'photo' => $req->photo,
+
+           
+            'category' => $req->categoryRelation->name ?? '-',
+        ];
+    });
 }
 
 public function show($id)
 {
     $user = auth()->user();
 
-    $req = RequestModel::find($id);
+    $req = RequestModel::with('branch')->find($id);
 
     if (!$req) {
         return response()->json([
@@ -82,37 +104,82 @@ public function show($id)
     }
 
     // kalau admin → boleh lihat semua di cabang
-    if (in_array($user->role, ['admin_ga','super_admin']) &&
+    if (in_array($user->role, ['admin']) &&
         $req->branch_id !== $user->branch_id) {
         return response()->json([
             'message' => 'Beda cabang'
         ], 403);
     }
 
-    return response()->json($req);
+    return response()->json([
+    'id' => $req->id,
+    'title' => $req->title,
+    'description' => $req->description,
+    'category' => $req->categoryRelation->name ?? '-',
+    'status' => $req->status,
+    'urgency' => $req->urgency,
+    'photo' => $req->photo,
+
+    // 🔥 TAMBAHAN INI
+    'branch' => $req->branch->name ?? '-'
+]);
 }
 
-public function getSubCategory($category)
+public function materialRequests(Request $request)
 {
-    // mapping category ke id
-    $categoryMap = [
-        'kelistrikan' => 1,
-        'sipil' => 2
-    ];
+    try {
+        $query = \App\Models\MaterialRequest::with('repairRequest')
+            ->where('status', 'pending');
 
-    $categoryId = $categoryMap[$category] ?? null;
+        if ($request->request_id) {
+            $query->where('repair_request_id', $request->request_id);
+        }
 
-    if (!$categoryId) {
-        return response()->json([]);
+        return response()->json($query->get());
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error material',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+public function approveMaterial($id)
+{
+    $material = \App\Models\MaterialRequest::findOrFail($id);
+
+    $material->status = 'approved';
+    $material->save();
+
+    // 🔥 cek semua material untuk request ini
+    $remaining = \App\Models\MaterialRequest::where('repair_request_id', $material->repair_request_id)
+        ->where('status', 'pending')
+        ->count();
+
+    // kalau semua sudah approved
+    if ($remaining === 0) {
+        $req = RequestModel::find($material->repair_request_id);
+        $req->status = 'scheduled'; // atau langsung boleh kerja
+        $req->save();
     }
 
-    $data = \DB::table('sub_categories')
-        ->where('category_id', $categoryId)
-        ->pluck('name');
-
-    return response()->json($data);
+    return response()->json(['message' => 'Material ready']);
 }
+public function approveAllMaterial($id)
+{
+    \App\Models\MaterialRequest::where('repair_request_id', $id)
+        ->update(['status' => 'approved']);
 
+    $req = RequestModel::find($id);
+
+    if ($req) {
+        $req->status = 'material_ready';
+        $req->save();
+    }
+
+    return response()->json(['message' => 'Material ready']);
+}
 public function approve(Request $request, $id)
 {
     $user = auth()->user();
@@ -141,8 +208,7 @@ public function approve(Request $request, $id)
     $req->urgency = $request->urgency;
     $req->technician_id = $request->technician_id ?? null;
 
-    // OPTIONAL (kalau belum ada kolomnya, jangan dipakai)
-    // $req->approved_at = now();
+
 
     $req->save();
 

@@ -33,13 +33,27 @@ class TechnicianDashboardController extends Controller
     }
 
     public function jobs()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        return WorkRequest::where('technician_id', $user->id)
-            ->latest()
-            ->get();
-    }
+    return WorkRequest::with(['branch', 'categoryRelation'])
+        ->where('technician_id', $user->id)
+        ->latest()
+        ->get()
+        ->map(function ($req) {
+            return [
+                'id' => $req->id,
+                'title' => $req->title,
+                'description' => $req->description,
+                'status' => $req->status,
+                'photo' => $req->photo,
+
+                // 🔥 INI YANG KAMU BUTUH
+                'branch' => $req->branch->name ?? '-',
+                'category' => $req->categoryRelation->name ?? '-',
+            ];
+        });
+}
 
     // ================= ASSIGN =================
     public function assignTechnician(Request $request, $id)
@@ -139,7 +153,7 @@ if (!$req) {
     $request->validate(['schedule_date' => 'required|date']);
 
     $req->schedule_date = $request->schedule_date;
-    $req->status = 'scheduled';
+    $req->status = 'material_ready';
     $req->save();
 
     return response()->json(['message' => 'Jadwal diset']);
@@ -221,7 +235,8 @@ if (!$req) {
             'repair_request_id' => $id,
             'item_name' => $item['name'],
             'qty' => $item['qty'],
-            'unit' => $item['unit'] ?? null
+            'unit' => $item['unit'] ?? null,
+            'status' => 'pending'
         ]);
     }
 

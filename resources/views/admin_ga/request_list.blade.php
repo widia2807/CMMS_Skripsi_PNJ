@@ -219,6 +219,13 @@ if (!res.ok) {
                     </button>
                 ` : ''}
 
+                 ${item.status === 'waiting_material' ? `
+                    <button onclick="reviewMaterial(${item.id})"
+                        class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-1 rounded text-xs">
+                        Review Material
+                    </button>
+                ` : ''}
+
             </div>
 
         </div>
@@ -228,6 +235,64 @@ if (!res.ok) {
     document.getElementById('requestTable').innerHTML = html;
 }
 
+async function reviewMaterial(id) {
+    const res = await fetch(`/api/materials?request_id=${id}`, {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        console.error(data);
+        alert('Gagal load material');
+        return;
+    }
+
+    if (!Array.isArray(data)) {
+        console.error(data);
+        alert('Format data salah');
+        return;
+    }
+
+    let html = '<h4 class="font-semibold mb-2">Material Dibutuhkan</h4>';
+
+    data.forEach(item => {
+        html += `
+            <div class="bg-gray-100 p-2 rounded mb-2">
+                <p>${item.item_name} - ${item.qty} ${item.unit}</p>
+            </div>
+        `;
+    });
+
+    document.getElementById('detailContent').innerHTML = html;
+
+    
+    document.getElementById('detailPanel').classList.remove('translate-x-full');
+    document.getElementById('overlay').classList.remove('hidden');
+
+    
+    document.getElementById('detailAction').innerHTML = `
+        <button onclick="approveAllMaterial(${id})"
+            class="w-full bg-green-500 text-white py-2 rounded">
+            Material Siap
+        </button>
+    `;
+}
+
+async function approveAllMaterial(id) {
+    const res = await fetch(`/api/materials/approve-all/${id}`, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) return alert(data.message);
+
+    alert('Material siap!');
+    closeDetail();
+    loadRequests();
+}
 async function detail(id) {
     const res = await fetch(`/api/requests/${id}`, {
         headers: {
@@ -243,6 +308,10 @@ async function detail(id) {
 
             <div>
                 <h3 class="text-lg font-semibold">${data.title}</h3>
+                <div class="text-sm">
+            <span class="font-medium text-gray-600">Cabang:</span>
+            <span class="text-gray-800">${data.branch ?? '-'}</span>
+        </div>
                 <p class="text-xs text-gray-500">${data.category}</p>
             </div>
 
@@ -395,6 +464,7 @@ function closeImage() {
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadRequests();
+    
 });
 
 
@@ -440,6 +510,10 @@ async function submitApprove(level) {
         loadRequests();
         closeDetail();
     }
+}
+
+function goTo(page) {
+    window.location.href = page;
 }
 </script>
 

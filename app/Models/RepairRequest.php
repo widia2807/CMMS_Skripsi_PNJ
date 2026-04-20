@@ -13,8 +13,8 @@ class RepairRequest extends Model
         'branch_id',
         'title',
         'description',
-        'category',
-        'sub_category',
+        'category_id',
+    'sub_category_id',
         'photo',
         'status',
         'reject_reason',
@@ -33,5 +33,15 @@ class RepairRequest extends Model
     public function technician()
 {
     return $this->belongsTo(User::class, 'technician_id');
+}
+
+public function branch()
+{
+    return $this->belongsTo(Branch::class);
+}
+
+public function categoryRelation()
+{
+    return $this->belongsTo(Category::class, 'category_id');
 }
 }

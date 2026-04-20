@@ -23,6 +23,32 @@
 
 </div>
 
+<div id="detailModal"
+    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white w-[90%] max-w-md rounded-xl p-4">
+
+        <h3 class="font-semibold text-lg mb-2">Detail Pekerjaan</h3>
+
+        <div id="detailContent" class="space-y-2"></div>
+
+        <button onclick="closeDetail()"
+            class="mt-4 w-full bg-gray-500 text-white py-2 rounded">
+            Tutup
+        </button>
+
+    </div>
+</div>
+
+<div id="imageModal"
+    class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50">
+
+    <img id="modalImage" class="max-w-[90%] max-h-[90%] rounded">
+
+    <button onclick="closeImage()"
+        class="absolute top-5 right-5 text-white text-2xl">✕</button>
+</div>
+
 <div id="materialModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
     <div class="bg-white p-5 rounded-xl w-[90%] max-w-md">
 
@@ -68,6 +94,7 @@ const statusLabel = {
     'waiting_material': 'Menunggu Material',
     'on_progress': 'Sedang Dikerjakan',
     'done': 'Selesai',
+    'material_ready': 'Material Siap',
     'verified': 'Terverifikasi'
 };
 // ================= LOAD JOB =================
@@ -80,6 +107,7 @@ async function loadJobs() {
         });
 
         const data = await res.json();
+        window.jobData = data;
 
         if (!res.ok) {
             alert(data.message || 'Gagal load data');
@@ -108,10 +136,11 @@ async function loadJobs() {
                         Langsung Kerja
                     </button>
 
-                    <button onclick="inspectJob(${job.id}, true)" class="bg-yellow-500 text-white px-2 py-1 rounded">
+                    <button onclick="needMaterial(${job.id})" 
+                        class="bg-yellow-500 text-white px-2 py-1 rounded">
                         Butuh Material
                     </button>
-                `;
+                                    `;
             }
 
             // WAITING MATERIAL
@@ -131,6 +160,14 @@ async function loadJobs() {
                     </button>
                 `;
             }
+            else if (job.status === 'material_ready') {
+                action = `
+                    <button onclick="startJob(${job.id})"
+                        class="bg-green-600 text-white px-2 py-1 rounded">
+                        Mulai Kerja
+                    </button>
+                `;
+            }
 
             // ON PROGRESS
             else if (job.status === 'on_progress') {
@@ -143,13 +180,25 @@ async function loadJobs() {
 
             html += `
                 <div class="bg-white p-4 rounded shadow">
-                    <h3 class="font-semibold">${job.title ?? '-'}</h3>
+                   <h3 class="font-semibold">${job.title ?? '-'}</h3>
+
+                    <p class="text-xs text-gray-400">🏢 ${job.branch ?? '-'}</p>
+
                     <p class="text-sm text-gray-500">${job.category ?? '-'}</p>
+
+                    ${job.photo ? `
+                        <img src="/storage/${job.photo}" 
+                            class="w-full h-32 object-cover rounded mt-2">
+                    ` : ''}
                     <p class="text-xs text-gray-400 mb-2">Status: ${statusLabel[job.status] ?? job.status}</p>
 
                     <div class="flex gap-2 flex-wrap">
                         ${action}
                     </div>
+                    <button onclick="openDetail(${job.id})"
+        class="bg-gray-800 text-white px-2 py-1 rounded">
+        Detail
+    </button>
                 </div>
             `;
         });
@@ -162,7 +211,73 @@ async function loadJobs() {
     }
 }
 
-// ================= ACTION =================
+async function needMaterial(id) {
+    const res = await fetch(`/api/technician/inspect/${id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+            needs_material: true,
+            notes: 'Butuh material'
+        })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) return alert(data.message);
+
+    // 🔥 langsung buka form
+    openMaterialForm(id);
+}
+
+function openDetail(id) {
+    const job = window.jobData.find(j => j.id === id);
+
+    if (!job) return;
+
+    document.getElementById('detailContent').innerHTML = `
+        <h4 class="font-semibold">${job.title}</h4>
+
+        <p class="text-sm text-gray-500">🏢 ${job.branch}</p>
+
+        <p class="text-sm">${job.category}</p>
+
+        <p class="text-sm text-gray-700">${job.description}</p>
+
+        ${job.photo ? `
+            <img src="/storage/${job.photo}" 
+                onclick="openImage('/storage/${job.photo}')"
+                class="w-full h-40 object-cover rounded cursor-pointer">
+        ` : ''}
+
+        <p class="text-xs text-gray-400">
+            Status: ${statusLabel[job.status] ?? job.status}
+        </p>
+    `;
+
+    document.getElementById('detailModal').classList.remove('hidden');
+    document.getElementById('detailModal').classList.add('flex');
+}
+
+function closeDetail() {
+    document.getElementById('detailModal').classList.add('hidden');
+    document.getElementById('detailModal').classList.remove('flex');
+}
+
+
+function openImage(src) {
+    document.getElementById('modalImage').src = src;
+
+    document.getElementById('imageModal').classList.remove('hidden');
+    document.getElementById('imageModal').classList.add('flex');
+}
+
+function closeImage() {
+    document.getElementById('imageModal').classList.add('hidden');
+    document.getElementById('imageModal').classList.remove('flex');
+}
 
 async function setSchedule(id) {
     const date = document.getElementById(`date-${id}`).value;

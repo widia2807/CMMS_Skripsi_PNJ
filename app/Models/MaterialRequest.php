@@ -12,4 +12,9 @@ class MaterialRequest extends Model
         'qty',
         'unit'
     ];
+
+    public function repairRequest()
+{
+    return $this->belongsTo(\App\Models\RepairRequest::class, 'repair_request_id');
+}
 }

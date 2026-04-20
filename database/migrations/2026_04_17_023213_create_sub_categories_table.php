@@ -9,20 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->boolean('must_change_password')->default(false)->after('status');
-    });
-}
+    public function up(): void
+    {
+      Schema::create('sub_categories', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('category_id')->constrained()->onDelete('cascade');
+    $table->string('name');
+    $table->timestamps();
+});
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('sub_categories');
     }
 };
