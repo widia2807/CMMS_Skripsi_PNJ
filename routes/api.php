@@ -13,6 +13,9 @@ use App\Http\Controllers\API\TechnicianController;
 use App\Http\Controllers\API\TechnicianDashboardController;
 use App\Http\Controllers\PIC\DashboardController as PICDashboardController;
 use App\Models\Category;
+use App\Http\Controllers\API\AssetController;
+use App\Http\Controllers\API\AssetCategoryController;
+use App\Http\Controllers\API\AssetSubCategoryController;
 // PUBLIC ROUTE
 Route::post('/register', [AuthController::class,'register']);
 Route::post('/login', [AuthController::class,'login']);
@@ -24,7 +27,7 @@ Route::get('/test', function(){
  
    
 // 🔐 PROTECTED ROUTE
-Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
         Route::get('/lite/dashboard', [LiteDashboardController::class, 'index']);
          Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
@@ -66,14 +69,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/sub-categories/{category}', [RequestController::class, 'getSubCategory']);
     Route::get('/pic/activity', [DashboardController::class, 'activity']);
     Route::get('/materials', [RequestController::class, 'materialRequests']);
-Route::post('/materials/{id}/approve', [RequestController::class, 'approveMaterial']);
+    Route::post('/materials/{id}/approve', [RequestController::class, 'approveMaterial']);
 
     //request admin ga
     Route::post('/requests/{id}/approve', [RequestController::class, 'approve']);
     Route::put('/requests/{id}/reject', [RequestController::class, 'reject']);
     Route::get('/requests/{id}', [RequestController::class, 'show']);
     Route::get('/materials', [RequestController::class, 'materialRequests']);
-Route::post('/materials/approve-all/{id}', [RequestController::class, 'approveAllMaterial']);
+    Route::post('/materials/approve-all/{id}', [RequestController::class, 'approveAllMaterial']);
+    Route::apiResource('assets', AssetController::class);
+    Route::get('/assets/export', [AssetController::class, 'export']);
+    Route::get('/categories', [AssetCategoryController::class, 'index']);
+    Route::get('/sub-categories', [AssetSubCategoryController::class, 'index']);
+    Route::post('/categories', [AssetCategoryController::class, 'store']);
+    Route::post('/sub-categories', [AssetSubCategoryController::class, 'store']);
+    Route::get('/categories', [AssetCategoryController::class, 'index']);
     // tukang
     Route::get('/dashboard-technician', [TechnicianDashboardController::class, 'index']);
     Route::get('/technicians', [TechnicianDashboardController::class, 'technicians']);

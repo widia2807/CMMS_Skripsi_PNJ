@@ -27,6 +27,10 @@ Route::get('/maintenance', function () {
 Route::get('/tukang/pekerjaan', function () {
     return view('tukang.pekerjaan');
 });
+
+Route::get('/assets', function () {
+    return view('assets');
+});
  
 //dashboard 
 Route::get('/dashboard-admin', function () {

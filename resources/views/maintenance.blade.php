@@ -112,7 +112,7 @@ async function loadRequests() {
     });
 }
 
-// ✅ APPROVE
+
 async function approve(id) {
     await fetch(`/api/requests/${id}/approve`, {
         method: 'PUT',
@@ -125,18 +125,20 @@ async function approve(id) {
     loadRequests();
 }
 
-// ❌ OPEN MODAL
+function goTo(url){
+    window.location.href = url;
+}
 function openReject(id) {
     selectedId = id;
     document.getElementById('rejectModal').classList.remove('hidden');
 }
 
-// ❌ CLOSE MODAL
+
 function closeModal() {
     document.getElementById('rejectModal').classList.add('hidden');
 }
 
-// ❌ CONFIRM REJECT
+
 async function confirmReject() {
     const reason = document.getElementById('rejectReason').value;
 

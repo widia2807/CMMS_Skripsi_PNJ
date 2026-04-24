@@ -29,9 +29,9 @@
             <span>Maintenance</span>
         </li>
 
-        <li id="menu-technician" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/technicians')">
-            <i data-feather="users" class="w-5 h-5"></i>
-            <span>Tukang</span>
+        <li id="menu-assets" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/assets')">
+            <i data-feather="archive" class="w-5 h-5"></i>
+            <span>Data Aset</span>
         </li>
 
         <li id="menu-tools" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/borrow-tools')">
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     admin: [
         'menu-perbaikan',
         'menu-maintenance',
-        'menu-technician',
+        'menu-assets',
         'menu-tools',
         'menu-spk',
         'menu-report'
