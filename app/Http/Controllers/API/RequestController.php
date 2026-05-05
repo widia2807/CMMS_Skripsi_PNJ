@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Category;
+use App\Models\SubCategory;
 use App\Models\RepairRequest as RequestModel;
 
 class RequestController extends Controller
@@ -77,7 +79,7 @@ public function index()
             'description' => $req->description,
             'status' => $req->status,
             'photo' => $req->photo,
-
+            'category_id' => $req->category_id,
            
             'category' => $req->categoryRelation->name ?? '-',
         ];
@@ -103,12 +105,12 @@ public function show($id)
         ], 403);
     }
 
-    // kalau admin → boleh lihat semua di cabang
-    if (in_array($user->role, ['admin']) &&
-        $req->branch_id !== $user->branch_id) {
-        return response()->json([
-            'message' => 'Beda cabang'
-        ], 403);
+   if ($user->role === 'admin') {
+        $branchCompanyId = $req->branch->company_id ?? null;
+        
+        if ($branchCompanyId !== $user->company_id) {
+            return response()->json(['message' => 'Beda company'], 403);
+        }
     }
 
     return response()->json([
@@ -119,7 +121,7 @@ public function show($id)
     'status' => $req->status,
     'urgency' => $req->urgency,
     'photo' => $req->photo,
-
+    'category_id' => $req->category_id,
     // 🔥 TAMBAHAN INI
     'branch' => $req->branch->name ?? '-'
 ]);
@@ -290,4 +292,14 @@ public function assign(Request $request, $id)
         'message' => 'Tukang berhasil ditentukan'
     ]);
 }
+
+public function getSubCategory($categoryId)
+{
+    $data = SubCategory::where('category_id', $categoryId)
+        ->pluck('name');
+
+    return response()->json($data);
+}
+
+
 }

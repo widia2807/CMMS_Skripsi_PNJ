@@ -182,4 +182,11 @@ public function disable($id)
         'message' => 'User dinonaktifkan'
     ]);
 }
+
+ public function workers()
+    {
+        return User::where('role', 'technician')
+            ->select('id','name')
+            ->get();
+    }
 }

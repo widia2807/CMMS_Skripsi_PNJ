@@ -21,6 +21,7 @@ class Asset extends Model
         'acquisition_year',
         'user_id',
         'pic_id',
+        'photo',
     ];
 
     public function category()

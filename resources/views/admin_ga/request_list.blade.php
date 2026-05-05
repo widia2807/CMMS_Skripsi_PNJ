@@ -1,374 +1,395 @@
 <!DOCTYPE html>
 <html>
- <button onclick="toggleSidebar()" 
-    class="md:hidden mb-4 bg-gray-800 text-white px-3 py-2 rounded">
-    ☰ 
-</button>   
 <head>
-    <title>Request List</title>
-
+    <title>Perbaikan Gedung</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    <!-- FONT -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+        .card { transition: box-shadow 0.2s, transform 0.2s; }
+        .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.09); transform: translateY(-2px); }
+
+        .btn { transition: all 0.15s ease; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        .modal-box { animation: scaleIn 0.2s ease; }
+
+        .detail-panel { transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    </style>
 </head>
-<style>
-@keyframes scaleIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-.animate-scaleIn {
-    animation: scaleIn 0.2s ease;
-}
-</style>
-<body class="bg-gray-50 font-[Inter]">
+
+<body class="bg-slate-50 min-h-screen">
 
 @include('components.sidebar')
 
-<div class="flex h-screen">
+<div class="flex min-h-screen">
+<div class="flex-1 md:ml-64">
 
-    <!-- CONTENT -->
-    <div class="flex-1 md:ml-64 p-6 overflow-auto">
-
-        <!-- HEADER -->
-        <div class="mb-6">
-            <h1 class="text-2xl font-semibold text-gray-800">Perbaikan Gedung</h1>
-            <p class="text-sm text-gray-500">Monitoring & approval request</p>
+<!-- TOPBAR -->
+<div class="bg-white border-b border-slate-100 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+    <div>
+        <h1 class="font-bold text-slate-800 text-lg">Perbaikan Gedung</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Monitoring & approval request</p>
+    </div>
+    <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+            <i data-feather="user" class="w-4 h-4 text-indigo-600"></i>
         </div>
-
-        <!-- CARD LIST -->
-        <div id="requestTable" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-
+        <span class="text-sm font-medium text-slate-600">Admin</span>
     </div>
-
 </div>
 
-<!-- DETAIL PANEL -->
+<div class="p-8">
+
+<!-- FILTER + STATS -->
+<div class="flex flex-wrap gap-2 mb-6" id="filterTabs">
+    <button onclick="filterRequests('all')" id="tab-all" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-white">
+        Semua
+    </button>
+    <button onclick="filterRequests('pending')" id="tab-pending" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
+        Pending
+    </button>
+    <button onclick="filterRequests('approved')" id="tab-approved" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
+        Disetujui
+    </button>
+    <button onclick="filterRequests('on_progress')" id="tab-on_progress" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
+        Dikerjakan
+    </button>
+    <button onclick="filterRequests('done')" id="tab-done" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
+        Selesai
+    </button>
+    <button onclick="filterRequests('rejected')" id="tab-rejected" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
+        Ditolak
+    </button>
+</div>
+
+<!-- CARD GRID -->
+<div id="requestTable" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+
+<!-- EMPTY STATE -->
+<div id="emptyState" class="hidden text-center py-20">
+    <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-feather="inbox" class="w-8 h-8 text-slate-400"></i>
+    </div>
+    <p class="font-semibold text-slate-500">Tidak ada request</p>
+    <p class="text-slate-400 text-sm mt-1">Belum ada data pada kategori ini</p>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- DETAIL PANEL (SLIDE FROM RIGHT) -->
 <div id="detailPanel"
-    class="fixed top-0 right-0 w-full sm:w-[420px] h-full bg-white shadow-xl transform translate-x-full transition duration-300 z-50 flex flex-col">
+    class="detail-panel fixed top-0 right-0 w-full sm:w-[440px] h-full bg-white shadow-2xl transform translate-x-full z-50 flex flex-col">
 
-    <!-- HEADER -->
-    <div class="flex items-center justify-between p-4 border-b">
-        <h2 class="font-semibold text-gray-800">Detail</h2>
-        <button onclick="closeDetail()" class="text-xl">✕</button>
+    <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+        <h2 class="font-bold text-slate-800">Detail Request</h2>
+        <button onclick="closeDetail()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+            <i data-feather="x" class="w-4 h-4"></i>
+        </button>
     </div>
 
-    <!-- CONTENT -->
-    <div id="detailContent" class="flex-1 overflow-auto p-4"></div>
+    <div id="detailContent" class="flex-1 overflow-auto p-6 space-y-4"></div>
 
-    <!-- ACTION BUTTON (STICKY BAWAH) -->
-    <div id="detailAction" class="p-4 border-t space-y-2 bg-white">
-        <!-- nanti diisi JS -->
-    </div>
-
+    <div id="detailAction" class="p-6 border-t border-slate-100 space-y-2 bg-white"></div>
 </div>
+
 <!-- OVERLAY -->
-<div id="overlay" 
-    onclick="closeDetail()" 
-    class="fixed inset-0 bg-black/40 hidden z-40">
-</div>
+<div id="overlay" onclick="closeDetail()" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-40"></div>
 
 <!-- IMAGE MODAL -->
-<div id="imageModal"
-    class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50">
-
-    <img id="modalImage" class="max-w-[90%] max-h-[90%] rounded-xl shadow-lg">
-
-    <button onclick="closeImage()" 
-        class="absolute top-5 right-5 text-white text-3xl">✕</button>
+<div id="imageModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50">
+    <img id="modalImage" class="max-w-[90%] max-h-[85vh] rounded-xl shadow-2xl object-contain">
+    <button onclick="closeImage()" class="absolute top-5 right-5 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors">
+        <i data-feather="x" class="w-5 h-5"></i>
+    </button>
 </div>
 
-<div id="approveModal" 
-    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-
-    <div class="bg-white w-[90%] max-w-sm rounded-2xl p-5 shadow-xl animate-scaleIn">
-
-        <h3 class="font-semibold text-gray-800 mb-4 text-center">
-            Pilih Tingkat Urgensi
-        </h3>
-
-        <div class="space-y-3">
-
-            <!-- LOW -->
-            <button onclick="submitApprove('low')" 
-                class="w-full flex items-center justify-between px-4 py-3 rounded-xl border hover:bg-gray-100 transition">
-                <span class="font-medium">Santai</span>
-                <span class="text-xs text-gray-400">Low</span>
-            </button>
-
-            <!-- MEDIUM -->
-            <button onclick="submitApprove('medium')" 
-                class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-yellow-400 text-white hover:bg-yellow-500 transition">
-                <span class="font-medium">Segera</span>
-                <span class="text-xs opacity-80">Medium</span>
-            </button>
-
-            <!-- HIGH -->
-            <button onclick="submitApprove('high')" 
-                class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 transition">
-                <span class="font-medium">Prioritas</span>
-                <span class="text-xs opacity-80">High</span>
-            </button>
-
+<!-- APPROVE MODAL (URGENCY) -->
+<div id="approveModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-box">
+        <div class="text-center mb-5">
+            <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <i data-feather="check-circle" class="w-6 h-6 text-green-600"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-lg">Tingkat Urgensi</h3>
+            <p class="text-slate-400 text-sm mt-1">Tentukan prioritas penanganan</p>
         </div>
 
-        <button onclick="closeApproveModal()" 
-            class="mt-4 w-full text-gray-500 text-sm hover:underline">
+        <div class="space-y-2.5">
+            <button onclick="submitApprove('low')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
+                        <i data-feather="clock" class="w-4 h-4 text-slate-500"></i>
+                    </div>
+                    <span class="font-semibold text-slate-700">Santai</span>
+                </div>
+                <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full font-medium">Low</span>
+            </button>
+
+            <button onclick="submitApprove('medium')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-amber-50 border border-amber-200 hover:bg-amber-100 transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <i data-feather="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+                    </div>
+                    <span class="font-semibold text-amber-700">Segera</span>
+                </div>
+                <span class="text-xs bg-amber-200 text-amber-700 px-2 py-1 rounded-full font-medium">Medium</span>
+            </button>
+
+            <button onclick="submitApprove('high')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-red-50 border border-red-200 hover:bg-red-100 transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i data-feather="zap" class="w-4 h-4 text-red-600"></i>
+                    </div>
+                    <span class="font-semibold text-red-700">Prioritas</span>
+                </div>
+                <span class="text-xs bg-red-200 text-red-700 px-2 py-1 rounded-full font-medium">High</span>
+            </button>
+        </div>
+
+        <button onclick="closeApproveModal()" class="mt-4 w-full text-slate-400 text-sm hover:text-slate-600 font-medium py-2">
             Batal
         </button>
-
     </div>
 </div>
 
 <!-- ASSIGN TECHNICIAN MODAL -->
-<div id="assignModal" 
-    class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+<div id="assignModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-box">
+        <div class="text-center mb-5">
+            <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <i data-feather="user-check" class="w-6 h-6 text-blue-600"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-lg">Tentukan Tukang</h3>
+            <p class="text-slate-400 text-sm mt-1">Pilih teknisi yang akan menangani</p>
+        </div>
 
-    <div class="bg-white w-[90%] max-w-sm rounded-2xl p-5 shadow-xl animate-scaleIn">
-
-        <h3 class="font-semibold text-gray-800 mb-4 text-center">
-            Pilih Tukang
-        </h3>
-
-        <select id="technicianSelect" 
-            class="w-full border p-2 rounded mb-4">
-            <option value="">Loading...</option>
+        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Pilih Teknisi</label>
+        <select id="technicianSelect" class="w-full border border-slate-200 rounded-xl p-3 text-sm mb-5">
+            <option value="">Memuat data...</option>
         </select>
 
-        <button onclick="submitAssign()" 
-            class="w-full bg-blue-600 text-white py-2 rounded-lg">
-            Assign
-        </button>
-
-        <button onclick="closeAssignModal()" 
-            class="mt-3 w-full text-gray-500 text-sm hover:underline">
-            Batal
-        </button>
-
+        <div class="flex gap-2">
+            <button onclick="closeAssignModal()" class="btn flex-1 border border-slate-200 text-slate-500 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50">
+                Batal
+            </button>
+            <button onclick="submitAssign()" class="btn flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-semibold">
+                Assign
+            </button>
+        </div>
     </div>
-
 </div>
 
 <script>
-
 let selectedCategory = null;
 let selectedId = null;
+let currentFilter = 'all';
 const token = localStorage.getItem('token');
-if (!token) {
-    alert('Session habis, silakan login ulang');
-    window.location.href = '/login';
-}
-async function loadRequests() {
-    const res = await fetch('/api/requests', {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
+if (!token) { alert('Session habis'); window.location.href = '/login'; }
+
+const statusLabel = {
+    'pending':          'Pending',
+    'approved':         'Disetujui',
+    'waiting_material': 'Menunggu Material',
+    'material_ready':   'Material Siap',
+    'on_progress':      'Dikerjakan',
+    'done':             'Selesai',
+    'rejected':         'Ditolak',
+};
+
+const statusStyle = {
+    'pending':          'bg-amber-100 text-amber-700',
+    'approved':         'bg-green-100 text-green-700',
+    'waiting_material': 'bg-orange-100 text-orange-700',
+    'material_ready':   'bg-blue-100 text-blue-700',
+    'on_progress':      'bg-purple-100 text-purple-700',
+    'done':             'bg-slate-100 text-slate-600',
+    'rejected':         'bg-red-100 text-red-700',
+};
+
+const urgencyStyle = {
+    'low':    'bg-slate-100 text-slate-500',
+    'medium': 'bg-amber-100 text-amber-700',
+    'high':   'bg-red-100 text-red-700',
+};
+
+function filterRequests(status) {
+    currentFilter = status;
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = 'tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200';
     });
-
-    const data = await res.json();
-if (!res.ok) {
-    alert('Gagal load data');
-    return;
+    document.getElementById('tab-' + status).className = 'tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-white';
+    renderRequests(window.requestData || []);
 }
-    let html = '';
 
-    data.forEach(item => {
-        html += `
-        <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition">
+function renderRequests(data) {
+    const filtered = currentFilter === 'all' ? data : data.filter(i => i.status === currentFilter);
+    const grid = document.getElementById('requestTable');
+    const empty = document.getElementById('emptyState');
 
-            <div class="flex justify-between items-start mb-2">
-                <h3 class="font-semibold text-gray-800">${item.title}</h3>
+    if (!filtered.length) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        feather.replace();
+        return;
+    }
+    empty.classList.add('hidden');
 
-                <span class="text-xs px-2 py-1 rounded 
-                    ${item.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
-                      item.status === 'approved' ? 'bg-green-100 text-green-700' : 
-                      'bg-red-100 text-red-700'}">
-                    ${item.status}
-                </span>
-            </div>
-
-            <p class="text-xs text-gray-500 mb-2">${item.category}</p>
-
-            <p class="text-sm text-gray-700 mb-3 line-clamp-2">
-                ${item.description}
-            </p>
-
+    grid.innerHTML = filtered.map(item => `
+        <div class="card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             ${item.photo ? `
-                <img src="/storage/${item.photo}" 
-                     onclick="openImage('/storage/${item.photo}')"
-                     class="w-full h-32 object-cover rounded mb-3 cursor-pointer">
-            ` : ''}
+                <div class="h-36 overflow-hidden cursor-pointer relative" onclick="openImage('/storage/${item.photo}')">
+                    <img src="/storage/${item.photo}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                </div>
+            ` : `<div class="h-1.5 bg-gradient-to-r from-indigo-400 to-blue-300"></div>`}
 
-            <div class="flex flex-wrap gap-2">
+            <div class="p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-bold text-slate-800 text-sm leading-snug flex-1 pr-2">${item.title}</h3>
+                    <span class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap ${statusStyle[item.status] ?? 'bg-slate-100 text-slate-500'}">
+                        ${statusLabel[item.status] ?? item.status}
+                    </span>
+                </div>
 
-                <button onclick="detail(${item.id})"
-                    class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-1 rounded text-xs">
-                    Detail
-                </button>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
+                    <i data-feather="tag" class="w-3 h-3"></i>
+                    <span>${item.category ?? '-'}</span>
+                </div>
 
-                ${item.status === 'pending' ? `
-                    <button onclick="approve(${item.id}, '${item.category}')"
-                        class="flex-1 bg-green-500 hover:bg-green-600 text-white py-1 rounded text-xs">
-                        Approve
+                ${item.urgency ? `
+                <div class="flex items-center gap-1.5 mb-2">
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium ${urgencyStyle[item.urgency] ?? ''}">
+                        ${item.urgency === 'high' ? '🔴 Prioritas' : item.urgency === 'medium' ? '🟡 Segera' : '🟢 Santai'}
+                    </span>
+                </div>` : ''}
+
+                <p class="text-xs text-slate-500 line-clamp-2 mb-3">${item.description ?? ''}</p>
+
+                <div class="flex flex-wrap gap-1.5 border-t border-slate-50 pt-3">
+                    <button onclick="detail(${item.id})" class="btn flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                        <i data-feather="eye" class="w-3 h-3"></i> Detail
                     </button>
 
-                    <button onclick="reject(${item.id})"
-                        class="flex-1 bg-red-500 hover:bg-red-600 text-white py-1 rounded text-xs">
-                        Reject
-                    </button>
-                ` : ''}
+                    ${item.status === 'pending' ? `
+                        <button onclick="approve(${item.id}, ${item.category_id})" class="btn flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                            <i data-feather="check" class="w-3 h-3"></i> Approve
+                        </button>
+                        <button onclick="reject(${item.id})" class="btn flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                            <i data-feather="x" class="w-3 h-3"></i> Reject
+                        </button>
+                    ` : ''}
 
-                 ${item.status === 'waiting_material' ? `
-                    <button onclick="reviewMaterial(${item.id})"
-                        class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-1 rounded text-xs">
-                        Review Material
-                    </button>
-                ` : ''}
-
+                    ${item.status === 'waiting_material' || item.status === 'material_ready' ? `
+                        <button onclick="reviewMaterial(${item.id})" class="btn flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                            <i data-feather="package" class="w-3 h-3"></i> Review Material
+                        </button>
+                    ` : ''}
+                </div>
             </div>
-
         </div>
-        `;
-    });
+    `).join('');
 
-    document.getElementById('requestTable').innerHTML = html;
+    feather.replace();
 }
 
-async function reviewMaterial(id) {
-    const res = await fetch(`/api/materials?request_id=${id}`, {
-        headers: { Authorization: 'Bearer ' + token }
-    });
-
+async function loadRequests() {
+    const res = await fetch('/api/requests', { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
-
-    if (!res.ok) {
-        console.error(data);
-        alert('Gagal load material');
-        return;
-    }
-
-    if (!Array.isArray(data)) {
-        console.error(data);
-        alert('Format data salah');
-        return;
-    }
-
-    let html = '<h4 class="font-semibold mb-2">Material Dibutuhkan</h4>';
-
-    data.forEach(item => {
-        html += `
-            <div class="bg-gray-100 p-2 rounded mb-2">
-                <p>${item.item_name} - ${item.qty} ${item.unit}</p>
-            </div>
-        `;
-    });
-
-    document.getElementById('detailContent').innerHTML = html;
-
-    
-    document.getElementById('detailPanel').classList.remove('translate-x-full');
-    document.getElementById('overlay').classList.remove('hidden');
-
-    
-    document.getElementById('detailAction').innerHTML = `
-        <button onclick="approveAllMaterial(${id})"
-            class="w-full bg-green-500 text-white py-2 rounded">
-            Material Siap
-        </button>
-    `;
+    if (!res.ok) { alert('Gagal load data'); return; }
+    window.requestData = data;
+    renderRequests(data);
 }
 
-async function approveAllMaterial(id) {
-    const res = await fetch(`/api/materials/approve-all/${id}`, {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + token }
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) return alert(data.message);
-
-    alert('Material siap!');
-    closeDetail();
-    loadRequests();
-}
 async function detail(id) {
-    const res = await fetch(`/api/requests/${id}`, {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    });
-
+    const res = await fetch(`/api/requests/${id}`, { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
 
-    // CONTENT
     document.getElementById('detailContent').innerHTML = `
-        <div class="space-y-4">
-
-            <div>
-                <h3 class="text-lg font-semibold">${data.title}</h3>
-                <div class="text-sm">
-            <span class="font-medium text-gray-600">Cabang:</span>
-            <span class="text-gray-800">${data.branch ?? '-'}</span>
+        <div class="flex justify-between items-start">
+            <h3 class="font-bold text-slate-800 text-base leading-snug flex-1 pr-3">${data.title}</h3>
+            <span class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap ${statusStyle[data.status] ?? ''}">
+                ${statusLabel[data.status] ?? data.status}
+            </span>
         </div>
-                <p class="text-xs text-gray-500">${data.category}</p>
-            </div>
 
-            <div class="flex gap-2 text-xs">
-                <span class="px-2 py-1 rounded bg-blue-100 text-blue-700">
-                    ${data.status}
+        <div class="grid grid-cols-2 gap-2">
+            <div class="bg-slate-50 rounded-xl p-3">
+                <p class="text-xs text-slate-400 mb-0.5">Cabang</p>
+                <p class="text-sm font-semibold text-slate-700">${data.branch ?? '-'}</p>
+            </div>
+            <div class="bg-slate-50 rounded-xl p-3">
+                <p class="text-xs text-slate-400 mb-0.5">Kategori</p>
+                <p class="text-sm font-semibold text-slate-700">${data.category ?? '-'}</p>
+            </div>
+            ${data.urgency ? `
+            <div class="bg-slate-50 rounded-xl p-3 col-span-2">
+                <p class="text-xs text-slate-400 mb-0.5">Urgensi</p>
+                <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${urgencyStyle[data.urgency] ?? ''}">
+                    ${data.urgency === 'high' ? '🔴 Prioritas' : data.urgency === 'medium' ? '🟡 Segera' : '🟢 Santai'}
                 </span>
-                <span class="px-2 py-1 rounded bg-yellow-100 text-yellow-700">
-                    ${data.urgency ?? '-'}
-                </span>
-            </div>
-
-            <div class="bg-gray-100 p-3 rounded text-sm">
-                ${data.description}
-            </div>
-
-            ${data.photo ? `
-                <img src="/storage/${data.photo}" 
-                     onclick="openImage('/storage/${data.photo}')"
-                     class="w-full h-52 object-cover rounded cursor-pointer">
-            ` : ''}
-
+            </div>` : ''}
         </div>
+
+        <div class="bg-slate-50 rounded-xl p-4">
+            <p class="text-xs text-slate-400 mb-1">Deskripsi</p>
+            <p class="text-sm text-slate-700 leading-relaxed">${data.description ?? '-'}</p>
+        </div>
+
+        ${data.photo ? `
+            <img src="/storage/${data.photo}" onclick="openImage('/storage/${data.photo}')"
+                class="w-full h-48 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-opacity">
+        ` : ''}
     `;
 
-    // ACTION BUTTON (INI YANG PENTING)
     let actionHTML = '';
-
     if (data.status === 'pending') {
         actionHTML = `
             <div class="flex gap-2">
-                <button onclick="approve(${data.id}, '${data.category}')"
-                    class="flex-1 bg-green-500 text-white py-2 rounded">
-                    Approve
+                <button onclick="approve(${data.id}, '${data.category}')" class="btn flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                    <i data-feather="check" class="w-4 h-4"></i> Approve
                 </button>
-                <button onclick="reject(${data.id})"
-                    class="flex-1 bg-red-500 text-white py-2 rounded">
-                    Reject
+                <button onclick="reject(${data.id})" class="btn flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                    <i data-feather="x" class="w-4 h-4"></i> Reject
                 </button>
-            </div>
-        `;
+            </div>`;
+    }
+    if (data.status === 'approved' && !data.technician_id) {
+        actionHTML += `
+            <button onclick="openAssignFromDetail(${data.id}, ${data.category_id})" class="btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                <i data-feather="user-plus" class="w-4 h-4"></i> Tentukan Tukang
+            </button>`;
     }
 
-    if (data.status === 'approved' && !data.technician_id) {
-    actionHTML += `
-        <button onclick="openAssignFromDetail(${data.id}, '${data.category}')"
-            class="w-full bg-blue-500 text-white py-2 rounded">
-            Tentukan Tukang
-        </button>
-    `;
-}
-
     document.getElementById('detailAction').innerHTML = actionHTML;
-
-    // OPEN PANEL
     document.getElementById('detailPanel').classList.remove('translate-x-full');
     document.getElementById('overlay').classList.remove('hidden');
+    feather.replace();
 }
 
 function closeDetail() {
@@ -376,78 +397,126 @@ function closeDetail() {
     document.getElementById('overlay').classList.add('hidden');
 }
 
-
-async function openAssignModal() {
-    const modal = document.getElementById('assignModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-
-    const res = await fetch(`/api/technicians?category=${selectedCategory}`, {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    });
-
+async function reviewMaterial(id) {
+    const res = await fetch(`/api/materials?request_id=${id}`, { headers: { Authorization: 'Bearer ' + token } });
     const data = await res.json();
+    if (!res.ok || !Array.isArray(data)) { alert('Gagal load material'); return; }
 
-    let html = '<option value="">Pilih Tukang</option>';
+    document.getElementById('detailContent').innerHTML = `
+        <div class="mb-4">
+            <h4 class="font-bold text-slate-800 mb-1">Material Dibutuhkan</h4>
+            <p class="text-xs text-slate-400">Review list material yang diajukan teknisi</p>
+        </div>
+        <div class="space-y-2">
+            ${data.map((item, i) => `
+                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 bg-indigo-100 rounded-lg flex items-center justify-center text-xs font-bold text-indigo-600">${i+1}</div>
+                        <span class="text-sm font-medium text-slate-700">${item.item_name}</span>
+                    </div>
+                    <span class="text-sm text-slate-500 font-semibold">${item.qty} <span class="text-xs font-normal">${item.unit}</span></span>
+                </div>
+            `).join('')}
+        </div>
+    `;
 
-    data.forEach(t => {
-        html += `<option value="${t.id}">${t.name}</option>`;
-    });
+    document.getElementById('detailAction').innerHTML = `
+        <button onclick="approveAllMaterial(${id})" class="btn w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+            <i data-feather="check-circle" class="w-4 h-4"></i> Konfirmasi Material Siap
+        </button>`;
 
-    document.getElementById('technicianSelect').innerHTML = html;
+    document.getElementById('detailPanel').classList.remove('translate-x-full');
+    document.getElementById('overlay').classList.remove('hidden');
+    feather.replace();
 }
 
-async function submitAssign() {
-    const techId = document.getElementById('technicianSelect').value;
-
-    if (!techId) return alert('Pilih tukang dulu!');
-
-    const res = await fetch(`/api/requests/${selectedId}/assign-technician`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ technician_id: techId })
-    });
-
+async function approveAllMaterial(id) {
+    const res = await fetch(`/api/materials/approve-all/${id}`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
     const data = await res.json();
-    if (!res.ok) {
-    alert(data.message || 'Terjadi error');
-    return;
-}
-
-    alert('Tukang berhasil ditentukan!');
-    closeAssignModal();
+    if (!res.ok) return alert(data.message);
+    alert('Material siap!');
     closeDetail();
     loadRequests();
 }
+
+function approve(id, category) {
+    selectedId = id;
+    selectedCategory = category;
+    const modal = document.getElementById('approveModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeApproveModal() {
+    document.getElementById('approveModal').classList.remove('flex');
+    document.getElementById('approveModal').classList.add('hidden');
+}
+
+async function submitApprove(level) {
+    const res = await fetch(`/api/requests/${selectedId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ urgency: level })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.message || 'Gagal approve'); return; }
+    closeApproveModal();
+    if (level === 'high') {
+        openAssignModal();
+    } else {
+        alert('Berhasil approve!');
+        loadRequests();
+        closeDetail();
+    }
+}
+
+async function openAssignModal() {
+    document.getElementById('assignModal').classList.remove('hidden');
+    document.getElementById('assignModal').classList.add('flex');
+    const res = await fetch(`/api/technicians?category_id=${selectedCategory}`, { headers: { 'Authorization': 'Bearer ' + token } });
+    const data = await res.json();
+    if (!res.ok || !Array.isArray(data)) { alert('Gagal load teknisi'); closeAssignModal(); return; }
+    document.getElementById('technicianSelect').innerHTML =
+        '<option value="">Pilih Teknisi</option>' +
+        data.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    feather.replace();
+}
+
 function openAssignFromDetail(id, category) {
     selectedId = id;
     selectedCategory = category;
     openAssignModal();
 }
+
 function closeAssignModal() {
-    const modal = document.getElementById('assignModal');
-    modal.classList.remove('flex');
-    modal.classList.add('hidden');
+    document.getElementById('assignModal').classList.remove('flex');
+    document.getElementById('assignModal').classList.add('hidden');
+}
+
+async function submitAssign() {
+    const techId = document.getElementById('technicianSelect').value;
+    if (!techId) return alert('Pilih tukang dulu!');
+    const res = await fetch(`/api/requests/${selectedId}/assign-technician`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ technician_id: techId })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.message || 'Terjadi error'); return; }
+    alert('Tukang berhasil ditentukan!');
+    closeAssignModal();
+    closeDetail();
+    loadRequests();
 }
 
 async function reject(id) {
     const reason = prompt('Alasan reject:');
     if (!reason) return;
-
     await fetch(`/api/requests/${id}/reject`, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ reason })
     });
-
     loadRequests();
     closeDetail();
 }
@@ -455,66 +524,22 @@ async function reject(id) {
 function openImage(src) {
     document.getElementById('modalImage').src = src;
     document.getElementById('imageModal').classList.remove('hidden');
+    document.getElementById('imageModal').classList.add('flex');
+}
+
+function goTo(url) {
+    window.location.href = url;
 }
 
 function closeImage() {
     document.getElementById('imageModal').classList.add('hidden');
+    document.getElementById('imageModal').classList.remove('flex');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadRequests();
-    
 });
-
-
-
-function approve(id, category) {
-    selectedId = id;
-    selectedCategory = category;
-
-    const modal = document.getElementById('approveModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex'); 
-}
-
-function closeApproveModal() {
-    const modal = document.getElementById('approveModal');
-    modal.classList.remove('flex');
-    modal.classList.add('hidden');
-}
-
-async function submitApprove(level) {
-    const res = await fetch(`/api/requests/${selectedId}/approve`, {
-        method: 'POST', 
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ urgency: level })
-    });
-
-    const data = await res.json(); 
-
-    if (!res.ok) {
-        alert(data.message || 'Gagal approve');
-        return;
-    }
-
-    closeApproveModal();
-
-    if (level === 'high') {
-        openAssignModal();
-    } else {
-        alert('Berhasil approve! Tukang bisa ditentukan nanti.');
-        loadRequests();
-        closeDetail();
-    }
-}
-
-function goTo(page) {
-    window.location.href = page;
-}
 </script>
 
 </body>

@@ -37,8 +37,6 @@
                 <select id="category" onchange="updateSubCategory()"
                     class="w-full border p-2 mb-3 rounded">
                     <option value="">Pilih Kategori</option>
-                    <option value="kelistrikan">Kelistrikan</option>
-                    <option value="sipil">Sipil</option>
                 </select>
 
                 <!-- SUB CATEGORY -->
@@ -90,7 +88,7 @@ async function updateSubCategory() {
 
     sub.innerHTML = '<option>Loading...</option>';
 
-    const res = await fetch(`/api/sub-categories/${category}`, {
+    const res = await fetch(`/api/request/sub-categories/${category}`, {
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem('token'),
             'Accept': 'application/json'
@@ -108,18 +106,34 @@ async function updateSubCategory() {
     sub.innerHTML = '<option value="">Pilih Jenis Kerusakan</option>';
 
     data.forEach(item => {
-        const label = item.replaceAll('_', ' ');
-        sub.innerHTML += `<option value="${item}">${label}</option>`;
+    sub.innerHTML += `<option value="${item}">${item}</option>`;
+});
+}
+async function loadCategories() {
+    const select = document.getElementById('category');
+
+    const res = await fetch('/api/categories', {
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('token'),
+            'Accept': 'application/json'
+        }
+    });
+
+    const data = await res.json();
+
+    select.innerHTML = '<option value="">Pilih Kategori</option>';
+
+    data.forEach(cat => {
+        select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
     });
 }
-
 // SUBMIT
 async function submitRequest() {
     const formData = new FormData();
 
     formData.append('title', document.getElementById('title').value);
     formData.append('description', document.getElementById('description').value);
-    formData.append('category', document.getElementById('category').value);
+    formData.append('category_id', document.getElementById('category').value);
     formData.append('sub_category', document.getElementById('sub_category').value);
 
     const file = document.getElementById('photo').files[0];
@@ -149,7 +163,7 @@ async function submitRequest() {
     window.location.href = '/status';
 }
 
-// NAV
+
 function goTo(url){
     window.location.href = url;
 }
@@ -169,9 +183,9 @@ function toggleSidebar(){
     document.getElementById('sidebar').classList.toggle('-translate-x-full');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    feather.replace();
-});
+
+    loadCategories();
+
 
 </script>
 

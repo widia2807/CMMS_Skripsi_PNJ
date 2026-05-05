@@ -21,7 +21,7 @@ Route::get('/users', fn() => view('full_menu.user_management', [
     'user' => auth()->user()
 ]));
 Route::get('/maintenance', function () {
-    return view('maintenance');
+    return view('admin_ga.maintenance');
 });
 
 Route::get('/tukang/pekerjaan', function () {
@@ -32,6 +32,11 @@ Route::get('/assets', function () {
     return view('assets');
 });
  
+Route::get('/status', fn() => view('pic-status', [
+    'user' => auth()->user()
+]));
+
+
 //dashboard 
 Route::get('/dashboard-admin', function () {
     return view('dashboard.dashboard_admin_ga');

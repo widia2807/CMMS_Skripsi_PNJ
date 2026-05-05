@@ -113,39 +113,35 @@ class TechnicianDashboardController extends Controller
     ]);
 }
 
-    // ================= GET TECHNICIAN =================
     public function technicians(Request $request)
-    {
-        $categoryName = $request->query('category');
+{
+    try {
+        $user = auth()->user(); // ← ini yang kurang
 
-        $category = Category::where('name', $categoryName)->first();
+        $query = User::where('role', 'technician')
+            ->where('company_id', $user->company_id);
 
-        if (!$category) {
-            return response()->json([
-                'message' => 'Category tidak ditemukan'
-            ], 404);
-        }
+        return response()->json($query->get(['id', 'name']));
 
-        return User::where('role', 'technician')
-            ->where('category_id', $category->id)
-            ->get();
+    } catch (\Exception $e) {
+        return response()->json(['message' => $e->getMessage()], 500);
     }
+}
 
-    public function schedule(Request $request, $id)
+   public function schedule(Request $request, $id)
 {
     $user = auth()->user();
 
     $req = WorkRequest::where('id', $id)
-    ->where('technician_id', $user->id)
-    ->first();
+        ->where('technician_id', $user->id)
+        ->first();
 
-if (!$req) {
-    return response()->json([
-        'message' => 'Job tidak ditemukan / bukan milik anda'
-    ], 404);
-}
+    if (!$req) {
+        return response()->json([
+            'message' => 'Job tidak ditemukan / bukan milik anda'
+        ], 404);
+    }
 
-    // Tambah 'waiting_material' di sini
     if (!in_array($req->status, ['approved', 'waiting_material'])) {
         return response()->json(['message' => 'Tidak bisa dijadwalkan'], 400);
     }
@@ -153,34 +149,33 @@ if (!$req) {
     $request->validate(['schedule_date' => 'required|date']);
 
     $req->schedule_date = $request->schedule_date;
-    $req->status = 'material_ready';
+    $req->status = 'scheduled'; // ← fix: was 'material_ready'
     $req->save();
 
     return response()->json(['message' => 'Jadwal diset']);
 }
 
     // ================= START JOB =================
-    public function startJob($id)
-    {
-        $user = auth()->user();
+ public function startJob($id)
+{
+    $user = auth()->user();
 
-        $req = WorkRequest::where('id', $id)
-            ->where('technician_id', $user->id)
-            ->first();
+    $req = WorkRequest::where('id', $id)
+        ->where('technician_id', $user->id)
+        ->first();
 
-        if (!in_array($req->status, ['waiting_material'])) {
-            return response()->json([
-                'message' => 'Belum siap dikerjakan (tunggu material)'
-            ], 400);
-        }
-
-        $req->status = 'on_progress';
-        $req->save();
-
+    // ← tambah 'material_ready'
+    if (!in_array($req->status, ['waiting_material', 'material_ready'])) {
         return response()->json([
-            'message' => 'Pekerjaan dimulai'
-        ]);
+            'message' => 'Belum siap dikerjakan'
+        ], 400);
     }
+
+    $req->status = 'on_progress';
+    $req->save();
+
+    return response()->json(['message' => 'Pekerjaan dimulai']);
+}
 
     // ================= COMPLETE =================
     public function completeJob($id)

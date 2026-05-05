@@ -42,6 +42,16 @@
                     <h2 id="approvedRequest" class="text-2xl font-bold text-green-600">0</h2>
                 </div>
 
+                <div class="bg-white p-4 rounded-xl shadow">
+                    <p class="text-gray-500 text-sm">Total Categories</p>
+                    <h2 id="totalCategories" class="text-2xl font-bold text-blue-600">0</h2>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl shadow">
+                    <p class="text-gray-500 text-sm">Total Sub Categories</p>
+                    <h2 id="totalSubCategories" class="text-2xl font-bold text-purple-600">0</h2>
+                </div>
+
             </div>
 
             <!-- INFO -->
@@ -52,6 +62,77 @@
                 </p>
             </div>
 
+           <div class="bg-white p-6 rounded-xl shadow mt-6">
+            <div class="mb-4">
+                <h2 class="text-lg font-bold">Pengaturan Kategori Perbaikan</h2>
+                <p class="text-sm text-gray-500">
+                    Tambahkan dan kelola kategori utama untuk pengajuan perbaikan.
+                </p>
+            </div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-semibold">Categories</h2>
+                    <div class="space-x-2">
+                        <button onclick="showAddCategory()" class="bg-blue-500 text-white px-3 py-1 rounded">+ Tambah</button>
+                        <button onclick="toggleCategoryList()" class="bg-gray-500 text-white px-3 py-1 rounded">Lihat List</button>
+                    </div>
+                </div>
+
+                <!-- FORM -->
+                <div id="categoryForm" class="hidden mb-4">
+                    <input id="categoryName" type="text" placeholder="Nama Category"
+                        class="border p-2 rounded w-full mb-2">
+                    <button onclick="addCategory()" class="bg-green-500 text-white px-3 py-1 rounded">Simpan</button>
+                </div>
+
+                <!-- TABLE -->
+                <div id="categoryTableWrapper" class="hidden max-h-60 overflow-y-auto">
+                    <table class="w-full text-sm border">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2 text-left">Nama</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow mt-6">
+                 <div class="mb-4">
+                    <h2 class="text-lg font-bold">Pengaturan Sub Kategori Perbaikan</h2>
+                    <p class="text-sm text-gray-500">
+                        Tentukan detail kategori agar pengajuan lebih spesifik.
+                    </p>
+                </div>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-semibold">Sub Categories</h2>
+                    <div class="space-x-2">
+                        <button onclick="showAddSubCategory()" class="bg-purple-500 text-white px-3 py-1 rounded">+ Tambah</button>
+                        <button onclick="toggleSubCategoryList()" class="bg-gray-500 text-white px-3 py-1 rounded">Lihat List</button>
+                    </div>
+                </div>
+
+                <!-- FORM -->
+                <div id="subCategoryForm" class="hidden mb-4">
+                    <select id="subCategoryCategory" class="border p-2 rounded w-full mb-2"></select>
+                    <input id="subCategoryName" type="text" placeholder="Nama Sub Category"
+                        class="border p-2 rounded w-full mb-2">
+                    <button onclick="addSubCategory()" class="bg-green-500 text-white px-3 py-1 rounded">Simpan</button>
+                </div>
+
+                <!-- TABLE -->
+                <div id="subCategoryTableWrapper" class="hidden max-h-60 overflow-y-auto">
+                    <table class="w-full text-sm border">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2 text-left">Sub Category</th>
+                                <th class="p-2 text-left">Category</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subCategoryTable"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -73,10 +154,87 @@ if (!token || !user) {
 document.getElementById('userInfo').innerText =
     user.name + ' (' + user.role + ')';
 
+async function loadCategories() {
+    try {
+        const res = await fetch('/api/categories', {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !Array.isArray(data)) {
+            console.error('CATEGORY ERROR:', data);
+            return;
+        }
+
+        // TOTAL
+        document.getElementById('totalCategories').innerText = data.length;
+
+        // LIST
+        const list = document.getElementById('categoryList');
+        if (list) {
+            list.innerHTML = data.map(c => `<li>• ${c.name}</li>`).join('');
+        }
+
+    } catch (err) {
+        console.error('ERROR CATEGORY:', err);
+    }
+}
+
+async function loadSubCategories() {
+    try {
+        const res = await fetch('/api/sub-categories', {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !Array.isArray(data)) {
+            console.error('SUB CATEGORY ERROR:', data);
+            return;
+        }
+
+        // TOTAL
+        document.getElementById('totalSubCategories').innerText = data.length;
+
+        // LIST
+        const list = document.getElementById('subCategoryList');
+        if (list) {
+            list.innerHTML = data.map(s => `<li>• ${s.name}</li>`).join('');
+        }
+
+    } catch (err) {
+        console.error('ERROR SUB CATEGORY:', err);
+    }
+}
+
 function goTo(url) {
     window.location.href = url;
 }
+function showAddCategory() {
+    document.getElementById('categoryForm').classList.toggle('hidden');
+}
 
+function toggleCategoryList() {
+    document.getElementById('categoryTableWrapper').classList.toggle('hidden');
+    loadCategoriesTable();
+}
+
+function showAddSubCategory() {
+    document.getElementById('subCategoryForm').classList.toggle('hidden');
+    loadCategoryDropdown();
+}
+
+function toggleSubCategoryList() {
+    document.getElementById('subCategoryTableWrapper').classList.toggle('hidden');
+    loadSubCategoriesTable();
+}
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -97,7 +255,74 @@ function goToDashboard() {
     }
 }
 
-// 🔥 LOAD DATA (SUDAH ANTI ERROR & 401)
+async function loadCategoriesTable() {
+    const res = await fetch('/api/categories', {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    document.getElementById('categoryTable').innerHTML =
+        data.map(c => `<tr><td class="p-2">${c.name}</td></tr>`).join('');
+}
+
+async function loadSubCategoriesTable() {
+    const res = await fetch('/api/sub-categories', {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    document.getElementById('subCategoryTable').innerHTML =
+        data.map(s => `
+            <tr>
+                <td class="p-2">${s.name}</td>
+                <td class="p-2">${s.category?.name || '-'}</td>
+            </tr>
+        `).join('');
+}
+
+async function addCategory() {
+    const name = document.getElementById('categoryName').value;
+
+    await fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ name })
+    });
+
+    alert('Category ditambahkan');
+    loadCategories();
+}
+async function loadCategoryDropdown() {
+    const res = await fetch('/api/categories', {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    document.getElementById('subCategoryCategory').innerHTML =
+        data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+async function addSubCategory() {
+    const name = document.getElementById('subCategoryName').value;
+    const category_id = document.getElementById('subCategoryCategory').value;
+
+    await fetch('/api/sub-categories', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ name, category_id })
+    });
+
+    alert('Sub Category ditambahkan');
+    loadSubCategories();
+}
+
+
 async function loadDashboard() {
     try {
         const res = await fetch('/api/requests', {
@@ -141,6 +366,8 @@ async function loadDashboard() {
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadDashboard();
+    loadCategories();       
+    loadSubCategories();   
 });
 </script>
 
