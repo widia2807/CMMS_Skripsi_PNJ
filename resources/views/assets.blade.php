@@ -57,6 +57,21 @@
             border: 1px solid #f1f5f9;
             box-shadow: 0 1px 3px rgba(0,0,0,0.04);
         }
+
+        .qty-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 8px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
     </style>
 </head>
 
@@ -94,9 +109,18 @@
         <button onclick="openSubCategoryModal()" class="btn flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
             <i data-feather="layers" class="w-4 h-4"></i> Sub Kategori
         </button>
-        <a href="/api/assets/export" class="btn flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
+        <button onclick="openRoomModal()" class="btn flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
+            <i data-feather="map-pin" class="w-4 h-4"></i> Ruangan
+        </button>
+        <button onclick="exportAssets()" class="btn flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
             <i data-feather="download" class="w-4 h-4"></i> Export
-        </a>
+        </button>
+        <button onclick="downloadTemplate()" class="btn flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
+            <i data-feather="file-text" class="w-4 h-4"></i> Template
+        </button>
+        <button onclick="openImportModal()" class="btn flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
+            <i data-feather="upload" class="w-4 h-4"></i> Import
+        </button>
         <button onclick="openForm()" class="btn flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
             <i data-feather="plus" class="w-4 h-4"></i> Tambah Aset
         </button>
@@ -114,6 +138,7 @@
                 <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Kategori</th>
                 <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Sub Kategori</th>
                 <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Kondisi</th>
+                <th class="px-5 py-3.5 text-center font-semibold text-slate-500 text-xs uppercase tracking-wide">Jumlah</th>
                 <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Brand</th>
                 <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Nilai</th>
                 <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Foto</th>
@@ -138,6 +163,70 @@
 </div>
 </div>
 
+<!-- IMPORT MODAL -->
+<div id="importModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
+<div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl modal-enter">
+    <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
+        <div>
+            <h2 class="font-bold text-slate-800">Import Aset</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Upload file Excel sesuai template</p>
+        </div>
+        <button onclick="closeImportModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+            <i data-feather="x" class="w-4 h-4"></i>
+        </button>
+    </div>
+    <div class="p-6 space-y-4">
+        <div class="bg-teal-50 border border-teal-200 rounded-lg p-3 text-xs text-teal-700">
+            Belum punya template? <button onclick="downloadTemplate()" class="font-semibold underline">Download di sini</button>
+        </div>
+        <div>
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Pilih File Excel</label>
+            <input type="file" id="importFile" accept=".xlsx,.xls" class="w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-600 file:text-sm file:font-medium hover:file:bg-slate-200">
+        </div>
+        <div id="importResult" class="hidden"></div>
+        <button onclick="submitImport()" class="btn w-full bg-orange-500 hover:bg-orange-600 text-white py-2.5 rounded-lg font-semibold text-sm">
+            Upload & Import
+        </button>
+    </div>
+</div>
+</div>
+
+<!-- ROOM MODAL -->
+<div id="roomModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-sm shadow-2xl modal-enter">
+        <div class="flex justify-between items-center mb-5">
+            <div>
+                <h2 class="font-bold text-slate-800">Tambah Ruangan</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Ruangan per cabang</p>
+            </div>
+            <button onclick="closeRoomModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+                <i data-feather="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <div class="space-y-3">
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Cabang</label>
+                <select id="room_branch_id" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm">
+                    <option value="">Pilih Cabang</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Nama Ruangan</label>
+                <input id="new_room" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="Contoh: Ruang Rapat, Lab A...">
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="saveRoom()" class="btn flex-1 bg-rose-500 hover:bg-rose-600 text-white py-2.5 rounded-lg font-semibold text-sm">
+                    Simpan
+                </button>
+                <button onclick="closeRoomModal()" class="btn px-4 py-2.5 rounded-lg text-sm font-medium text-slate-500 hover:bg-slate-100 border border-slate-200">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL TAMBAH/EDIT ASET -->
 <div id="modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
 <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-enter max-h-[90vh] overflow-y-auto">
@@ -150,14 +239,27 @@
     </div>
 
     <div class="p-6 space-y-3">
+        <!-- Nama -->
         <div>
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Nama Asset <span class="text-red-500">*</span></label>
             <input id="name" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="Nama Asset">
         </div>
+
+        <!-- Cabang — harus di atas room agar event change bisa trigger loadRooms -->
         <div>
-            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Lokasi</label>
-            <input id="location" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="Lokasi">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Cabang</label>
+            <select id="branch_id" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm"></select>
         </div>
+
+        <!-- Ruangan -->
+        <div>
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Lokasi / Ruangan</label>
+            <select id="room_id" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" disabled>
+                <option value="">Pilih cabang dulu</option>
+            </select>
+        </div>
+
+        <!-- Kondisi -->
         <div>
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Kondisi <span class="text-red-500">*</span></label>
             <select id="condition" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm">
@@ -167,6 +269,8 @@
                 <option value="rusak berat">Rusak Berat</option>
             </select>
         </div>
+
+        <!-- Kategori & Sub -->
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Kategori</label>
@@ -179,11 +283,14 @@
                 </select>
             </div>
         </div>
-        <div>
-            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Cabang</label>
-            <select id="branch_id" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm"></select>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
+
+        <!-- Jumlah, Brand, Tahun -->
+        <div class="grid grid-cols-3 gap-3">
+            <div>
+                <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Jumlah</label>
+                <input id="quantity" type="number" min="1" value="1"
+                    class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="1">
+            </div>
             <div>
                 <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Brand</label>
                 <input id="brand" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="Optional">
@@ -193,14 +300,19 @@
                 <input id="acquisition_year" type="number" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="Optional">
             </div>
         </div>
+
+        <!-- Nilai -->
         <div>
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Nilai (Rp)</label>
             <input id="value" type="number" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="Optional">
         </div>
+
+        <!-- Foto -->
         <div>
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Foto</label>
             <input type="file" id="photo" accept="image/*" class="w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-600 file:text-sm file:font-medium hover:file:bg-slate-200">
         </div>
+
         <button onclick="saveAsset()" class="btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold text-sm mt-2">
             Simpan Aset
         </button>
@@ -263,15 +375,99 @@ const API = '/api/assets';
 const token = localStorage.getItem('token');
 let editId = null;
 
+// ─── Import ───────────────────────────────────────────────
+function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); feather.replace(); }
+function closeImportModal() {
+    document.getElementById('importModal').classList.add('hidden');
+    document.getElementById('importResult').classList.add('hidden');
+}
+
+async function downloadTemplate() {
+    const res = await fetch('/api/assets/import-template', { headers: { Authorization: 'Bearer ' + token } });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'Template_Import_Aset.xlsx'; a.click();
+    URL.revokeObjectURL(url);
+}
+
+async function submitImport() {
+    const file = document.getElementById('importFile').files[0];
+    if (!file) { alert('Pilih file dulu!'); return; }
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/assets/import', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd });
+    const data = await res.json();
+    const resultDiv = document.getElementById('importResult');
+    resultDiv.classList.remove('hidden');
+    if (data.errors?.length) {
+        resultDiv.innerHTML = `<div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+            <p class="font-semibold mb-1">${data.message}</p>
+            <ul class="list-disc pl-4 space-y-0.5">${data.errors.map(e => `<li>${e}</li>`).join('')}</ul>
+        </div>`;
+    } else {
+        resultDiv.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-lg p-3 text-xs text-green-700 font-semibold">${data.message}</div>`;
+    }
+    loadAssets();
+}
+
+// ─── Room ─────────────────────────────────────────────────
+function openRoomModal() {
+    document.getElementById('roomModal').classList.remove('hidden');
+    document.getElementById('new_room').value = '';
+    loadRoomBranchDropdown();
+    feather.replace();
+}
+function closeRoomModal() { document.getElementById('roomModal').classList.add('hidden'); }
+
+async function loadRoomBranchDropdown() {
+    const branches = await fetch('/api/branches', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
+    document.getElementById('room_branch_id').innerHTML =
+        '<option value="">Pilih Cabang</option>' +
+        branches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+}
+
+async function saveRoom() {
+    const branch_id = parseInt(document.getElementById('room_branch_id').value);
+    const name = document.getElementById('new_room').value;
+    if (!branch_id) { alert('Pilih cabang dulu!'); return; }
+    if (!name) { alert('Nama ruangan wajib diisi!'); return; }
+    const res = await fetch('/api/rooms', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ branch_id, name })
+    });
+    if (!res.ok) { alert('Gagal menambahkan ruangan!'); return; }
+    document.getElementById('new_room').value = '';
+    closeRoomModal();
+    alert('Ruangan berhasil ditambahkan!');
+}
+
+async function loadRooms(branchId) {
+    const roomSelect = document.getElementById('room_id');
+    if (!branchId) {
+        roomSelect.innerHTML = '<option value="">Pilih cabang dulu</option>';
+        roomSelect.disabled = true;
+        return;
+    }
+    try {
+        const res = await fetch('/api/rooms?branch_id=' + branchId, { headers: { Authorization: 'Bearer ' + token } });
+        if (!res.ok) { roomSelect.innerHTML = '<option value="">Gagal load ruangan</option>'; return; }
+        const rooms = await res.json();
+        roomSelect.innerHTML = '<option value="">Pilih Ruangan</option>' +
+            rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+        roomSelect.disabled = false;
+    } catch (err) {
+        roomSelect.innerHTML = '<option value="">Error loading data</option>';
+        console.error(err);
+    }
+}
+
+// ─── Helpers ──────────────────────────────────────────────
 function conditionBadge(c) {
     if (!c) return '<span class="text-slate-300">-</span>';
-    const map = {
-        'baik': 'badge-baik',
-        'rusak ringan': 'badge-ringan',
-        'rusak berat': 'badge-berat'
-    };
-    const cls = map[c] || 'bg-slate-100 text-slate-500';
-    return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold ${cls} capitalize">${c}</span>`;
+    const map = { 'baik': 'badge-baik', 'rusak ringan': 'badge-ringan', 'rusak berat': 'badge-berat' };
+    return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold ${map[c] || 'bg-slate-100 text-slate-500'} capitalize">${c}</span>`;
 }
 
 function rupiah(v) {
@@ -279,11 +475,13 @@ function rupiah(v) {
     return 'Rp ' + parseInt(v).toLocaleString('id-ID');
 }
 
+// ─── Load Assets ──────────────────────────────────────────
 async function loadAssets() {
     const res = await fetch(API, { headers: { Authorization: 'Bearer ' + token } });
     const data = await res.json();
-
     const empty = document.getElementById('emptyState');
+    const assetTable = document.getElementById('assetTable');
+
     if (!data.length) {
         assetTable.innerHTML = '';
         empty.classList.remove('hidden');
@@ -296,7 +494,7 @@ async function loadAssets() {
         <tr class="border-b border-slate-50 last:border-0">
             <td class="px-5 py-4">
                 <span class="font-semibold text-slate-700">${a.name}</span>
-                ${a.location ? `<p class="text-xs text-slate-400 mt-0.5">${a.location}</p>` : ''}
+                <div class="text-xs text-slate-400 mt-0.5">${a.room?.name ?? '-'}</div>
             </td>
             <td class="px-5 py-4 text-slate-500">${a.branch?.name ?? '<span class="text-slate-300">-</span>'}</td>
             <td class="px-5 py-4">
@@ -310,6 +508,9 @@ async function loadAssets() {
                     : '<span class="text-slate-300">-</span>'}
             </td>
             <td class="px-5 py-4">${conditionBadge(a.condition)}</td>
+            <td class="px-5 py-4 text-center">
+                <span class="qty-badge">${a.quantity ?? 1}</span>
+            </td>
             <td class="px-5 py-4 text-slate-500 text-sm">${a.brand ?? '<span class="text-slate-300">-</span>'}</td>
             <td class="px-5 py-4 text-slate-600 text-sm font-medium">${rupiah(a.value)}</td>
             <td class="px-5 py-4">
@@ -335,6 +536,7 @@ async function loadAssets() {
     feather.replace();
 }
 
+// ─── Category ─────────────────────────────────────────────
 async function saveCategory() {
     const name = document.getElementById('new_category').value;
     if (!name) { alert('Nama category wajib diisi!'); return; }
@@ -364,9 +566,7 @@ async function saveSubCategory() {
 }
 
 async function loadCategoryForSub() {
-    const categories = await fetch('/api/asset/categories', {
-        headers: { Authorization: 'Bearer ' + token }
-    }).then(r => r.json());
+    const categories = await fetch('/api/asset/categories', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
     const subParent = document.getElementById('sub_parent');
     if (!subParent) return;
     subParent.innerHTML = '<option value="">Pilih Category</option>' +
@@ -374,96 +574,137 @@ async function loadCategoryForSub() {
 }
 
 async function loadDropdowns() {
-    const categories = await fetch('/api/asset/categories', { headers: { Authorization: 'Bearer ' + token }}).then(r=>r.json());
-    const branches = await fetch('/api/branches', { headers: { Authorization: 'Bearer ' + token }}).then(r=>r.json());
-    document.getElementById('category_id').innerHTML = '<option value="">Pilih Kategori</option>' + categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-    document.getElementById('branch_id').innerHTML = '<option value="">Pilih Cabang</option>' + branches.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+    const [categories, branches] = await Promise.all([
+        fetch('/api/asset/categories', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json()),
+        fetch('/api/branches', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json())
+    ]);
+    document.getElementById('category_id').innerHTML =
+        '<option value="">Pilih Kategori</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    document.getElementById('branch_id').innerHTML =
+        '<option value="">Pilih Cabang</option>' + branches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
 }
 
-document.getElementById('category_id').addEventListener('change', async function(){
-    if(!this.value){ document.getElementById('sub_category_id').innerHTML='<option>Pilih Sub</option>'; return; }
-    const subs = await fetch('/api/asset/sub-categories?category_id='+this.value, {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-    document.getElementById('sub_category_id').innerHTML = '<option value="">Pilih Sub</option>'+subs.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+// ─── Event Listeners ──────────────────────────────────────
+// Langsung attach — tidak perlu DOMContentLoaded karena script ada di bawah HTML
+document.getElementById('category_id').addEventListener('change', async function () {
+    if (!this.value) { document.getElementById('sub_category_id').innerHTML = '<option>Pilih Sub</option>'; return; }
+    const subs = await fetch('/api/asset/sub-categories?category_id=' + this.value, { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
+    document.getElementById('sub_category_id').innerHTML =
+        '<option value="">Pilih Sub</option>' + subs.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 });
 
-async function saveAsset(){
+document.getElementById('branch_id').addEventListener('change', function () {
+    loadRooms(this.value);
+});
+
+// ─── Save Asset ───────────────────────────────────────────
+async function saveAsset() {
     const nameInput = document.getElementById('name');
     const conditionInput = document.getElementById('condition');
-    if(!nameInput.value){ alert('Nama wajib diisi!'); return; }
-    if(!conditionInput.value){ alert('Kondisi wajib diisi!'); return; }
+    if (!nameInput.value) { alert('Nama wajib diisi!'); return; }
+    if (!conditionInput.value) { alert('Kondisi wajib diisi!'); return; }
 
     const fd = new FormData();
     fd.append('name', nameInput.value);
-    fd.append('location', document.getElementById('location').value);
+    fd.append('branch_id', document.getElementById('branch_id').value);
+    fd.append('room_id', document.getElementById('room_id').value);
     fd.append('condition', conditionInput.value);
     fd.append('category_id', document.getElementById('category_id').value);
     fd.append('sub_category_id', document.getElementById('sub_category_id').value);
-    fd.append('branch_id', document.getElementById('branch_id').value);
+    fd.append('quantity', document.getElementById('quantity').value || 1);  // ← quantity
     fd.append('brand', document.getElementById('brand').value);
-    fd.append('value', document.getElementById('value').value);
     fd.append('acquisition_year', document.getElementById('acquisition_year').value);
+    fd.append('value', document.getElementById('value').value);
     const photo = document.getElementById('photo');
-    if(photo.files[0]) fd.append('photo', photo.files[0]);
+    if (photo.files[0]) fd.append('photo', photo.files[0]);
 
     let url = API;
-    if(editId){ url += '/' + editId; fd.append('_method','PUT'); }
+    if (editId) { url += '/' + editId; fd.append('_method', 'PUT'); }
 
-    await fetch(url,{ method:'POST', headers:{Authorization:'Bearer '+token}, body:fd });
+    await fetch(url, { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd });
     resetForm();
     closeForm();
     loadAssets();
 }
 
-async function editAsset(id){
-    const d = await fetch(API+'/'+id, { headers:{Authorization:'Bearer '+token} }).then(r=>r.json());
+// ─── Edit Asset ───────────────────────────────────────────
+async function editAsset(id) {
+    const d = await fetch(API + '/' + id, { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
+
     document.getElementById('modalTitle').textContent = 'Edit Aset';
     document.getElementById('name').value = d.name ?? '';
-    document.getElementById('location').value = d.location ?? '';
     document.getElementById('condition').value = d.condition ?? '';
-    document.getElementById('category_id').value = d.category_id;
-
-    const subs = await fetch('/api/asset/sub-categories?category_id='+d.category_id, {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-    document.getElementById('sub_category_id').innerHTML = '<option value="">Pilih Sub</option>' + subs.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-    document.getElementById('sub_category_id').value = d.sub_category_id;
-    document.getElementById('branch_id').value = d.branch_id;
+    document.getElementById('category_id').value = d.category_id ?? '';
+    document.getElementById('branch_id').value = d.branch_id ?? '';
     document.getElementById('brand').value = d.brand ?? '';
     document.getElementById('value').value = d.value ?? '';
     document.getElementById('acquisition_year').value = d.acquisition_year ?? '';
+    document.getElementById('quantity').value = d.quantity ?? 1;  // ← quantity
+
+    // Load sub kategori
+    if (d.category_id) {
+        const subs = await fetch('/api/asset/sub-categories?category_id=' + d.category_id, { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
+        document.getElementById('sub_category_id').innerHTML =
+            '<option value="">Pilih Sub</option>' + subs.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        document.getElementById('sub_category_id').value = d.sub_category_id ?? '';
+    }
+
+    // Load rooms setelah branch di-set, lalu set room_id
+    await loadRooms(d.branch_id);
+    document.getElementById('room_id').value = d.room_id ?? '';
 
     editId = id;
     openForm();
 }
 
-async function deleteAsset(id){
-    if(confirm('Yakin ingin menghapus aset ini?')){
-        await fetch(API+'/'+id,{method:'DELETE',headers:{Authorization:'Bearer '+token}});
+// ─── Delete Asset ─────────────────────────────────────────
+async function deleteAsset(id) {
+    if (confirm('Yakin ingin menghapus aset ini?')) {
+        await fetch(API + '/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
         loadAssets();
     }
 }
 
-function resetForm(){
+// ─── Export ───────────────────────────────────────────────
+async function exportAssets() {
+    const res = await fetch('/api/assets/export', { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) { alert('Export gagal!'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Data_Aset_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ─── Reset / Open / Close ─────────────────────────────────
+function resetForm() {
     editId = null;
     document.getElementById('modalTitle').textContent = 'Tambah Aset';
-    ['name','location','brand','value','acquisition_year'].forEach(id => document.getElementById(id).value = '');
+    ['name', 'brand', 'value', 'acquisition_year'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('quantity').value = 1;  // ← reset ke 1
     document.getElementById('condition').value = '';
     document.getElementById('category_id').value = '';
     document.getElementById('sub_category_id').innerHTML = '<option>Pilih Sub</option>';
     document.getElementById('branch_id').value = '';
+    document.getElementById('room_id').innerHTML = '<option value="">Pilih cabang dulu</option>';
+    document.getElementById('room_id').disabled = true;
 }
-
-function openCategoryModal() { document.getElementById('categoryModal').classList.remove('hidden'); }
+function goTo(url) {
+    window.location.href = url;
+}
+function openCategoryModal() { document.getElementById('categoryModal').classList.remove('hidden'); feather.replace(); }
 function closeCategoryModal() { document.getElementById('categoryModal').classList.add('hidden'); }
-function openSubCategoryModal() { document.getElementById('subCategoryModal').classList.remove('hidden'); loadCategoryForSub(); }
+function openSubCategoryModal() { document.getElementById('subCategoryModal').classList.remove('hidden'); loadCategoryForSub(); feather.replace(); }
 function closeSubCategoryModal() { document.getElementById('subCategoryModal').classList.add('hidden'); }
-function openForm() { document.getElementById('modal').classList.remove('hidden'); }
+function openForm() { document.getElementById('modal').classList.remove('hidden'); feather.replace(); }
 function closeForm() { document.getElementById('modal').classList.add('hidden'); resetForm(); }
 
-// INIT
+// ─── Init ─────────────────────────────────────────────────
 loadAssets();
 loadDropdowns();
-
-// Feather icons
-document.addEventListener('DOMContentLoaded', () => feather.replace());
+feather.replace();
 </script>
 
 </body>

@@ -13,7 +13,8 @@ use App\Http\Controllers\API\{
     TechnicianDashboardController,
     AssetController,
     AssetCategoryController,
-    AssetSubCategoryController
+    AssetSubCategoryController,
+    RoomController
 };
 use Illuminate\Http\Request;
 use App\Models\Category;
@@ -54,7 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/{id}/toggle', [UserController::class, 'toggle']);
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
 
-  
+    Route::get('/branches/import-template', [BranchController::class, 'importTemplate']);
     Route::post('/import-branches', [ImportController::class, 'importBranches']);
 
     
@@ -91,8 +92,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/materials/approve-all/{id}', [RequestController::class, 'approveAllMaterial']);
 
    
-    Route::apiResource('assets', AssetController::class);
     Route::get('/assets/export', [AssetController::class, 'export']);
+    Route::get('/assets/import-template', [AssetController::class, 'importTemplate']);
+    Route::post('/assets/import', [AssetController::class, 'import']);
+    Route::apiResource('assets', AssetController::class);
 
     Route::get('/asset/categories', [AssetCategoryController::class, 'index']);
     Route::post('/asset/categories', [AssetCategoryController::class, 'store']);
@@ -114,17 +117,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Daftar semua jadwal (support ?status=, ?worker_id=, ?month=)
     Route::get('/scheduled-maintenances', [ScheduledMaintenanceController::class, 'index']);
- 
-    // Detail satu jadwal
     Route::get('/scheduled-maintenances/{id}', [ScheduledMaintenanceController::class, 'show']);
- 
-    // Buat jadwal baru
     Route::post('/scheduled-maintenances', [ScheduledMaintenanceController::class, 'store']);
- 
-    // Ubah tukang (reassign)
     Route::put('/scheduled-maintenances/{id}/assign', [ScheduledMaintenanceController::class, 'assign']);
- 
-    // Hapus jadwal (hanya status pending)
     Route::delete('/scheduled-maintenances/{id}', [ScheduledMaintenanceController::class, 'destroy']);
  
  
@@ -140,10 +135,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/scheduled-maintenances/{id}/complete', [ScheduledMaintenanceController::class, 'complete']);
  
  
-    /* ─── SHARED ─── */
- 
-    // Daftar tukang (untuk dropdown di form Admin GA)
-    // Sesuaikan filter role dengan sistem role yang kamu pakai
+    Route::get('/rooms', [RoomController::class, 'index']);
+    Route::post('/rooms', [RoomController::class, 'store']);
     Route::get('/workers', function () {
         return \App\Models\User::where('role', 'tukang')
             ->select('id', 'name')

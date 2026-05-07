@@ -44,4 +44,13 @@ public function categoryRelation()
 {
     return $this->belongsTo(Category::class, 'category_id');
 }
+
+protected static function booted()
+{
+    static::addGlobalScope('company', function ($query) {
+        if (auth()->check()) {
+            $query->where('company_id', auth()->user()->company_id);
+        }
+    });
+}
 }

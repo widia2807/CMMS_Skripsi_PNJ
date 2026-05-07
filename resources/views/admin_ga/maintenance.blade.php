@@ -457,6 +457,10 @@ async function openReport(id) {
 function closeReportModal() {
     document.getElementById('reportModal').style.display = 'none';
 }
+
+function goTo(url) {
+    window.location.href = url;
+}
 </script>
 
 </body>

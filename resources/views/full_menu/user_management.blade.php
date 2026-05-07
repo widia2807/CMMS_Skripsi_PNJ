@@ -4,274 +4,305 @@
     <title>User Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .badge-active   { background: #d1fae5; color: #065f46; }
+        .badge-inactive { background: #fee2e2; color: #991b1b; }
+        .badge-admin    { background: #ede9fe; color: #5b21b6; }
+        .badge-pic      { background: #dbeafe; color: #1e40af; }
+        .badge-tech     { background: #fef3c7; color: #92400e; }
+        .badge-super    { background: #f1f5f9; color: #334155; }
+
+        .modal-enter { animation: modalIn 0.2s ease; }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        tr { transition: background 0.15s; }
+        tr:hover td { background: #f8fafc; }
+
+        .btn { transition: all 0.15s ease; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        input, select {
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    </style>
 </head>
 
+<body class="bg-slate-50">
 
-<body class="bg-gray-100">
 @include('components.sidebar')
-<div class="flex h-screen">
 
-<!-- OVERLAY -->
-    <div id="overlay"
-     class="fixed inset-0 bg-black opacity-40 hidden md:hidden"
-     onclick="toggleSidebar()">
+<div class="flex min-h-screen">
+<div class="flex-1 md:ml-64">
+
+<!-- TOPBAR -->
+<div class="bg-white border-b border-slate-100 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+    <div>
+        <h1 class="font-bold text-slate-800 text-lg">User Management</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Kelola akun dan hak akses pengguna</p>
     </div>
-    <!-- MAIN -->
-    <div class="flex-1 md:ml-64">
-
-        <!-- TOPBAR -->
-        <div class="bg-white shadow px-6 py-4 flex items-center justify-between">
-
-            <button onclick="toggleSidebar()" class="md:hidden">
-                <i data-feather="menu"></i>
-            </button>
-
-            <h1 class="font-semibold">User Management</h1>
-
-            <button onclick="openModal()"
-                class="bg-blue-600 text-white px-4 py-2 rounded">
-                + Tambah User
-            </button>
+    <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+            <span class="text-indigo-600 font-semibold text-sm">A</span>
         </div>
-
-        <!-- CONTENT -->
-        <div class="p-6">
-
-            <div class="bg-white rounded-xl shadow overflow-hidden">
-                <table class="w-full text-sm">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="p-3 text-left">Nama</th>
-                            <th class="p-3 text-left">Email</th>
-                            <th class="p-3 text-left">Role</th>
-                            <th class="p-3 text-left">Spesialisasi</th>
-                            <th class="p-3 text-left">Cabang</th>
-                            <th class="p-3 text-left">Status</th>
-                            <th class="p-3 text-left">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTable"></tbody>
-                </table>
-            </div>
-
-        </div>
+        <span class="text-sm font-medium text-slate-600">Admin</span>
     </div>
+</div>
+
+<div class="p-8">
+
+<!-- ACTION BAR -->
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+    <h2 class="text-xl font-bold text-slate-800">Daftar Pengguna</h2>
+    <button onclick="openModal()" class="btn flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
+        <i data-feather="user-plus" class="w-4 h-4"></i> Tambah User
+    </button>
+</div>
+
+<!-- TABLE -->
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="bg-slate-50 border-b border-slate-100">
+                <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Pengguna</th>
+                <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Role</th>
+                <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Spesialisasi</th>
+                <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Cabang</th>
+                <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Status</th>
+                <th class="px-5 py-3.5 text-left font-semibold text-slate-500 text-xs uppercase tracking-wide">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="hidden py-16 text-center">
+        <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <i data-feather="users" class="w-8 h-8 text-slate-400"></i>
+        </div>
+        <p class="text-slate-500 font-medium">Belum ada pengguna</p>
+        <p class="text-slate-400 text-xs mt-1">Klik tombol "+ Tambah User" untuk menambahkan</p>
+    </div>
+</div>
 
 </div>
-<!-- MODAL -->
-<div id="modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+</div>
+</div>
 
-    <div class="bg-white w-[90%] max-w-md rounded-2xl p-6 shadow-xl animate-scaleIn max-h-[90vh] overflow-y-auto">
+<!-- MODAL TAMBAH USER -->
+<div id="modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
+<div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-enter max-h-[90vh] overflow-y-auto">
 
-        <!-- HEADER -->
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-800">Tambah User</h2>
-            <button onclick="closeModal()" class="text-xl">✕</button>
+    <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
+        <div>
+            <h2 class="font-bold text-slate-800">Tambah User</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Buat akun pengguna baru</p>
         </div>
+        <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+            <i data-feather="x" class="w-4 h-4"></i>
+        </button>
+    </div>
 
-        <!-- FORM -->
-        <div class="space-y-3">
-
-            <input id="name" placeholder="Nama" 
-                class="w-full border p-2 rounded">
-
-            <input id="email" placeholder="Email" 
-                class="w-full border p-2 rounded">
-
-            <select id="role" onchange="handleRole()" 
-                class="w-full border p-2 rounded">
+    <div class="p-6 space-y-3">
+        <div>
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Nama <span class="text-red-500">*</span></label>
+            <input id="name" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="Nama lengkap">
+        </div>
+        <div>
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Email <span class="text-red-500">*</span></label>
+            <input id="email" type="email" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm" placeholder="email@perusahaan.com">
+        </div>
+        <div>
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Role <span class="text-red-500">*</span></label>
+            <select id="role" onchange="handleRole()" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm">
                 <option value="admin">Admin GA</option>
                 <option value="pic">PIC</option>
                 <option value="technician">Technician</option>
             </select>
-
-            <!-- KATEGORI -->
-            <div id="categoryWrapper" class="hidden">
-                <label class="text-xs text-gray-500">Spesialisasi</label>
-                <select id="category" class="w-full border p-2 rounded"></select>
-            </div>
-
-            <!-- BRANCH -->
-            <div id="branchWrapper">
-                <select id="branchType" onchange="handleBranchType()" 
-                    class="w-full border p-2 rounded">
-                    <option value="">-- pilih tipe lokasi --</option>
-                    <option value="ho">HO</option>
-                    <option value="branch">Cabang</option>
-                </select>
-
-                <select id="branch" class="w-full border p-2 rounded hidden"></select>
-            </div>
-
         </div>
 
-        <!-- BUTTON -->
-        <button onclick="saveUser()" 
-            class="mt-4 bg-blue-600 hover:bg-blue-700 text-white w-full p-2 rounded-lg">
-            Simpan
-        </button>
+        <!-- SPESIALISASI (technician only) -->
+        <div id="categoryWrapper" class="hidden">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Spesialisasi <span class="text-red-500">*</span></label>
+            <select id="category" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm"></select>
+        </div>
 
+        <!-- BRANCH -->
+        <div id="branchWrapper">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Tipe Lokasi <span class="text-red-500">*</span></label>
+            <select id="branchType" onchange="handleBranchType()" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm mb-2">
+                <option value="">Pilih tipe lokasi</option>
+                <option value="ho">Head Office (HO)</option>
+                <option value="branch">Cabang</option>
+            </select>
+            <select id="branch" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm hidden"></select>
+        </div>
+
+        <button onclick="saveUser()" class="btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold text-sm mt-2">
+            Simpan User
+        </button>
     </div>
+</div>
 </div>
 
 <script>
-    
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user'));
 
-// Proteksi login
-if (!user || !token) {
-    window.location.href = '/login';
+if (!user || !token) window.location.href = '/login';
+
+function goTo(url) { window.location.href = url; }
+function logout() { localStorage.clear(); window.location.href = '/login'; }
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    document.getElementById('overlay')?.classList.toggle('hidden');
 }
 
-function isLite() {
-    return user?.system_type === 'lite';
+function roleBadge(role) {
+    const map = {
+        'super_admin': ['badge-super', 'Super Admin'],
+        'admin':       ['badge-admin', 'Admin GA'],
+        'pic':         ['badge-pic',   'PIC'],
+        'technician':  ['badge-tech',  'Technician'],
+    };
+    const [cls, label] = map[role] ?? ['badge-super', role];
+    return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold ${cls}">${label}</span>`;
 }
 
-loadUsers();
-loadBranch();
+// LOAD USERS
+async function loadUsers() {
+    const res = await fetch('/api/users', {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const empty = document.getElementById('emptyState');
+    if (!data.length) {
+        document.getElementById('userTable').innerHTML = '';
+        empty.classList.remove('hidden');
+        feather.replace();
+        return;
+    }
+    empty.classList.add('hidden');
+
+    document.getElementById('userTable').innerHTML = data.map(u => {
+        let actions = '';
+
+        if (u.role === 'super_admin') {
+            actions = `
+                <button onclick="resetPassword(${u.id})" class="btn flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold border border-blue-200">
+                    <i data-feather="refresh-cw" class="w-3 h-3"></i> Reset
+                </button>`;
+        } else {
+            if (u.status === 'inactive') {
+                actions += `
+                    <button onclick="activateUser(${u.id})" class="btn flex items-center gap-1.5 bg-green-50 hover:bg-green-100 text-green-600 px-3 py-1.5 rounded-lg text-xs font-semibold border border-green-200">
+                        <i data-feather="check-circle" class="w-3 h-3"></i> Aktifkan
+                    </button>`;
+            } else {
+                actions += `
+                    <button onclick="disableUser(${u.id})" class="btn flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-200">
+                        <i data-feather="pause-circle" class="w-3 h-3"></i> Nonaktifkan
+                    </button>`;
+            }
+            actions += `
+                <button onclick="resetPassword(${u.id})" class="btn flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold border border-blue-200">
+                    <i data-feather="refresh-cw" class="w-3 h-3"></i> Reset
+                </button>
+                <button onclick="deleteUser(${u.id})" class="btn flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-200">
+                    <i data-feather="trash-2" class="w-3 h-3"></i> Hapus
+                </button>`;
+        }
+
+        return `
+        <tr class="border-b border-slate-50 last:border-0">
+            <td class="px-5 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-indigo-600 font-semibold text-xs">${u.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-700">${u.name}</p>
+                        <p class="text-xs text-slate-400">${u.email}</p>
+                    </div>
+                </div>
+            </td>
+            <td class="px-5 py-4">${roleBadge(u.role)}</td>
+            <td class="px-5 py-4 text-slate-500 text-sm">${u.category?.name ?? '<span class="text-slate-300">-</span>'}</td>
+            <td class="px-5 py-4 text-slate-500 text-sm">${u.branch?.name ?? '<span class="text-slate-300">-</span>'}</td>
+            <td class="px-5 py-4">
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${u.status === 'active' ? 'badge-active' : 'badge-inactive'}">
+                    ${u.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                </span>
+            </td>
+            <td class="px-5 py-4">
+                <div class="flex gap-1.5 flex-wrap">${actions}</div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    feather.replace();
+}
+
+async function loadBranch(filterType = null) {
+    const res = await fetch('/api/branches', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    let options = '<option value="">Pilih cabang</option>';
+    data.forEach(b => {
+        if (filterType && b.type !== filterType) return;
+        options += `<option value="${b.id}">${b.name} (${b.type === 'ho' ? 'HO' : 'Cabang'})</option>`;
+    });
+    document.getElementById('branch').innerHTML = options;
+}
+
+async function loadCategories() {
+    const res = await fetch('/api/categories', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    document.getElementById('category').innerHTML = '<option value="">Pilih spesialisasi</option>' +
+        data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function handleRole() {
+    const role = document.getElementById('role').value;
+    const catWrap = document.getElementById('categoryWrapper');
+    const branchWrap = document.getElementById('branchWrapper');
+    if (role === 'technician') {
+        catWrap.classList.remove('hidden');
+        branchWrap.classList.add('hidden');
+        loadCategories();
+    } else {
+        catWrap.classList.add('hidden');
+        branchWrap.classList.remove('hidden');
+    }
+}
 
 function handleBranchType() {
     const type = document.getElementById('branchType').value;
     const branchSelect = document.getElementById('branch');
-
-    if (type === 'branch') {
+    if (type) {
         branchSelect.classList.remove('hidden');
-        loadBranch('branch');
-    } else if (type === 'ho') {
-        branchSelect.classList.remove('hidden');
-        loadBranch('ho'); // 🔥 INI YANG KURANG
+        loadBranch(type);
     } else {
         branchSelect.classList.add('hidden');
     }
-}
-
-function goTo(url) {
-    window.location.href = url;
-}
-
-function goToDashboard() {
-    const user = JSON.parse(localStorage.getItem('user'));
-
-    if (user?.system_type === 'lite') {
-        window.location.href = '/dashboard-lite';
-    } else {
-        window.location.href = '/dashboard-full';
-    }
-}
-
-function logout() {
-    localStorage.clear();
-    window.location.href = '/login';
-}
-// ================= LOAD USERS =================
-async function loadUsers() {
-    const res = await fetch('/api/users', {
-    headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ' + token
-    }
-});
-
-if (!res.ok) {
-    console.error('Status:', res.status);
-    const text = await res.text();
-    console.error(text);
-    return;
-}
-
-    const data = await res.json();
-
-    let html = '';
-
-    data.forEach(user => {
-
-        // ================= STATUS =================
-        const statusBadge = user.status === 'active'
-            ? '<span class="text-green-600 font-semibold">Active</span>'
-            : '<span class="text-red-500 font-semibold">Inactive</span>';
-
-        // ================= ACTION BUTTON =================
-       let actionButtons = '';
-
-if (user.role === 'super_admin') {
-
-    // ✅ hanya reset
-    actionButtons += `
-    <button onclick="resetPassword(${user.id})"
-        class="bg-blue-500 px-2 py-1 text-white rounded text-xs">
-        Reset
-    </button>`;
-
-} else {
-
-    // Activate / Disable
-    if (user.status === 'inactive') {
-        actionButtons += `
-        <button onclick="activateUser(${user.id})"
-            class="bg-green-600 px-2 py-1 text-white rounded text-xs">
-            Activate
-        </button>`;
-    } else {
-        actionButtons += `
-        <button onclick="disableUser(${user.id})"
-            class="bg-yellow-500 px-2 py-1 text-white rounded text-xs">
-            Disable
-        </button>`;
-    }
-
-    // Reset
-    actionButtons += `
-    <button onclick="resetPassword(${user.id})"
-        class="bg-blue-500 px-2 py-1 text-white rounded text-xs">
-        Reset
-    </button>`;
-
-    // Delete
-    actionButtons += `
-    <button onclick="deleteUser(${user.id})"
-        class="bg-red-500 px-2 py-1 text-white rounded text-xs">
-        Delete
-    </button>`;
-}
-
-        html += `
-        <tr class="border-b hover:bg-gray-50">
-            <td class="p-2">${user.name}</td>
-            <td class="p-2">${user.email}</td>
-            <td class="p-2 capitalize">${user.role}</td>
-            <td class="p-2">${user.category?.name ?? '-'}</td>
-            <td class="p-2">${user.branch?.name ?? '-'}</td>
-            <td class="p-2">${statusBadge}</td>
-            <td class="p-2 flex gap-2 flex-wrap">${actionButtons}</td>
-        </tr>`;
-    });
-
-    document.getElementById('userTable').innerHTML = html;
-}
-
-async function loadBranch(filterType = null) {
-    const res = await fetch('/api/branches', {
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }
-    });
-
-    const data = await res.json();
-
-    let options = '<option value="">-- pilih cabang --</option>';
-
-    data.forEach(b => {
-
-        if (filterType && b.type !== filterType) return;
-
-        options += `<option value="${b.id}">
-            ${b.name} (${b.type === 'ho' ? 'HO' : 'Cabang'})
-        </option>`;
-    });
-
-    document.getElementById('branch').innerHTML = options;
 }
 
 async function saveUser() {
@@ -282,202 +313,76 @@ async function saveUser() {
     const branch_id = document.getElementById('branch').value;
     const category_id = document.getElementById('category').value;
 
-    let finalBranch = null;
-
-    // ================= VALIDASI =================
-    if (!name || !email || !role) {
-        alert('Semua field wajib diisi!');
-        return;
-    }
-
-    if (name.length < 6) {
-        alert('Nama minimal 6 karakter!');
-        return;
-    }
-
-    if (/^[.\-]+$/.test(name)) {
-        alert('Nama tidak valid!');
-        return;
-    }
-
-    if (!email.includes('@')) {
-        alert('Email tidak valid!');
-        return;
-    }
-
-    if (role === 'technician' && !category_id) {
-        alert('Spesialisasi wajib dipilih!');
-        return;
-    }
-
+    if (!name || !email || !role) { alert('Semua field wajib diisi!'); return; }
+    if (name.length < 6) { alert('Nama minimal 6 karakter!'); return; }
+    if (!email.includes('@')) { alert('Email tidak valid!'); return; }
+    if (role === 'technician' && !category_id) { alert('Spesialisasi wajib dipilih!'); return; }
     if (role !== 'technician') {
-        if (!type) {
-            alert('Tipe lokasi wajib dipilih!');
-            return;
-        }
-
-        if (type === 'branch' && !branch_id) {
-            alert('Cabang wajib dipilih!');
-            return;
-        }
+        if (!type) { alert('Tipe lokasi wajib dipilih!'); return; }
+        if (type === 'branch' && !branch_id) { alert('Cabang wajib dipilih!'); return; }
     }
 
-    // ================= LOGIC =================
+    let finalBranch = null;
     if (type === 'branch') {
         finalBranch = Number(branch_id);
+    } else if (type === 'ho') {
+        const d = await fetch('/api/branches', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
+        finalBranch = d.find(b => b.type === 'ho')?.id;
     }
 
-    if (type === 'ho') {
-        const resBranch = await fetch('/api/branches', {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer ' + token
-            }
-        });
-
-        const dataBranch = await resBranch.json();
-        const ho = dataBranch.find(b => b.type === 'ho');
-        finalBranch = ho?.id;
-    }
-    console.log('CATEGORY ID:', category_id);
     const res = await fetch('/api/users', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            name,
-            email,
-            role,
+            name, email, role,
             branch_id: role === 'technician' ? null : finalBranch,
             category_id: role === 'technician' ? Number(category_id) : null
         })
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-        console.error('VALIDATION ERROR:', data);
-        alert(JSON.stringify(data.errors)); // 🔥 ini penting
-        return;
-    }
-
+    if (!res.ok) { alert(JSON.stringify(data.errors)); return; }
     closeModal();
     loadUsers();
 }
+
 async function activateUser(id) {
-    await fetch(`/api/users/${id}/activate`, {
-        method: 'PUT',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }
-    });
-
+    await fetch(`/api/users/${id}/activate`, { method: 'PUT', headers: { Authorization: 'Bearer ' + token } });
     loadUsers();
 }
 
-// ================= DISABLE =================
 async function disableUser(id) {
-    await fetch(`/api/users/${id}/disable`, {
-        method: 'PUT',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }
-    });
-
+    await fetch(`/api/users/${id}/disable`, { method: 'PUT', headers: { Authorization: 'Bearer ' + token } });
     loadUsers();
 }
 
-// ================= DELETE =================
 async function deleteUser(id) {
     if (!confirm('Yakin hapus user ini?')) return;
-
-    await fetch(`/api/users/${id}`, {
-        method: 'DELETE',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }
-    });
-
+    await fetch(`/api/users/${id}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
     loadUsers();
 }
 
-// ================= RESET PASSWORD =================
 async function resetPassword(id) {
     if (!confirm('Reset password ke default (123456)?')) return;
-
-    await fetch(`/api/users/${id}/reset-password`, {
-        method: 'PUT',
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }
-    });
-
+    await fetch(`/api/users/${id}/reset-password`, { method: 'PUT', headers: { Authorization: 'Bearer ' + token } });
     alert('Password berhasil direset!');
 }
-function handleRole() {
-    const role = document.getElementById('role').value;
 
-    const categoryWrapper = document.getElementById('categoryWrapper');
-    const branchWrapper = document.getElementById('branchWrapper');
-
-    if (role === 'technician') {
-        categoryWrapper.classList.remove('hidden');
-        branchWrapper.classList.add('hidden');
-        loadCategories();
-    } else {
-        categoryWrapper.classList.add('hidden');
-        branchWrapper.classList.remove('hidden');
-    }
-}
-async function loadCategories() {
-    const res = await fetch('/api/categories', {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-    });
-
-    const data = await res.json();
-
-    let options = '<option value="">-- pilih spesialisasi --</option>';
-
-    data.forEach(cat => {
-        options += `<option value="${cat.id}">${cat.name}</option>`;
-    });
-
-    document.getElementById('category').innerHTML = options;
-}
-// ================= MODAL =================
 function openModal() {
     document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('name').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('role').value = 'admin';
+    document.getElementById('branchType').value = '';
+    document.getElementById('branch').classList.add('hidden');
+    document.getElementById('categoryWrapper').classList.add('hidden');
+    document.getElementById('branchWrapper').classList.remove('hidden');
+    feather.replace();
 }
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
-function closeModal() {
-    document.getElementById('modal').classList.add('hidden');
-}
-
-// ================= NAVIGATION =================
-function goTo(url){
-    window.location.href = url;
-}
-
-// ================= SIDEBAR =================
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
-}
-
-// ================= INIT =================
-
+loadUsers();
+loadBranch();
 feather.replace();
 </script>
 

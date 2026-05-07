@@ -22,6 +22,7 @@ class Asset extends Model
         'user_id',
         'pic_id',
         'photo',
+        'quantity', 
     ];
 
     public function category()
@@ -41,5 +42,10 @@ public function branch()
 public function user()
 {
     return $this->belongsTo(User::class);
+}
+
+public function room()
+{
+    return $this->belongsTo(Room::class);
 }
 }

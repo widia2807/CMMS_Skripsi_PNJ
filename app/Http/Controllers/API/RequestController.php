@@ -38,7 +38,7 @@ class RequestController extends Controller
     if ($request->hasFile('photo')) {
         $data['photo'] = $request->file('photo')->store('requests', 'public');
     }
-
+    $data['company_id'] = $user->company_id;
     $req = RequestModel::create($data);
 
     return response()->json([
@@ -67,6 +67,7 @@ public function index()
     
     else {
         $data = RequestModel::with('categoryRelation')
+            ->where('company_id', $user->company_id)
             ->latest()
             ->get();
     }
@@ -90,7 +91,9 @@ public function show($id)
 {
     $user = auth()->user();
 
-    $req = RequestModel::with('branch')->find($id);
+    $req = RequestModel::with('branch')
+    ->where('company_id', $user->company_id)
+    ->find($id);
 
     if (!$req) {
         return response()->json([
@@ -173,7 +176,8 @@ public function approveAllMaterial($id)
     \App\Models\MaterialRequest::where('repair_request_id', $id)
         ->update(['status' => 'approved']);
 
-    $req = RequestModel::find($id);
+    $req = RequestModel::where('company_id', $user->company_id)
+    ->findOrFail($id);
 
     if ($req) {
         $req->status = 'material_ready';
@@ -196,8 +200,8 @@ public function approve(Request $request, $id)
     ]);
 
     // 🔥 ADMIN = global (tidak pakai branch)
-    $req = RequestModel::find($id);
-
+    $req = RequestModel::where('company_id', $user->company_id)
+    ->findOrFail($id);
     if (!$req) {
         return response()->json(['message' => 'Data tidak ditemukan'], 404);
     }
@@ -229,7 +233,8 @@ public function assignTechnician(Request $request, $id)
         'technician_id' => 'required|exists:users,id'
     ]);
 
-    $req = RequestModel::find($id);
+    $req = RequestModel::where('company_id', $user->company_id)
+    ->findOrFail($id);
 
     if (!$req) {
         return response()->json(['message' => 'Data tidak ditemukan'], 404);
