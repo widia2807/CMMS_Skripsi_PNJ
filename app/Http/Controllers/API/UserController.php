@@ -22,7 +22,7 @@ class UserController extends Controller
     $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:users,email',
-        'role' => 'required|in:admin,pic,technician',
+        'role' => 'required|in:admin,pic,technician,management',
         'branch_id' => 'nullable',
         'category_id' => 'nullable'
     ]);
@@ -107,7 +107,7 @@ public function update(Request $request, $id)
     $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:users,email,' . $id,
-        'role' => 'required|in:admin,pic,technician',
+        'role' => 'required|in:admin,pic,technician,management',
         'branch_id' => 'nullable',
         'category_id' => 'nullable'
     ]);

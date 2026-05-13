@@ -14,7 +14,8 @@ use App\Http\Controllers\API\{
     AssetController,
     AssetCategoryController,
     AssetSubCategoryController,
-    RoomController
+    RoomController,
+    ScheduledMaintenanceController,
 };
 use Illuminate\Http\Request;
 use App\Models\Category;
@@ -114,35 +115,34 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/technician/complete/{id}', [TechnicianDashboardController::class, 'completeJob']);
     Route::post('/technician/inspect/{id}', [TechnicianDashboardController::class, 'inspectJob']);
     Route::post('/technician/material/{id}', [TechnicianDashboardController::class, 'requestMaterial']);
-
-        // Daftar semua jadwal (support ?status=, ?worker_id=, ?month=)
+    Route::get('/scheduled-maintenances/my-tasks', [ScheduledMaintenanceController::class, 'myTasks']);
     Route::get('/scheduled-maintenances', [ScheduledMaintenanceController::class, 'index']);
     Route::get('/scheduled-maintenances/{id}', [ScheduledMaintenanceController::class, 'show']);
     Route::post('/scheduled-maintenances', [ScheduledMaintenanceController::class, 'store']);
     Route::put('/scheduled-maintenances/{id}/assign', [ScheduledMaintenanceController::class, 'assign']);
-    Route::delete('/scheduled-maintenances/{id}', [ScheduledMaintenanceController::class, 'destroy']);
- 
- 
-    /* ─── TUKANG ─── */
- 
-    // Tugas milik tukang yang sedang login (support ?month=)
-    Route::get('/scheduled-maintenances/my-tasks', [ScheduledMaintenanceController::class, 'myTasks']);
- 
-    // Konfirmasi jadwal → status: pending → confirmed
     Route::put('/scheduled-maintenances/{id}/confirm', [ScheduledMaintenanceController::class, 'confirm']);
- 
-    // Tandai selesai + upload foto → status: confirmed/in_progress → done
     Route::post('/scheduled-maintenances/{id}/complete', [ScheduledMaintenanceController::class, 'complete']);
- 
- 
+    Route::delete('/scheduled-maintenances/{id}', [ScheduledMaintenanceController::class, 'destroy']);
+
     Route::get('/rooms', [RoomController::class, 'index']);
     Route::post('/rooms', [RoomController::class, 'store']);
     Route::get('/workers', function () {
-        return \App\Models\User::where('role', 'tukang')
+        return \App\Models\User::where('role', 'technician')
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
     });
 
+     Route::get('/borrowings', [BorrowingController::class,'index']); // admin
+    Route::get('/borrowings/my', [BorrowingController::class,'my']); // pic
+
+    Route::post('/borrowings', [BorrowingController::class,'store']);
+
+    Route::post('/borrowings/{id}/approve', [BorrowingController::class,'approve']);
+    Route::post('/borrowings/{id}/reject', [BorrowingController::class,'reject']);
+
+    // optional
+    Route::post('/borrowings/{id}/picked', [BorrowingController::class,'markPicked']);
+    Route::post('/borrowings/{id}/returned', [BorrowingController::class,'markReturned']);
 
 });

@@ -29,14 +29,28 @@ Route::get('/tukang/pekerjaan', function () {
 });
 
 Route::get('/assets', function () {
-    return view('assets');
+    return view('admin_ga.assets');
 });
  
 Route::get('/status', fn() => view('pic-status', [
     'user' => auth()->user()
 ]));
 
+Route::get('/peminjaman', function () {
+    return view('pic_peminjaman', [
+        'user' => auth()->user()
+    ]);
+});
 
+Route::get('/admin/peminjaman', function () {
+    return view('admin_ga.peminjaman_alat', [
+        'user' => auth()->user()
+    ]);
+});
+
+Route::get('/borrow-tools', function () {
+    return redirect('/peminjaman');
+});
 //dashboard 
 Route::get('/dashboard-admin', function () {
     return view('dashboard.dashboard_admin_ga');

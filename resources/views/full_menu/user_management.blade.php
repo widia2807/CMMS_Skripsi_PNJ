@@ -135,6 +135,7 @@
                 <option value="admin">Admin GA</option>
                 <option value="pic">PIC</option>
                 <option value="technician">Technician</option>
+                <option value="management">Management</option>
             </select>
         </div>
 
@@ -181,6 +182,7 @@ function roleBadge(role) {
         'admin':       ['badge-admin', 'Admin GA'],
         'pic':         ['badge-pic',   'PIC'],
         'technician':  ['badge-tech',  'Technician'],
+        'management': ['badge-admin', 'Management'],
     };
     const [cls, label] = map[role] ?? ['badge-super', role];
     return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold ${cls}">${label}</span>`;

@@ -241,12 +241,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadCategories() {
-    const res = await fetch('/api/categories');
+    const res = await fetch('/api/categories', {
+        headers: { Authorization: 'Bearer ' + token }
+    });
     const data = await res.json();
 
-    const el = document.getElementById('formCategory');
-    el.innerHTML = '';
+    if (!Array.isArray(data)) {
+        console.error('Categories error:', data);
+        return;
+    }
 
+    const el = document.getElementById('formCategory');
+    el.innerHTML = '<option value="">Pilih Kategori</option>';
     data.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
@@ -411,6 +417,17 @@ async function createSchedule() {
     loadSchedules();
 }
 
+function goToDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (user?.role === 'pic') {
+        window.location.href = '/dashboard-pic';
+    } else if (user?.system_type === 'lite') {
+        window.location.href = '/dashboard-lite';
+    } else {
+        window.location.href = '/dashboard-full';
+    }
+}
 /* ─── MODAL: UBAH TUKANG ─── */
 function openReassign(id) {
     selectedScheduleId = id;

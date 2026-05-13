@@ -34,7 +34,7 @@
             <span>Data Aset</span>
         </li>
 
-        <li id="menu-tools" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/borrow-tools')">
+        <li id="menu-tools" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goToBorrowing()">
             <i data-feather="package" class="w-5 h-5"></i>
             <span>Peminjaman Alat</span>
         </li>
@@ -119,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     pic: [
         'menu-pic',
-        'menu-status'
+        'menu-status',
+        'menu-tools'
     ],
 
     technician: [
@@ -150,7 +151,15 @@ function toggleSidebar() {
     sidebar.classList.toggle('-translate-x-full');
     overlay.classList.toggle('hidden');
 }
+function goToBorrowing() {
+    const user = JSON.parse(localStorage.getItem('user'));
 
+    if (user.role === 'admin') {
+        window.location.href = '/admin/peminjaman';
+    } else {
+        window.location.href = '/peminjaman';
+    }
+}
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
