@@ -210,7 +210,9 @@ async function markReturned(id){
     });
     loadBorrowings();
 }
-
+function goTo(url) {
+    window.location.href = url;
+}
 loadBorrowings();
 feather.replace();
 </script>

@@ -186,7 +186,9 @@ async function loadBorrowings(){
         </tr>
     `).join('');
 }
-
+function goTo(url) {
+    window.location.href = url;
+}
 loadBorrowings();
 feather.replace();
 </script>

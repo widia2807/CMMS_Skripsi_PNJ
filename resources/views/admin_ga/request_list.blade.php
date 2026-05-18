@@ -321,6 +321,10 @@ function renderRequests(data) {
 async function loadRequests() {
     const res = await fetch('/api/requests', { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
+    
+    console.log('STATUS:', res.status);
+    console.log('DATA:', data);  // ← tambah ini
+    
     if (!res.ok) { alert('Gagal load data'); return; }
     window.requestData = data;
     renderRequests(data);

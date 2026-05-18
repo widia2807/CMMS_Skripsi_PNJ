@@ -10,6 +10,7 @@ class RepairRequest extends Model
 
     protected $fillable = [
         'user_id',
+        'company_id',
         'branch_id',
         'title',
         'description',

@@ -25,7 +25,7 @@ class RequestController extends Controller
         'title' => 'required|string|max:255',
         'description' => 'required|string',
         'category_id' => 'required|exists:categories,id',
-        'sub_category' => 'required|string',
+        'sub_category_id' => 'required|exists:sub_categories,id',
         'photo' => 'nullable|image|max:2048'
     ]);
 
@@ -173,6 +173,7 @@ public function approveMaterial($id)
 }
 public function approveAllMaterial($id)
 {
+     $user = auth()->user();
     \App\Models\MaterialRequest::where('repair_request_id', $id)
         ->update(['status' => 'approved']);
 
@@ -301,7 +302,8 @@ public function assign(Request $request, $id)
 public function getSubCategory($categoryId)
 {
     $data = SubCategory::where('category_id', $categoryId)
-        ->pluck('name');
+        ->select('id', 'name')  // ← tambah id
+        ->get();                 // ← get() bukan pluck()
 
     return response()->json($data);
 }

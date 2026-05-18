@@ -87,10 +87,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/requests/{id}/reject', [RequestController::class, 'reject']);
     Route::post('/requests/{id}/assign-technician', [RequestController::class, 'assignTechnician']);
 
-    
+    Route::post('/materials/approve-all/{id}', [RequestController::class, 'approveAllMaterial']);
     Route::get('/materials', [RequestController::class, 'materialRequests']);
     Route::post('/materials/{id}/approve', [RequestController::class, 'approveMaterial']);
-    Route::post('/materials/approve-all/{id}', [RequestController::class, 'approveAllMaterial']);
+    
 
    
     Route::get('/assets/export', [AssetController::class, 'export']);
