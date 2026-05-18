@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+
 Route::get('/login', fn() => view('auth.login'));
 Route::get('/register', fn() => view('auth.register'));
 
@@ -47,7 +48,11 @@ Route::get('/admin/peminjaman', function () {
         'user' => auth()->user()
     ]);
 });
-
+Route::get('/spk', function () {
+    return view('admin_ga.work_order', [
+        'user' => auth()->user()
+    ]);
+});
 Route::get('/borrow-tools', function () {
     return redirect('/peminjaman');
 });

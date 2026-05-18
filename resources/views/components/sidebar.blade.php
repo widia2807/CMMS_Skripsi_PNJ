@@ -39,11 +39,11 @@
             <span>Peminjaman Alat</span>
         </li>
 
-        <li id="menu-spk" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/spk')">
+       <li id="menu-spk" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/spk')">
             <i data-feather="file-text" class="w-5 h-5"></i>
             <span>SPK</span>
         </li>
-
+        
         <li id="menu-report" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/reports')">
             <i data-feather="bar-chart" class="w-5 h-5"></i>
             <span>Laporan</span>
