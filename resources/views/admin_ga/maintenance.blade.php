@@ -23,6 +23,10 @@
             </div>
             <div class="flex items-center gap-3">
                 <span id="userInfo" class="text-sm text-gray-500"></span>
+                <button onclick="openSubCatModal()"
+                    class="text-sm px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition">
+                    Kelola Sub Kategori
+                </button>
                 <button onclick="openCreateModal()"
                     class="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition">
                     + Buat Jadwal
@@ -66,6 +70,18 @@
                 <option value="">Semua tukang</option>
             </select>
 
+            <!-- ++ FILTER KATEGORI ++ -->
+            <select id="filterCategory" onchange="onFilterCategoryChange()"
+                class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
+                <option value="">Semua kategori</option>
+            </select>
+
+            <!-- ++ FILTER SUB KATEGORI (muncul jika kategori dipilih) ++ -->
+            <select id="filterSubCategory" onchange="loadSchedules()"
+                class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none hidden">
+                <option value="">Semua sub kategori</option>
+            </select>
+
             <input type="month" id="filterMonth" onchange="loadSchedules()"
                 class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none" />
         </div>
@@ -94,15 +110,20 @@
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Kategori</label>
-                    <select id="formCategory"
+                    <select id="formCategory" onchange="onFormCategoryChange()"
                         class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-                        <option value="mekanikal">Mekanikal</option>
-                        <option value="elektrikal">Elektrikal</option>
-                        <option value="sipil">Sipil / Bangunan</option>
-                        <option value="kebersihan">Kebersihan</option>
-                        <option value="lainnya">Lainnya</option>
+                        <option value="">Pilih Kategori</option>
                     </select>
                 </div>
+            </div>
+
+            <!-- ++ SUB KATEGORI (muncul setelah pilih kategori) ++ -->
+            <div id="formSubCategoryWrapper" class="hidden">
+                <label class="text-xs text-gray-500 block mb-1">Sub Kategori</label>
+                <select id="formSubCategory"
+                    class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    <option value="">Pilih Sub Kategori</option>
+                </select>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -127,7 +148,6 @@
                 <label class="text-xs text-gray-500 block mb-1">Penugasan Tukang</label>
                 <select id="formWorker"
                     class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-                    <!-- Diisi dari API -->
                 </select>
             </div>
 
@@ -200,8 +220,8 @@
 </div>
 
 <script>
-const token   = localStorage.getItem('token');
-const user    = JSON.parse(localStorage.getItem('user'));
+const token    = localStorage.getItem('token');
+const user     = JSON.parse(localStorage.getItem('user'));
 const initials = n => n ? n.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '??';
 
 const AVATAR_COLORS = [
@@ -240,8 +260,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSchedules();
 });
 
+/* ─── LOAD CATEGORIES ─── */
 async function loadCategories() {
-    const res = await fetch('/api/categories', {
+    const res  = await fetch('/api/categories', {
         headers: { Authorization: 'Bearer ' + token }
     });
     const data = await res.json();
@@ -251,15 +272,82 @@ async function loadCategories() {
         return;
     }
 
-    const el = document.getElementById('formCategory');
-    el.innerHTML = '<option value="">Pilih Kategori</option>';
-    data.forEach(c => {
+    // Isi dropdown form & filter kategori
+    ['formCategory', 'filterCategory'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = id === 'filterCategory'
+            ? '<option value="">Semua kategori</option>'
+            : '<option value="">Pilih Kategori</option>';
+
+        data.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            el.appendChild(opt);
+        });
+    });
+}
+
+/* ─── LOAD SUB CATEGORIES (reusable) ─── */
+async function loadSubCategories(categoryId, targetElId, placeholderText) {
+    const el = document.getElementById(targetElId);
+    if (!el) return;
+
+    el.innerHTML = `<option value="">${placeholderText}</option>`;
+
+    if (!categoryId) return;
+
+    const res  = await fetch(`/api/scheduled-sub-categories?category_id=${categoryId}`, {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || !data.length) return;
+
+    data.forEach(s => {
         const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.name;
+        opt.value = s.id;
+        opt.textContent = s.name;
         el.appendChild(opt);
     });
 }
+
+/* ─── EVENT: FORM CATEGORY CHANGE ─── */
+async function onFormCategoryChange() {
+    const categoryId = document.getElementById('formCategory').value;
+    const wrapper    = document.getElementById('formSubCategoryWrapper');
+
+    if (!categoryId) {
+        wrapper.classList.add('hidden');
+        document.getElementById('formSubCategory').innerHTML = '<option value="">Pilih Sub Kategori</option>';
+        return;
+    }
+
+    await loadSubCategories(categoryId, 'formSubCategory', 'Pilih Sub Kategori');
+    wrapper.classList.remove('hidden');
+}
+
+/* ─── EVENT: FILTER CATEGORY CHANGE ─── */
+async function onFilterCategoryChange() {
+    const categoryId    = document.getElementById('filterCategory').value;
+    const filterSubEl   = document.getElementById('filterSubCategory');
+
+    // Reset filter sub category
+    filterSubEl.innerHTML = '<option value="">Semua sub kategori</option>';
+
+    if (!categoryId) {
+        filterSubEl.classList.add('hidden');
+        loadSchedules();
+        return;
+    }
+
+    await loadSubCategories(categoryId, 'filterSubCategory', 'Semua sub kategori');
+    filterSubEl.classList.remove('hidden');
+    loadSchedules();
+}
+
+/* ─── LOAD WORKERS ─── */
 async function loadWorkers() {
     const res  = await fetch('/api/workers', { headers: { 'Authorization': 'Bearer ' + token } });
     workers    = await res.json();
@@ -267,12 +355,11 @@ async function loadWorkers() {
     ['formWorker', 'filterWorker', 'reassignWorker'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        if (id === 'filterWorker') {
-            el.innerHTML = '<option value="">Semua tukang</option>';
-        } else {
-            el.innerHTML = '';
-        }
-        workers.forEach((w, i) => {
+        el.innerHTML = id === 'filterWorker'
+            ? '<option value="">Semua tukang</option>'
+            : '';
+
+        workers.forEach(w => {
             const opt = document.createElement('option');
             opt.value = w.id;
             opt.textContent = w.name;
@@ -283,14 +370,18 @@ async function loadWorkers() {
 
 /* ─── LOAD JADWAL ─── */
 async function loadSchedules() {
-    const status = document.getElementById('filterStatus').value;
-    const worker = document.getElementById('filterWorker').value;
-    const month  = document.getElementById('filterMonth').value;
+    const status      = document.getElementById('filterStatus').value;
+    const worker      = document.getElementById('filterWorker').value;
+    const month       = document.getElementById('filterMonth').value;
+    const category    = document.getElementById('filterCategory').value;
+    const subCategory = document.getElementById('filterSubCategory').value;
 
     const params = new URLSearchParams();
-    if (status) params.append('status', status);
-    if (worker) params.append('worker_id', worker);
-    if (month)  params.append('month', month);
+    if (status)      params.append('status', status);
+    if (worker)      params.append('worker_id', worker);
+    if (month)       params.append('month', month);
+    if (category)    params.append('category_id', category);
+    if (subCategory) params.append('scheduled_sub_category_id', subCategory);
 
     const res  = await fetch('/api/scheduled-maintenances?' + params.toString(), {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -324,6 +415,11 @@ function renderList(data) {
         const col    = AVATAR_COLORS[i % AVATAR_COLORS.length];
         const period = PERIOD_MAP[item.period] || item.period;
 
+        // Tampilkan sub category jika ada
+        const subCatBadge = item.sub_category_name
+            ? `<span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">${item.sub_category_name}</span>`
+            : '';
+
         const actionBtn = item.status === 'done'
             ? `<button onclick="openReport(${item.id})"
                   class="text-xs px-3 py-1 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition">
@@ -346,9 +442,12 @@ function renderList(data) {
             <div class="bg-white rounded-xl shadow-sm p-4">
                 <div class="flex justify-between items-start gap-3">
                     <div class="flex-1 min-w-0">
-                        <p class="font-medium text-sm text-gray-800 truncate">${item.title}</p>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <p class="font-medium text-sm text-gray-800 truncate">${item.title}</p>
+                            ${subCatBadge}
+                        </div>
                         <p class="text-xs text-gray-400 mt-0.5">
-                            ${item.category} &middot; ${period} &middot; ${formatDate(item.scheduled_date)}
+                            ${item.category_name ?? item.category} &middot; ${period} &middot; ${formatDate(item.scheduled_date)}
                         </p>
                         ${confirmNote}
                         ${doneNote}
@@ -386,16 +485,21 @@ function openCreateModal() {
 }
 function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
-    ['formTitle','formDate','formNote'].forEach(id => document.getElementById(id).value = '');
+    ['formTitle', 'formDate', 'formNote'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('formCategory').value = '';
+    document.getElementById('formSubCategory').innerHTML = '<option value="">Pilih Sub Kategori</option>';
+    document.getElementById('formSubCategoryWrapper').classList.add('hidden');
 }
+
 async function createSchedule() {
     const payload = {
-        title:     document.getElementById('formTitle').value,
-        category:  document.getElementById('formCategory').value,
-        scheduled_date: document.getElementById('formDate').value,
-        period:    document.getElementById('formPeriod').value,
-        worker_id: document.getElementById('formWorker').value,
-        note:      document.getElementById('formNote').value,
+        title:                     document.getElementById('formTitle').value,
+        category_id:               document.getElementById('formCategory').value,
+        scheduled_sub_category_id: document.getElementById('formSubCategory').value || null,
+        scheduled_date:            document.getElementById('formDate').value,
+        period:                    document.getElementById('formPeriod').value,
+        worker_id:                 document.getElementById('formWorker').value,
+        note:                      document.getElementById('formNote').value,
     };
 
     if (!payload.title || !payload.scheduled_date || !payload.worker_id) {
@@ -419,7 +523,6 @@ async function createSchedule() {
 
 function goToDashboard() {
     const user = JSON.parse(localStorage.getItem('user'));
-
     if (user?.role === 'pic') {
         window.location.href = '/dashboard-pic';
     } else if (user?.system_type === 'lite') {
@@ -428,6 +531,7 @@ function goToDashboard() {
         window.location.href = '/dashboard-full';
     }
 }
+
 /* ─── MODAL: UBAH TUKANG ─── */
 function openReassign(id) {
     selectedScheduleId = id;
@@ -463,6 +567,7 @@ async function openReport(id) {
     document.getElementById('reportContent').innerHTML = `
         <div class="space-y-2">
             <p><span class="text-gray-400">Pekerjaan:</span> ${item.title}</p>
+            <p><span class="text-gray-400">Kategori:</span> ${item.category_name ?? '-'} ${item.sub_category_name ? '/ ' + item.sub_category_name : ''}</p>
             <p><span class="text-gray-400">Tukang:</span> ${item.worker_name}</p>
             <p><span class="text-gray-400">Selesai pada:</span> ${formatDate(item.completed_at)}</p>
             ${item.completion_note ? `<p><span class="text-gray-400">Catatan tukang:</span> ${item.completion_note}</p>` : ''}
@@ -478,7 +583,232 @@ function closeReportModal() {
 function goTo(url) {
     window.location.href = url;
 }
+
+/* ═══════════════════════════════════════════
+   KELOLA SUB KATEGORI
+═══════════════════════════════════════════ */
+
+let editingSubCatId = null;
+
+async function openSubCatModal() {
+    document.getElementById('subCatModal').style.display = 'flex';
+    resetSubCatForm();
+    await loadSubCatCategories();
+}
+
+function closeSubCatModal() {
+    document.getElementById('subCatModal').style.display = 'none';
+    resetSubCatForm();
+}
+
+function resetSubCatForm() {
+    editingSubCatId = null;
+    document.getElementById('subCatFormCategory').value = '';
+    document.getElementById('subCatFormName').value     = '';
+    document.getElementById('subCatFormDesc').value     = '';
+    document.getElementById('subCatFormBtn').textContent = 'Tambah';
+    document.getElementById('subCatCancelEdit').classList.add('hidden');
+    document.getElementById('subCatList').innerHTML     = '';
+}
+
+/* Isi dropdown kategori di dalam modal */
+async function loadSubCatCategories() {
+    const res  = await fetch('/api/categories', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (!Array.isArray(data)) return;
+
+    const el = document.getElementById('subCatFormCategory');
+    el.innerHTML = '<option value="">Pilih Kategori</option>';
+    data.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        el.appendChild(opt);
+    });
+}
+
+/* Load daftar sub cat berdasarkan kategori yang dipilih di modal */
+async function onSubCatCategoryChange() {
+    const categoryId = document.getElementById('subCatFormCategory').value;
+    const listEl     = document.getElementById('subCatList');
+    listEl.innerHTML = '';
+
+    if (!categoryId) return;
+
+    const res  = await fetch(`/api/scheduled-sub-categories?category_id=${categoryId}`, {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || !data.length) {
+        listEl.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Belum ada sub kategori untuk kategori ini.</p>';
+        return;
+    }
+
+    data.forEach(s => {
+        const row = document.createElement('div');
+        row.id = `subcat-row-${s.id}`;
+        row.className = 'flex justify-between items-center py-2 border-b border-gray-100 last:border-0';
+        row.innerHTML = `
+            <div>
+                <p class="text-sm text-gray-700 font-medium">${s.name}</p>
+                ${s.description ? `<p class="text-xs text-gray-400">${s.description}</p>` : ''}
+            </div>
+            <div class="flex gap-2 shrink-0">
+                <button onclick="editSubCat(${s.id}, '${s.name.replace(/'/g, "\\'")}', '${(s.description ?? '').replace(/'/g, "\\'")}', ${s.category_id})"
+                    class="text-xs px-2 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition">
+                    Edit
+                </button>
+                <button onclick="deleteSubCat(${s.id})"
+                    class="text-xs px-2 py-1 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 transition">
+                    Hapus
+                </button>
+            </div>
+        `;
+        listEl.appendChild(row);
+    });
+}
+
+/* Isi form untuk mode edit */
+function editSubCat(id, name, desc, categoryId) {
+    editingSubCatId = id;
+    document.getElementById('subCatFormCategory').value  = categoryId;
+    document.getElementById('subCatFormName').value      = name;
+    document.getElementById('subCatFormDesc').value      = desc;
+    document.getElementById('subCatFormBtn').textContent = 'Simpan Perubahan';
+    document.getElementById('subCatCancelEdit').classList.remove('hidden');
+    document.getElementById('subCatFormName').focus();
+}
+
+/* Batal edit → balik ke mode tambah */
+function cancelEditSubCat() {
+    editingSubCatId = null;
+    document.getElementById('subCatFormName').value      = '';
+    document.getElementById('subCatFormDesc').value      = '';
+    document.getElementById('subCatFormBtn').textContent = 'Tambah';
+    document.getElementById('subCatCancelEdit').classList.add('hidden');
+}
+
+/* Simpan — handle tambah & edit */
+async function saveSubCat() {
+    const categoryId = document.getElementById('subCatFormCategory').value;
+    const name       = document.getElementById('subCatFormName').value.trim();
+    const desc       = document.getElementById('subCatFormDesc').value.trim();
+
+    if (!categoryId || !name) {
+        alert('Kategori dan nama sub kategori wajib diisi!');
+        return;
+    }
+
+    const isEdit = !!editingSubCatId;
+    const url    = isEdit
+        ? `/api/scheduled-sub-categories/${editingSubCatId}`
+        : '/api/scheduled-sub-categories';
+
+    await fetch(url, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ category_id: categoryId, name, description: desc }),
+    });
+
+    cancelEditSubCat();
+    await onSubCatCategoryChange(); // refresh list di modal
+
+    // Refresh juga dropdown filter & form buat jadwal
+    const filterCatId = document.getElementById('filterCategory').value;
+    if (filterCatId) {
+        await loadSubCategories(filterCatId, 'filterSubCategory', 'Semua sub kategori');
+    }
+    const formCatId = document.getElementById('formCategory').value;
+    if (formCatId) {
+        await loadSubCategories(formCatId, 'formSubCategory', 'Pilih Sub Kategori');
+    }
+}
+
+/* Hapus sub kategori */
+async function deleteSubCat(id) {
+    if (!confirm('Yakin hapus sub kategori ini?')) return;
+
+    await fetch(`/api/scheduled-sub-categories/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token },
+    });
+
+    await onSubCatCategoryChange();
+}
 </script>
+
+<!-- ===================== MODAL KELOLA SUB KATEGORI ===================== -->
+<div id="subCatModal"
+     class="fixed inset-0 bg-black bg-opacity-50 z-50"
+     style="display: none; align-items: flex-start; justify-content: center; padding-top: 60px;">
+
+    <div class="bg-white rounded-2xl w-full max-w-md mx-4 shadow-xl overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+            <h2 class="font-semibold text-base">Kelola Sub Kategori</h2>
+            <button onclick="closeSubCatModal()" class="text-gray-400 hover:text-gray-600 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-6 space-y-5 max-h-[72vh] overflow-y-auto">
+
+            <!-- Form tambah / edit -->
+            <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tambah / Edit Sub Kategori</p>
+
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Kategori Induk</label>
+                    <select id="subCatFormCategory" onchange="onSubCatCategoryChange()"
+                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        <option value="">Pilih Kategori</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Nama Sub Kategori</label>
+                    <input id="subCatFormName" type="text" placeholder="Cth: Servis Berkala AC"
+                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300" />
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Deskripsi <span class="text-gray-400">(opsional)</span></label>
+                    <input id="subCatFormDesc" type="text" placeholder="Cth: Dilakukan setiap 3 bulan sekali"
+                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300" />
+                </div>
+
+                <div class="flex gap-2 pt-1">
+                    <button id="subCatCancelEdit" onclick="cancelEditSubCat()"
+                        class="hidden text-sm px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
+                        Batal
+                    </button>
+                    <button id="subCatFormBtn" onclick="saveSubCat()"
+                        class="flex-1 text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                        Tambah
+                    </button>
+                </div>
+            </div>
+
+            <!-- Daftar sub kategori -->
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                    Daftar Sub Kategori
+                </p>
+                <div id="subCatList">
+                    <p class="text-xs text-gray-400 text-center py-3">Pilih kategori di atas untuk melihat daftarnya.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

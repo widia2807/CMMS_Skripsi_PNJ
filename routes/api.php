@@ -16,6 +16,8 @@ use App\Http\Controllers\API\{
     AssetSubCategoryController,
     RoomController,
     ScheduledMaintenanceController,
+    ScheduledSubCategoryController,
+    BorrowingController,
 };
 use Illuminate\Http\Request;
 use App\Models\Category;
@@ -36,8 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
     Route::get('/lite/dashboard', [LiteDashboardController::class, 'index']);
     Route::get('/pic/dashboard', [PICDashboardController::class, 'index']);
-
-   
+    Route::get('/pic/activity', [PICDashboardController::class, 'activity']);
     Route::put('/company', [CompanyController::class, 'update']);
 
     Route::get('/branches', [BranchController::class, 'index']);
@@ -123,7 +124,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/scheduled-maintenances/{id}/confirm', [ScheduledMaintenanceController::class, 'confirm']);
     Route::post('/scheduled-maintenances/{id}/complete', [ScheduledMaintenanceController::class, 'complete']);
     Route::delete('/scheduled-maintenances/{id}', [ScheduledMaintenanceController::class, 'destroy']);
-
+    Route::get('/scheduled-sub-categories', [ScheduledSubCategoryController::class, 'index']);
+    Route::post('/scheduled-sub-categories', [ScheduledSubCategoryController::class, 'store']);
+    Route::put('/scheduled-sub-categories/{id}', [ScheduledSubCategoryController::class, 'update']);
+    Route::delete('/scheduled-sub-categories/{id}', [ScheduledSubCategoryController::class, 'destroy']);
+    Route::put('/scheduled-maintenances/{id}/start', [ScheduledMaintenanceController::class, 'start']);
     Route::get('/rooms', [RoomController::class, 'index']);
     Route::post('/rooms', [RoomController::class, 'store']);
     Route::get('/workers', function () {
@@ -140,6 +145,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/borrowings/{id}/approve', [BorrowingController::class,'approve']);
     Route::post('/borrowings/{id}/reject', [BorrowingController::class,'reject']);
+
+    // Perbaikan Gedung
+    Route::post('/requests/{id}/send-spk',   [RequestController::class, 'sendSpk']);
+    Route::get('/requests/{id}/work-order',  [RequestController::class, 'workOrder']);
+
+    // Maintenance Terjadwal
+    Route::post('/scheduled-maintenances/{id}/send-spk',  [ScheduledMaintenanceController::class, 'sendSpk']);
+    Route::get('/scheduled-maintenances/{id}/work-order', [ScheduledMaintenanceController::class, 'workOrder']);
 
     // optional
     Route::post('/borrowings/{id}/picked', [BorrowingController::class,'markPicked']);

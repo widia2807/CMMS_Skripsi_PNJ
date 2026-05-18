@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\SubCategory;
+use App\Helpers\SpkHelper;
+use Carbon\Carbon;
 use App\Models\RepairRequest as RequestModel;
 
 class RequestController extends Controller
@@ -130,6 +132,57 @@ public function show($id)
 ]);
 }
 
+
+// POST /api/requests/{id}/send-spk
+public function sendSpk($id)
+{
+    $request = MaintenanceRequest::with([
+        'category', 'subCategory', 'branch',
+        'worker', 'createdBy', 'spkSentBy'
+    ])->findOrFail($id);
+
+    // Cek syarat: harus sudah ada tukang dan sudah dijadwalkan
+    if (!$request->technician_id) {
+        return response()->json(['message' => 'Tukang belum ditentukan'], 422);
+    }
+    if (!$request->schedule_date) {
+        return response()->json(['message' => 'Tukang belum mengatur jadwal'], 422);
+    }
+
+    // Generate nomor SPK jika belum ada
+    if (!$request->spk_number) {
+        $request->spk_number = SpkHelper::generate('repair');
+    }
+
+    $request->spk_sent_at = Carbon::now();
+    $request->spk_sent_by = auth()->id();
+    $request->save();
+
+    return response()->json([
+        'message'    => 'SPK berhasil dikirim',
+        'spk_number' => $request->spk_number,
+        'spk_sent_at'=> $request->spk_sent_at,
+    ]);
+}
+
+// GET /api/requests/{id}/work-order  → data untuk view WO
+public function workOrder($id)
+{
+    $wo = MaintenanceRequest::with([
+        'category', 'subCategory', 'branch',
+        'worker', 'createdBy', 'spkSentBy', 'materials'
+    ])->findOrFail($id);
+
+    $wo->type = 'repair'; // tandai tipe
+
+    $company = \App\Models\Company::first();
+
+    return response()->json([
+        'wo'       => $wo,
+        'company'  => $company,
+        'materials'=> $wo->materials ?? [],
+    ]);
+}
 public function materialRequests(Request $request)
 {
     try {

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
 use App\Models\Borrowing;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\Controller;
 class BorrowingController extends Controller
 {
     // PIC → lihat data sendiri

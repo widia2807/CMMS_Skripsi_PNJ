@@ -7,37 +7,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
-
         .card { transition: box-shadow 0.2s, transform 0.2s; }
         .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.09); transform: translateY(-2px); }
-
         .btn { transition: all 0.15s ease; }
         .btn:hover { transform: translateY(-1px); }
         .btn:active { transform: translateY(0); }
-
-        @keyframes scaleIn {
-            from { transform: scale(0.95); opacity: 0; }
-            to   { transform: scale(1); opacity: 1; }
-        }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal-box { animation: scaleIn 0.2s ease; }
-
         .detail-panel { transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
-        }
-
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
+        input:focus, select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+
+        /* SPK badge */
+        .spk-sent    { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+        .spk-pending { background: #fefce8; border: 1px solid #fde047; color: #854d0e; }
     </style>
 </head>
 
@@ -64,26 +49,14 @@
 
 <div class="p-8">
 
-<!-- FILTER + STATS -->
-<div class="flex flex-wrap gap-2 mb-6" id="filterTabs">
-    <button onclick="filterRequests('all')" id="tab-all" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-white">
-        Semua
-    </button>
-    <button onclick="filterRequests('pending')" id="tab-pending" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
-        Pending
-    </button>
-    <button onclick="filterRequests('approved')" id="tab-approved" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
-        Disetujui
-    </button>
-    <button onclick="filterRequests('on_progress')" id="tab-on_progress" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
-        Dikerjakan
-    </button>
-    <button onclick="filterRequests('done')" id="tab-done" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
-        Selesai
-    </button>
-    <button onclick="filterRequests('rejected')" id="tab-rejected" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">
-        Ditolak
-    </button>
+<!-- FILTER TABS -->
+<div class="flex flex-wrap gap-2 mb-6">
+    <button onclick="filterRequests('all')"         id="tab-all"         class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-white">Semua</button>
+    <button onclick="filterRequests('pending')"     id="tab-pending"     class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">Pending</button>
+    <button onclick="filterRequests('approved')"    id="tab-approved"    class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">Disetujui</button>
+    <button onclick="filterRequests('on_progress')" id="tab-on_progress" class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">Dikerjakan</button>
+    <button onclick="filterRequests('done')"        id="tab-done"        class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">Selesai</button>
+    <button onclick="filterRequests('rejected')"    id="tab-rejected"    class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">Ditolak</button>
 </div>
 
 <!-- CARD GRID -->
@@ -102,19 +75,16 @@
 </div>
 </div>
 
-<!-- DETAIL PANEL (SLIDE FROM RIGHT) -->
+<!-- DETAIL PANEL -->
 <div id="detailPanel"
     class="detail-panel fixed top-0 right-0 w-full sm:w-[440px] h-full bg-white shadow-2xl transform translate-x-full z-50 flex flex-col">
-
     <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
         <h2 class="font-bold text-slate-800">Detail Request</h2>
-        <button onclick="closeDetail()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+        <button onclick="closeDetail()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400">
             <i data-feather="x" class="w-4 h-4"></i>
         </button>
     </div>
-
     <div id="detailContent" class="flex-1 overflow-auto p-6 space-y-4"></div>
-
     <div id="detailAction" class="p-6 border-t border-slate-100 space-y-2 bg-white"></div>
 </div>
 
@@ -124,12 +94,12 @@
 <!-- IMAGE MODAL -->
 <div id="imageModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50">
     <img id="modalImage" class="max-w-[90%] max-h-[85vh] rounded-xl shadow-2xl object-contain">
-    <button onclick="closeImage()" class="absolute top-5 right-5 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors">
+    <button onclick="closeImage()" class="absolute top-5 right-5 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white">
         <i data-feather="x" class="w-5 h-5"></i>
     </button>
 </div>
 
-<!-- APPROVE MODAL (URGENCY) -->
+<!-- APPROVE MODAL -->
 <div id="approveModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-box">
         <div class="text-center mb-5">
@@ -139,46 +109,34 @@
             <h3 class="font-bold text-slate-800 text-lg">Tingkat Urgensi</h3>
             <p class="text-slate-400 text-sm mt-1">Tentukan prioritas penanganan</p>
         </div>
-
         <div class="space-y-2.5">
-            <button onclick="submitApprove('low')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition">
+            <button onclick="submitApprove('low')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl border border-slate-200 hover:bg-slate-50">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                        <i data-feather="clock" class="w-4 h-4 text-slate-500"></i>
-                    </div>
+                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center"><i data-feather="clock" class="w-4 h-4 text-slate-500"></i></div>
                     <span class="font-semibold text-slate-700">Santai</span>
                 </div>
                 <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full font-medium">Low</span>
             </button>
-
-            <button onclick="submitApprove('medium')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-amber-50 border border-amber-200 hover:bg-amber-100 transition">
+            <button onclick="submitApprove('medium')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-amber-50 border border-amber-200 hover:bg-amber-100">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <i data-feather="alert-triangle" class="w-4 h-4 text-amber-600"></i>
-                    </div>
+                    <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center"><i data-feather="alert-triangle" class="w-4 h-4 text-amber-600"></i></div>
                     <span class="font-semibold text-amber-700">Segera</span>
                 </div>
                 <span class="text-xs bg-amber-200 text-amber-700 px-2 py-1 rounded-full font-medium">Medium</span>
             </button>
-
-            <button onclick="submitApprove('high')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-red-50 border border-red-200 hover:bg-red-100 transition">
+            <button onclick="submitApprove('high')" class="btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-red-50 border border-red-200 hover:bg-red-100">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                        <i data-feather="zap" class="w-4 h-4 text-red-600"></i>
-                    </div>
+                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center"><i data-feather="zap" class="w-4 h-4 text-red-600"></i></div>
                     <span class="font-semibold text-red-700">Prioritas</span>
                 </div>
                 <span class="text-xs bg-red-200 text-red-700 px-2 py-1 rounded-full font-medium">High</span>
             </button>
         </div>
-
-        <button onclick="closeApproveModal()" class="mt-4 w-full text-slate-400 text-sm hover:text-slate-600 font-medium py-2">
-            Batal
-        </button>
+        <button onclick="closeApproveModal()" class="mt-4 w-full text-slate-400 text-sm hover:text-slate-600 font-medium py-2">Batal</button>
     </div>
 </div>
 
-<!-- ASSIGN TECHNICIAN MODAL -->
+<!-- ASSIGN MODAL -->
 <div id="assignModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-box">
         <div class="text-center mb-5">
@@ -188,18 +146,32 @@
             <h3 class="font-bold text-slate-800 text-lg">Tentukan Tukang</h3>
             <p class="text-slate-400 text-sm mt-1">Pilih teknisi yang akan menangani</p>
         </div>
-
         <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Pilih Teknisi</label>
         <select id="technicianSelect" class="w-full border border-slate-200 rounded-xl p-3 text-sm mb-5">
             <option value="">Memuat data...</option>
         </select>
-
         <div class="flex gap-2">
-            <button onclick="closeAssignModal()" class="btn flex-1 border border-slate-200 text-slate-500 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50">
-                Batal
-            </button>
-            <button onclick="submitAssign()" class="btn flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-semibold">
-                Assign
+            <button onclick="closeAssignModal()" class="btn flex-1 border border-slate-200 text-slate-500 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50">Batal</button>
+            <button onclick="submitAssign()" class="btn flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-semibold">Assign</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ MODAL KONFIRMASI KIRIM SPK ══ -->
+<div id="spkConfirmModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-box">
+        <div class="text-center mb-5">
+            <div class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <i data-feather="send" class="w-6 h-6 text-indigo-600"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-lg">Kirim SPK?</h3>
+            <p class="text-slate-400 text-sm mt-1">SPK akan dikirim ke tukang dan nomor SPK akan digenerate otomatis.</p>
+        </div>
+        <div id="spkConfirmInfo" class="bg-slate-50 rounded-xl p-4 text-sm text-slate-600 space-y-1 mb-5"></div>
+        <div class="flex gap-2">
+            <button onclick="closeSpkConfirm()" class="btn flex-1 border border-slate-200 text-slate-500 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50">Batal</button>
+            <button onclick="submitSendSpk()" class="btn flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                <i data-feather="send" class="w-4 h-4"></i> Kirim SPK
             </button>
         </div>
     </div>
@@ -207,37 +179,41 @@
 
 <script>
 let selectedCategory = null;
-let selectedId = null;
-let currentFilter = 'all';
+let selectedId       = null;
+let spkTargetId      = null;
+let currentFilter    = 'all';
 const token = localStorage.getItem('token');
 if (!token) { alert('Session habis'); window.location.href = '/login'; }
 
 const statusLabel = {
-    'pending':          'Pending',
-    'approved':         'Disetujui',
-    'waiting_material': 'Menunggu Material',
-    'material_ready':   'Material Siap',
-    'on_progress':      'Dikerjakan',
-    'done':             'Selesai',
-    'rejected':         'Ditolak',
+    pending: 'Pending', approved: 'Disetujui',
+    waiting_material: 'Menunggu Material', material_ready: 'Material Siap',
+    on_progress: 'Dikerjakan', done: 'Selesai', rejected: 'Ditolak',
 };
-
 const statusStyle = {
-    'pending':          'bg-amber-100 text-amber-700',
-    'approved':         'bg-green-100 text-green-700',
-    'waiting_material': 'bg-orange-100 text-orange-700',
-    'material_ready':   'bg-blue-100 text-blue-700',
-    'on_progress':      'bg-purple-100 text-purple-700',
-    'done':             'bg-slate-100 text-slate-600',
-    'rejected':         'bg-red-100 text-red-700',
+    pending: 'bg-amber-100 text-amber-700', approved: 'bg-green-100 text-green-700',
+    waiting_material: 'bg-orange-100 text-orange-700', material_ready: 'bg-blue-100 text-blue-700',
+    on_progress: 'bg-purple-100 text-purple-700', done: 'bg-slate-100 text-slate-600',
+    rejected: 'bg-red-100 text-red-700',
 };
-
 const urgencyStyle = {
-    'low':    'bg-slate-100 text-slate-500',
-    'medium': 'bg-amber-100 text-amber-700',
-    'high':   'bg-red-100 text-red-700',
+    low: 'bg-slate-100 text-slate-500', medium: 'bg-amber-100 text-amber-700', high: 'bg-red-100 text-red-700',
 };
 
+/* ── HELPERS ── */
+function formatDate(str) {
+    if (!str) return '-';
+    return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function spkEligible(item) {
+    // Syarat kirim SPK: sudah ada tukang & sudah dijadwalkan & belum pernah kirim SPK
+    return item.technician_id && item.schedule_date && !item.spk_sent_at;
+}
+function spkAlreadySent(item) {
+    return !!item.spk_sent_at;
+}
+
+/* ── FILTER ── */
 function filterRequests(status) {
     currentFilter = status;
     document.querySelectorAll('.tab-btn').forEach(b => {
@@ -247,9 +223,10 @@ function filterRequests(status) {
     renderRequests(window.requestData || []);
 }
 
+/* ── RENDER ── */
 function renderRequests(data) {
     const filtered = currentFilter === 'all' ? data : data.filter(i => i.status === currentFilter);
-    const grid = document.getElementById('requestTable');
+    const grid  = document.getElementById('requestTable');
     const empty = document.getElementById('emptyState');
 
     if (!filtered.length) {
@@ -260,22 +237,49 @@ function renderRequests(data) {
     }
     empty.classList.add('hidden');
 
-    grid.innerHTML = filtered.map(item => `
+    grid.innerHTML = filtered.map(item => {
+        // SPK status badge
+        const spkBadge = item.spk_sent_at
+            ? `<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold spk-sent">
+                   <i data-feather="file-text" class="w-3 h-3"></i> SPK Terkirim
+               </div>`
+            : spkEligible(item)
+            ? `<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold spk-pending">
+                   <i data-feather="clock" class="w-3 h-3"></i> Siap Kirim SPK
+               </div>`
+            : '';
+
+        // SPK buttons
+        const spkButtons = item.spk_sent_at
+            ? `<button onclick="openWorkOrder(${item.id}, 'repair')"
+                  class="btn flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                  <i data-feather="file-text" class="w-3 h-3"></i> Lihat SPK
+               </button>`
+            : spkEligible(item)
+            ? `<button onclick="openSpkConfirm(${item.id})"
+                  class="btn flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                  <i data-feather="send" class="w-3 h-3"></i> Kirim SPK
+               </button>`
+            : '';
+
+        return `
         <div class="card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            ${item.photo ? `
-                <div class="h-36 overflow-hidden cursor-pointer relative" onclick="openImage('/storage/${item.photo}')">
-                    <img src="/storage/${item.photo}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
-            ` : `<div class="h-1.5 bg-gradient-to-r from-indigo-400 to-blue-300"></div>`}
+            ${item.photo
+                ? `<div class="h-36 overflow-hidden cursor-pointer relative" onclick="openImage('/storage/${item.photo}')">
+                       <img src="/storage/${item.photo}" class="w-full h-full object-cover">
+                       <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                   </div>`
+                : `<div class="h-1.5 bg-gradient-to-r from-indigo-400 to-blue-300"></div>`}
 
             <div class="p-4">
-                <div class="flex justify-between items-start mb-2">
+                <div class="flex justify-between items-start mb-1">
                     <h3 class="font-bold text-slate-800 text-sm leading-snug flex-1 pr-2">${item.title}</h3>
                     <span class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap ${statusStyle[item.status] ?? 'bg-slate-100 text-slate-500'}">
                         ${statusLabel[item.status] ?? item.status}
                     </span>
                 </div>
+
+                ${spkBadge ? `<div class="mb-2">${spkBadge}</div>` : '<div class="mb-2"></div>'}
 
                 <div class="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
                     <i data-feather="tag" class="w-3 h-3"></i>
@@ -310,37 +314,49 @@ function renderRequests(data) {
                             <i data-feather="package" class="w-3 h-3"></i> Review Material
                         </button>
                     ` : ''}
+
+                    ${spkButtons}
                 </div>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 
     feather.replace();
 }
 
+/* ── LOAD ── */
 async function loadRequests() {
-    const res = await fetch('/api/requests', { headers: { 'Authorization': 'Bearer ' + token } });
+    const res  = await fetch('/api/requests', { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
-    
-    console.log('STATUS:', res.status);
-    console.log('DATA:', data);  // ← tambah ini
-    
     if (!res.ok) { alert('Gagal load data'); return; }
     window.requestData = data;
     renderRequests(data);
 }
 
+/* ── DETAIL PANEL ── */
 async function detail(id) {
-    const res = await fetch(`/api/requests/${id}`, { headers: { 'Authorization': 'Bearer ' + token } });
+    const res  = await fetch(`/api/requests/${id}`, { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
+
+    const spkInfo = data.spk_sent_at
+        ? `<div class="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
+               <i data-feather="file-text" class="w-4 h-4 text-green-600 shrink-0"></i>
+               <div>
+                   <p class="text-xs font-bold text-green-700">${data.spk_number}</p>
+                   <p class="text-xs text-green-600">SPK dikirim: ${formatDate(data.spk_sent_at)}</p>
+               </div>
+           </div>`
+        : '';
 
     document.getElementById('detailContent').innerHTML = `
         <div class="flex justify-between items-start">
-            <h3 class="font-bold text-slate-800 text-base leading-snug flex-1 pr-3">${data.title}</h3>
+            <h3 class="font-bold text-slate-800 text-base flex-1 pr-3">${data.title}</h3>
             <span class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap ${statusStyle[data.status] ?? ''}">
                 ${statusLabel[data.status] ?? data.status}
             </span>
         </div>
+
+        ${spkInfo}
 
         <div class="grid grid-cols-2 gap-2">
             <div class="bg-slate-50 rounded-xl p-3">
@@ -351,6 +367,16 @@ async function detail(id) {
                 <p class="text-xs text-slate-400 mb-0.5">Kategori</p>
                 <p class="text-sm font-semibold text-slate-700">${data.category ?? '-'}</p>
             </div>
+            ${data.technician_name ? `
+            <div class="bg-slate-50 rounded-xl p-3">
+                <p class="text-xs text-slate-400 mb-0.5">Tukang</p>
+                <p class="text-sm font-semibold text-slate-700">${data.technician_name}</p>
+            </div>` : ''}
+            ${data.schedule_date ? `
+            <div class="bg-slate-50 rounded-xl p-3">
+                <p class="text-xs text-slate-400 mb-0.5">Jadwal</p>
+                <p class="text-sm font-semibold text-slate-700">${formatDate(data.schedule_date)}</p>
+            </div>` : ''}
             ${data.urgency ? `
             <div class="bg-slate-50 rounded-xl p-3 col-span-2">
                 <p class="text-xs text-slate-400 mb-0.5">Urgensi</p>
@@ -365,15 +391,14 @@ async function detail(id) {
             <p class="text-sm text-slate-700 leading-relaxed">${data.description ?? '-'}</p>
         </div>
 
-        ${data.photo ? `
-            <img src="/storage/${data.photo}" onclick="openImage('/storage/${data.photo}')"
-                class="w-full h-48 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-opacity">
-        ` : ''}
+        ${data.photo ? `<img src="/storage/${data.photo}" onclick="openImage('/storage/${data.photo}')"
+            class="w-full h-48 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-opacity">` : ''}
     `;
 
     let actionHTML = '';
+
     if (data.status === 'pending') {
-        actionHTML = `
+        actionHTML += `
             <div class="flex gap-2">
                 <button onclick="approve(${data.id}, '${data.category}')" class="btn flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
                     <i data-feather="check" class="w-4 h-4"></i> Approve
@@ -390,6 +415,19 @@ async function detail(id) {
             </button>`;
     }
 
+    // Tombol SPK di detail panel
+    if (data.spk_sent_at) {
+        actionHTML += `
+            <button onclick="openWorkOrder(${data.id}, 'repair')" class="btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                <i data-feather="file-text" class="w-4 h-4"></i> Lihat & Cetak SPK
+            </button>`;
+    } else if (data.technician_id && data.schedule_date) {
+        actionHTML += `
+            <button onclick="openSpkConfirm(${data.id})" class="btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                <i data-feather="send" class="w-4 h-4"></i> Kirim SPK ke Tukang
+            </button>`;
+    }
+
     document.getElementById('detailAction').innerHTML = actionHTML;
     document.getElementById('detailPanel').classList.remove('translate-x-full');
     document.getElementById('overlay').classList.remove('hidden');
@@ -401,8 +439,9 @@ function closeDetail() {
     document.getElementById('overlay').classList.add('hidden');
 }
 
+/* ── MATERIAL REVIEW ── */
 async function reviewMaterial(id) {
-    const res = await fetch(`/api/materials?request_id=${id}`, { headers: { Authorization: 'Bearer ' + token } });
+    const res  = await fetch(`/api/materials?request_id=${id}`, { headers: { Authorization: 'Bearer ' + token } });
     const data = await res.json();
     if (!res.ok || !Array.isArray(data)) { alert('Gagal load material'); return; }
 
@@ -423,19 +462,17 @@ async function reviewMaterial(id) {
             `).join('')}
         </div>
     `;
-
     document.getElementById('detailAction').innerHTML = `
         <button onclick="approveAllMaterial(${id})" class="btn w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
             <i data-feather="check-circle" class="w-4 h-4"></i> Konfirmasi Material Siap
         </button>`;
-
     document.getElementById('detailPanel').classList.remove('translate-x-full');
     document.getElementById('overlay').classList.remove('hidden');
     feather.replace();
 }
 
 async function approveAllMaterial(id) {
-    const res = await fetch(`/api/materials/approve-all/${id}`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const res  = await fetch(`/api/materials/approve-all/${id}`, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
     const data = await res.json();
     if (!res.ok) return alert(data.message);
     alert('Material siap!');
@@ -443,21 +480,12 @@ async function approveAllMaterial(id) {
     loadRequests();
 }
 
-function approve(id, category) {
-    selectedId = id;
-    selectedCategory = category;
-    const modal = document.getElementById('approveModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-}
-
-function closeApproveModal() {
-    document.getElementById('approveModal').classList.remove('flex');
-    document.getElementById('approveModal').classList.add('hidden');
-}
+/* ── APPROVE / REJECT / ASSIGN ── */
+function approve(id, category) { selectedId = id; selectedCategory = category; document.getElementById('approveModal').classList.remove('hidden'); document.getElementById('approveModal').classList.add('flex'); }
+function closeApproveModal()   { document.getElementById('approveModal').classList.remove('flex'); document.getElementById('approveModal').classList.add('hidden'); }
 
 async function submitApprove(level) {
-    const res = await fetch(`/api/requests/${selectedId}/approve`, {
+    const res  = await fetch(`/api/requests/${selectedId}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ urgency: level })
@@ -465,42 +493,25 @@ async function submitApprove(level) {
     const data = await res.json();
     if (!res.ok) { alert(data.message || 'Gagal approve'); return; }
     closeApproveModal();
-    if (level === 'high') {
-        openAssignModal();
-    } else {
-        alert('Berhasil approve!');
-        loadRequests();
-        closeDetail();
-    }
+    if (level === 'high') { openAssignModal(); } else { alert('Berhasil approve!'); loadRequests(); closeDetail(); }
 }
 
 async function openAssignModal() {
     document.getElementById('assignModal').classList.remove('hidden');
     document.getElementById('assignModal').classList.add('flex');
-    const res = await fetch(`/api/technicians?category_id=${selectedCategory}`, { headers: { 'Authorization': 'Bearer ' + token } });
+    const res  = await fetch(`/api/technicians?category_id=${selectedCategory}`, { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
     if (!res.ok || !Array.isArray(data)) { alert('Gagal load teknisi'); closeAssignModal(); return; }
-    document.getElementById('technicianSelect').innerHTML =
-        '<option value="">Pilih Teknisi</option>' +
-        data.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    document.getElementById('technicianSelect').innerHTML = '<option value="">Pilih Teknisi</option>' + data.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
     feather.replace();
 }
-
-function openAssignFromDetail(id, category) {
-    selectedId = id;
-    selectedCategory = category;
-    openAssignModal();
-}
-
-function closeAssignModal() {
-    document.getElementById('assignModal').classList.remove('flex');
-    document.getElementById('assignModal').classList.add('hidden');
-}
+function openAssignFromDetail(id, category) { selectedId = id; selectedCategory = category; openAssignModal(); }
+function closeAssignModal() { document.getElementById('assignModal').classList.remove('flex'); document.getElementById('assignModal').classList.add('hidden'); }
 
 async function submitAssign() {
     const techId = document.getElementById('technicianSelect').value;
     if (!techId) return alert('Pilih tukang dulu!');
-    const res = await fetch(`/api/requests/${selectedId}/assign-technician`, {
+    const res  = await fetch(`/api/requests/${selectedId}/assign-technician`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ technician_id: techId })
@@ -508,9 +519,7 @@ async function submitAssign() {
     const data = await res.json();
     if (!res.ok) { alert(data.message || 'Terjadi error'); return; }
     alert('Tukang berhasil ditentukan!');
-    closeAssignModal();
-    closeDetail();
-    loadRequests();
+    closeAssignModal(); closeDetail(); loadRequests();
 }
 
 async function reject(id) {
@@ -521,39 +530,68 @@ async function reject(id) {
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ reason })
     });
-    loadRequests();
+    loadRequests(); closeDetail();
+}
+
+/* ══════════════════════════════════════
+   SPK — KIRIM & LIHAT
+══════════════════════════════════════ */
+
+function openSpkConfirm(id) {
+    spkTargetId = id;
+    const item  = (window.requestData || []).find(r => r.id === id);
+
+    document.getElementById('spkConfirmInfo').innerHTML = item ? `
+        <div class="flex justify-between"><span class="text-slate-400">Pekerjaan</span><span class="font-semibold">${item.title}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Tukang</span><span class="font-semibold">${item.technician_name ?? '-'}</span></div>
+        <div class="flex justify-between"><span class="text-slate-400">Jadwal</span><span class="font-semibold">${formatDate(item.schedule_date)}</span></div>
+    ` : '';
+
+    document.getElementById('spkConfirmModal').classList.remove('hidden');
+    document.getElementById('spkConfirmModal').classList.add('flex');
+    feather.replace();
+}
+
+function closeSpkConfirm() {
+    document.getElementById('spkConfirmModal').classList.remove('flex');
+    document.getElementById('spkConfirmModal').classList.add('hidden');
+    spkTargetId = null;
+}
+
+async function submitSendSpk() {
+    const res  = await fetch(`/api/requests/${spkTargetId}/send-spk`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.message ?? 'Gagal kirim SPK'); return; }
+
+    closeSpkConfirm();
     closeDetail();
+    await loadRequests();
+
+    // Langsung buka WO setelah kirim
+    openWorkOrder(spkTargetId, 'repair');
 }
 
-function openImage(src) {
-    document.getElementById('modalImage').src = src;
-    document.getElementById('imageModal').classList.remove('hidden');
-    document.getElementById('imageModal').classList.add('flex');
+/* Buka halaman WO di tab baru */
+function openWorkOrder(id, type) {
+    window.open(`/work-order/${type}/${id}`, '_blank');
 }
 
-function goTo(url) {
-    window.location.href = url;
-}
+/* ── IMAGE ── */
+function openImage(src) { document.getElementById('modalImage').src = src; document.getElementById('imageModal').classList.remove('hidden'); document.getElementById('imageModal').classList.add('flex'); }
+function closeImage()   { document.getElementById('imageModal').classList.add('hidden'); document.getElementById('imageModal').classList.remove('flex'); }
+
+function goTo(url) { window.location.href = url; }
 function goToDashboard() {
     const user = JSON.parse(localStorage.getItem('user'));
-
-    if (user?.role === 'pic') {
-        window.location.href = '/dashboard-pic';
-    } else if (user?.system_type === 'lite') {
-        window.location.href = '/dashboard-lite';
-    } else {
-        window.location.href = '/dashboard-full';
-    }
-}
-function closeImage() {
-    document.getElementById('imageModal').classList.add('hidden');
-    document.getElementById('imageModal').classList.remove('flex');
+    if (user?.role === 'pic') { window.location.href = '/dashboard-pic'; }
+    else if (user?.system_type === 'lite') { window.location.href = '/dashboard-lite'; }
+    else { window.location.href = '/dashboard-full'; }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    feather.replace();
-    loadRequests();
-});
+document.addEventListener('DOMContentLoaded', () => { feather.replace(); loadRequests(); });
 </script>
 
 </body>

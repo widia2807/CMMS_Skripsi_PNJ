@@ -216,6 +216,64 @@ class ScheduledMaintenanceController extends Controller
         return response()->json(['message' => 'Jadwal berhasil dihapus.']);
     }
 
+    // POST /api/scheduled-maintenances/{id}/send-spk
+public function sendSpk($id)
+{
+    $scheduled = ScheduledMaintenance::with([
+        'category', 'scheduledSubCategory', 'worker', 'createdBy'
+    ])->findOrFail($id);
+
+    // Cek syarat: tukang harus sudah konfirmasi
+    if (!$scheduled->worker_confirmed_at) {
+        return response()->json(['message' => 'Tukang belum konfirmasi tugas'], 422);
+    }
+
+    if (!$scheduled->spk_number) {
+        $scheduled->spk_number = SpkHelper::generate('scheduled');
+    }
+
+    $scheduled->spk_sent_at = Carbon::now();
+    $scheduled->spk_sent_by = auth()->id();
+    $scheduled->save();
+
+    return response()->json([
+        'message'    => 'SPK berhasil dikirim',
+        'spk_number' => $scheduled->spk_number,
+    ]);
+}
+
+// GET /api/scheduled-maintenances/{id}/work-order
+public function workOrder($id)
+{
+    $wo = ScheduledMaintenance::with([
+        'category', 'scheduledSubCategory', 'worker', 'createdBy', 'spkSentBy'
+    ])->findOrFail($id);
+
+    $wo->type = 'scheduled';
+
+    $company = \App\Models\Company::first();
+
+    return response()->json([
+        'wo'      => $wo,
+        'company' => $company,
+    ]);
+}
+
+    public function start($id)
+    {
+        $maintenance = ScheduledMaintenance::findOrFail($id);
+
+        if ($maintenance->status !== 'confirmed') {
+            return response()->json(['message' => 'Status harus confirmed terlebih dahulu'], 422);
+        }
+
+        $maintenance->update([
+            'status'     => 'in_progress',
+            'started_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Pekerjaan berhasil dimulai']);
+    }
     /* ═══════════════════════════════════════════
      *  HELPER — Format item untuk response JSON
      * ═══════════════════════════════════════════ */
