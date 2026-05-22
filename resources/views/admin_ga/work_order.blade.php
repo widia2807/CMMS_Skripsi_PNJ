@@ -354,9 +354,15 @@
 
 <script>
 const token  = localStorage.getItem('token');
-const woId   = window.location.pathname.split('/').pop(); // ambil ID dari URL /work-order/{type}/{id}
-const woType = window.location.pathname.split('/')[2];    // 'repair' atau 'scheduled'
+const parts = window.location.pathname.split('/');
+const woId  = parts.pop();     
+const woType = parts.pop();
 
+if (!woId || isNaN(woId)) {
+    document.getElementById('woPage').innerHTML = 
+        '<p style="color:red;text-align:center;margin-top:40px">ID Work Order tidak valid</p>';
+    throw new Error('Invalid WO ID: ' + woId);
+}
 // ── LOAD DATA ────────────────────────────────────────────────────────
 async function loadWO() {
     const res  = await fetch(`/api/work-orders/${woId}`, {

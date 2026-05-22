@@ -49,10 +49,13 @@ Route::get('/admin/peminjaman', function () {
     ]);
 });
 Route::get('/spk', function () {
-    return view('admin_ga.work_order', [
-        'user' => auth()->user()
-    ]);
+    return view('admin_ga.spk_list');
 });
+// routes/web.php — TAMBAH ini, jangan hapus yang /spk
+Route::get('/work-order/{type}/{id}', function () {
+    return view('admin_ga.work_order');
+});
+
 Route::get('/borrow-tools', function () {
     return redirect('/peminjaman');
 });

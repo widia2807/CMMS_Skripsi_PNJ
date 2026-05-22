@@ -18,6 +18,7 @@ use App\Http\Controllers\API\{
     ScheduledMaintenanceController,
     ScheduledSubCategoryController,
     BorrowingController,
+    WorkOrderController,
 };
 use Illuminate\Http\Request;
 use App\Models\Category;
@@ -159,6 +160,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/company-settings', [WorkOrderController::class, 'saveSettings']);
     
     // ── WORK ORDER ────────────────────────────────────────────────────────
+    Route::get('/work-orders', [WorkOrderController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/work-orders/{id}', [WorkOrderController::class, 'show']);
     Route::post('/requests/{id}/send-spk',                [WorkOrderController::class, 'sendRepairSpk']);
     Route::post('/scheduled-maintenances/{id}/send-spk',  [WorkOrderController::class, 'sendScheduledSpk']);

@@ -13,6 +13,15 @@ use Carbon\Carbon;
 
 class WorkOrderController extends Controller
 {
+    public function index()
+{
+    $user = auth()->user();
+    $wos  = WorkOrder::with(['category', 'worker'])
+                ->where('company_id', $user->company_id)
+                ->latest()
+                ->get();
+    return response()->json($wos);
+}
     // ══════════════════════════════════════════════════════════════
     //  COMPANY SETTINGS  (logo, alamat, TTD manager)
     // ══════════════════════════════════════════════════════════════
