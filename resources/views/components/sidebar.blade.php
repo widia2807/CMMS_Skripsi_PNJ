@@ -165,4 +165,13 @@ function logout() {
     localStorage.removeItem('user');
     window.location.href = '/login';
 }
+
+function goToDashboard() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user?.role === 'pic')              window.location.href = '/dashboard-pic';
+    else if (user?.role === 'technician')  window.location.href = '/dashboard-technician';
+    else if (user?.role === 'super_admin') window.location.href = '/dashboard-full';
+    else if (user?.system_type === 'lite') window.location.href = '/dashboard-lite';
+    else                                   window.location.href = '/dashboard-admin';
+}
 </script>

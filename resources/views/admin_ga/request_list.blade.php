@@ -3,7 +3,7 @@
 <head>
     <title>Perbaikan Gedung</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -183,6 +183,8 @@ let selectedId       = null;
 let spkTargetId      = null;
 let currentFilter    = 'all';
 const token = localStorage.getItem('token');
+const user  = JSON.parse(localStorage.getItem('user')); // ← tambah ini
+const isAdmin = user?.role === 'admin' || user?.role === 'admin_ga';
 if (!token) { alert('Session habis'); window.location.href = '/login'; }
 
 const statusLabel = {
@@ -249,21 +251,20 @@ function renderRequests(data) {
                </div>`
             : '';
 
-        // SPK buttons
-        const spkButtons = item.spk_sent_at
+                // SPK buttons — hanya admin yang bisa kirim/lihat SPK
+        const spkButtons = !isAdmin ? '' : item.spk_sent_at
             ? `<button onclick="openWorkOrder(${item.id}, 'repair')"
-                  class="btn flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
-                  <i data-feather="file-text" class="w-3 h-3"></i> Lihat SPK
-               </button>`
+                class="btn flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                <i data-feather="file-text" class="w-3 h-3"></i> Lihat SPK
+            </button>`
             : spkEligible(item)
             ? `<button onclick="openSpkConfirm(${item.id})"
-                  class="btn flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
-                  <i data-feather="send" class="w-3 h-3"></i> Kirim SPK
-               </button>`
+                class="btn flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+                <i data-feather="send" class="w-3 h-3"></i> Kirim SPK
+            </button>`
             : '';
-
-        return `
-        <div class="card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                return `
+                <div class="card bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             ${item.photo
                 ? `<div class="h-36 overflow-hidden cursor-pointer relative" onclick="openImage('/storage/${item.photo}')">
                        <img src="/storage/${item.photo}" class="w-full h-full object-cover">
@@ -415,17 +416,19 @@ async function detail(id) {
             </button>`;
     }
 
-    // Tombol SPK di detail panel
-    if (data.spk_sent_at) {
-        actionHTML += `
-            <button onclick="openWorkOrder(${data.id}, 'repair')" class="btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
-                <i data-feather="file-text" class="w-4 h-4"></i> Lihat & Cetak SPK
-            </button>`;
-    } else if (data.technician_id && data.schedule_date) {
-        actionHTML += `
-            <button onclick="openSpkConfirm(${data.id})" class="btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
-                <i data-feather="send" class="w-4 h-4"></i> Kirim SPK ke Tukang
-            </button>`;
+    // Tombol SPK di detail panel — hanya admin GA
+    if (isAdmin) {
+        if (data.spk_sent_at) {
+            actionHTML += `
+                <button onclick="openWorkOrder(${data.id}, 'repair')" class="btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                    <i data-feather="file-text" class="w-4 h-4"></i> Lihat & Cetak SPK
+                </button>`;
+        } else if (data.technician_id && data.schedule_date) {
+            actionHTML += `
+                <button onclick="openSpkConfirm(${data.id})" class="btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2">
+                    <i data-feather="send" class="w-4 h-4"></i> Kirim SPK ke Tukang
+                </button>`;
+        }
     }
 
     document.getElementById('detailAction').innerHTML = actionHTML;
@@ -585,10 +588,7 @@ function closeImage()   { document.getElementById('imageModal').classList.add('h
 
 function goTo(url) { window.location.href = url; }
 function goToDashboard() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user?.role === 'pic') { window.location.href = '/dashboard-pic'; }
-    else if (user?.system_type === 'lite') { window.location.href = '/dashboard-lite'; }
-    else { window.location.href = '/dashboard-full'; }
+   window.location.href = url;
 }
 
 document.addEventListener('DOMContentLoaded', () => { feather.replace(); loadRequests(); });

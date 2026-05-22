@@ -306,6 +306,7 @@ async function submitRequest() {
     const subCategory = document.getElementById('sub_category').value;
 
     if (!title)       { alert('Judul masalah wajib diisi!'); return; }
+     if (!categoryId)  { alert('Pilih kategori terlebih dahulu!'); return; }
     if (!categoryId)  { alert('Pilih kategori terlebih dahulu!'); return; }
     if (!description) { alert('Deskripsi masalah wajib diisi!'); return; }
 
@@ -317,7 +318,7 @@ async function submitRequest() {
     fd.append('title', title);
     fd.append('description', description);
     fd.append('category_id', categoryId);
-    fd.append('sub_category', subCategory);
+    fd.append('sub_category_id', subCategory);
 
     const file = document.getElementById('photo').files[0];
     if (file) fd.append('photo', file);

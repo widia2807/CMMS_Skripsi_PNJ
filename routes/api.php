@@ -154,6 +154,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/scheduled-maintenances/{id}/send-spk',  [ScheduledMaintenanceController::class, 'sendSpk']);
     Route::get('/scheduled-maintenances/{id}/work-order', [ScheduledMaintenanceController::class, 'workOrder']);
 
+    // ── COMPANY SETTINGS (logo, alamat, TTD manager) ─────────────────────
+    Route::get('/company-settings',  [WorkOrderController::class, 'getSettings']);
+    Route::post('/company-settings', [WorkOrderController::class, 'saveSettings']);
+    
+    // ── WORK ORDER ────────────────────────────────────────────────────────
+    Route::get('/work-orders/{id}', [WorkOrderController::class, 'show']);
+    Route::post('/requests/{id}/send-spk',                [WorkOrderController::class, 'sendRepairSpk']);
+    Route::post('/scheduled-maintenances/{id}/send-spk',  [WorkOrderController::class, 'sendScheduledSpk']);
+
     // optional
     Route::post('/borrowings/{id}/picked', [BorrowingController::class,'markPicked']);
     Route::post('/borrowings/{id}/returned', [BorrowingController::class,'markReturned']);

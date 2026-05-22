@@ -1,914 +1,793 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Maintenance Terjadwal</title>
+    <title>Pekerjaan Tukang</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .card { transition: box-shadow 0.2s, transform 0.2s; }
+        .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-1px); }
+        .btn { transition: all 0.15s ease; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .modal-box { animation: modalIn 0.2s ease; }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-slate-50 min-h-screen">
 
 @include('components.sidebar')
 
-<div class="flex h-screen">
+<div class="flex min-h-screen">
+<div class="flex-1 md:ml-64">
 
-    <!-- MAIN -->
-    <div class="flex-1 md:ml-64 p-6 overflow-y-auto">
-
-        <!-- HEADER -->
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <h1 class="text-xl font-bold">Maintenance Terjadwal</h1>
-                <p class="text-sm text-gray-500 mt-0.5">Kelola jadwal & penugasan tukang</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <span id="userInfo" class="text-sm text-gray-500"></span>
-                <button onclick="openSubCatModal()"
-                    class="text-sm px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition">
-                    Kelola Sub Kategori
-                </button>
-                <button onclick="openCreateModal()"
-                    class="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                    + Buat Jadwal
-                </button>
-            </div>
+<!-- TOPBAR -->
+<div class="bg-white border-b border-slate-100 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+    <div>
+        <h1 class="font-bold text-slate-800 text-lg">Pekerjaan Saya</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Daftar pekerjaan yang ditugaskan</p>
+    </div>
+    <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+            <i data-feather="user" class="w-4 h-4 text-blue-600"></i>
         </div>
-
-        <!-- STATS -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-                <p class="text-xs text-gray-500 mb-1">Total Jadwal</p>
-                <p id="statTotal" class="text-2xl font-semibold text-gray-800">0</p>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-                <p class="text-xs text-gray-500 mb-1">Menunggu Konfirmasi</p>
-                <p id="statPending" class="text-2xl font-semibold text-amber-600">0</p>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-                <p class="text-xs text-gray-500 mb-1">Sedang Berjalan</p>
-                <p id="statOngoing" class="text-2xl font-semibold text-blue-600">0</p>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm">
-                <p class="text-xs text-gray-500 mb-1">Selesai</p>
-                <p id="statDone" class="text-2xl font-semibold text-green-600">0</p>
-            </div>
-        </div>
-
-        <!-- FILTER -->
-        <div class="flex flex-wrap gap-3 mb-4">
-            <select id="filterStatus" onchange="loadSchedules()"
-                class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-                <option value="">Semua status</option>
-                <option value="pending">Menunggu Konfirmasi</option>
-                <option value="confirmed">Dikonfirmasi</option>
-                <option value="in_progress">Sedang Berjalan</option>
-                <option value="done">Selesai</option>
-            </select>
-
-            <select id="filterWorker" onchange="loadSchedules()"
-                class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-                <option value="">Semua tukang</option>
-            </select>
-
-            <!-- ++ FILTER KATEGORI ++ -->
-            <select id="filterCategory" onchange="onFilterCategoryChange()"
-                class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-                <option value="">Semua kategori</option>
-            </select>
-
-            <!-- ++ FILTER SUB KATEGORI (muncul jika kategori dipilih) ++ -->
-            <select id="filterSubCategory" onchange="loadSchedules()"
-                class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none hidden">
-                <option value="">Semua sub kategori</option>
-            </select>
-
-            <input type="month" id="filterMonth" onchange="loadSchedules()"
-                class="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none" />
-        </div>
-
-        <!-- LIST -->
-        <div id="scheduleList" class="space-y-3"></div>
-
+        <span id="techName" class="text-sm font-medium text-slate-600">Teknisi</span>
     </div>
 </div>
 
-<!-- ===================== MODAL BUAT JADWAL ===================== -->
-<div id="createModal"
-     class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"
-     style="display: none; align-items: center; justify-content: center;">
+<div class="p-8 space-y-10">
 
-    <div class="bg-white rounded-2xl w-full max-w-lg mx-4 p-6 shadow-xl">
-        <h2 class="font-semibold text-base mb-4">Buat Jadwal Maintenance</h2>
+    <!-- ══════════════════════════════════════
+         SECTION 1 — PERBAIKAN GEDUNG
+    ══════════════════════════════════════ -->
+    <div>
+        <!-- Section header -->
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                <i data-feather="tool" class="w-4 h-4 text-orange-600"></i>
+            </div>
+            <div>
+                <h2 class="font-bold text-slate-800">Perbaikan Gedung</h2>
+                <p class="text-xs text-slate-400">Pengajuan perbaikan yang ditugaskan ke kamu</p>
+            </div>
+        </div>
 
-        <div class="space-y-3">
+        <!-- Filter tabs perbaikan -->
+        <div class="flex gap-2 mb-4 flex-wrap">
+            <button onclick="filterRepair('all')" id="rtab-all"
+                class="rtab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white">Semua</button>
+            <button onclick="filterRepair('approved')" id="rtab-approved"
+                class="rtab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200">Disetujui</button>
+            <button onclick="filterRepair('scheduled')" id="rtab-scheduled"
+                class="rtab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200">Terjadwal</button>
+            <button onclick="filterRepair('on_progress')" id="rtab-on_progress"
+                class="rtab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200">Sedang Dikerjakan</button>
+            <button onclick="filterRepair('done')" id="rtab-done"
+                class="rtab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200">Selesai</button>
+        </div>
 
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Judul Pekerjaan</label>
-                    <input id="formTitle" type="text" placeholder="Cth: Pemeriksaan AC Lantai 3"
-                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300" />
+        <div id="repairList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <div id="repairEmpty" class="hidden text-center py-12">
+            <div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <i data-feather="tool" class="w-7 h-7 text-orange-300"></i>
+            </div>
+            <p class="font-semibold text-slate-400 text-sm">Tidak ada pekerjaan perbaikan</p>
+        </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="border-t border-slate-200"></div>
+
+    <!-- ══════════════════════════════════════
+         SECTION 2 — MAINTENANCE TERJADWAL
+    ══════════════════════════════════════ -->
+    <div>
+        <!-- Section header -->
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                <i data-feather="calendar" class="w-4 h-4 text-blue-600"></i>
+            </div>
+            <div>
+                <h2 class="font-bold text-slate-800">Maintenance Terjadwal</h2>
+                <p class="text-xs text-slate-400">Jadwal maintenance berkala yang ditugaskan ke kamu</p>
+            </div>
+        </div>
+
+        <!-- Filter tabs scheduled -->
+        <div class="flex gap-2 mb-4 flex-wrap">
+            <button onclick="filterScheduled('all')" id="stab-all"
+                class="stab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white">Semua</button>
+            <button onclick="filterScheduled('pending')" id="stab-pending"
+                class="stab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200">Menunggu Konfirmasi</button>
+            <button onclick="filterScheduled('confirmed')" id="stab-confirmed"
+                class="stab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200">Dikonfirmasi</button>
+            <button onclick="filterScheduled('in_progress')" id="stab-in_progress"
+                class="stab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200">Sedang Berjalan</button>
+            <button onclick="filterScheduled('done')" id="stab-done"
+                class="stab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200">Selesai</button>
+        </div>
+
+        <div id="scheduledList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+        <div id="scheduledEmpty" class="hidden text-center py-12">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <i data-feather="calendar" class="w-7 h-7 text-blue-300"></i>
+            </div>
+            <p class="font-semibold text-slate-400 text-sm">Tidak ada jadwal maintenance</p>
+        </div>
+    </div>
+
+</div>
+</div>
+</div>
+
+<!-- ══════════════ MODAL DETAIL PERBAIKAN ══════════════ -->
+<div id="detailModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl modal-box max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
+            <h3 class="font-bold text-slate-800">Detail Pekerjaan</h3>
+            <button onclick="closeDetail()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
+                <i data-feather="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div id="detailContent" class="p-6 space-y-3"></div>
+    </div>
+</div>
+
+<!-- ══════════════ MODAL DETAIL SCHEDULED ══════════════ -->
+<div id="scheduledDetailModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl modal-box max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <i data-feather="calendar" class="w-3.5 h-3.5 text-blue-600"></i>
                 </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Kategori</label>
-                    <select id="formCategory" onchange="onFormCategoryChange()"
-                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-                        <option value="">Pilih Kategori</option>
+                <h3 class="font-bold text-slate-800">Detail Maintenance</h3>
+            </div>
+            <button onclick="closeScheduledDetail()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400">
+                <i data-feather="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div id="scheduledDetailContent" class="p-6 space-y-3"></div>
+
+        <!-- Tombol aksi di footer modal -->
+        <div id="scheduledDetailActions" class="px-6 pb-6 space-y-2"></div>
+    </div>
+</div>
+
+<!-- ══════════════ MODAL LAPORAN SELESAI SCHEDULED ══════════════ -->
+<div id="completeScheduledModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl modal-box">
+        <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
+            <h3 class="font-bold text-slate-800">Laporan Penyelesaian</h3>
+            <button onclick="closeCompleteScheduled()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400">
+                <i data-feather="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="text-xs text-slate-500 block mb-1">Catatan Penyelesaian</label>
+                <textarea id="completeNote" rows="3" placeholder="Tuliskan ringkasan hasil pekerjaan..."
+                    class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"></textarea>
+            </div>
+            <div>
+                <label class="text-xs text-slate-500 block mb-1">Foto Dokumentasi <span class="text-slate-400">(opsional)</span></label>
+                <input id="completePhoto" type="file" accept="image/*"
+                    class="w-full text-xs border border-slate-200 rounded-xl px-3 py-2 file:mr-3 file:text-xs file:border-0 file:bg-blue-50 file:text-blue-600 file:rounded-lg file:px-2 file:py-1" />
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeCompleteScheduled()"
+                    class="flex-1 btn border border-slate-200 text-slate-500 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50">
+                    Batal
+                </button>
+                <button onclick="submitCompleteScheduled()"
+                    class="flex-1 btn bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-semibold">
+                    Kirim Laporan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ MODAL IMAGE ══════════════ -->
+<div id="imageModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50">
+    <img id="modalImage" class="max-w-[90%] max-h-[85vh] rounded-xl shadow-2xl object-contain">
+    <button onclick="closeImage()" class="absolute top-5 right-5 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors">
+        <i data-feather="x" class="w-5 h-5"></i>
+    </button>
+</div>
+
+<!-- ══════════════ MODAL MATERIAL ══════════════ -->
+<div id="materialModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-box max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
+            <div>
+                <h3 class="font-bold text-slate-800">Ajukan Material</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Isi kebutuhan material pekerjaan</p>
+            </div>
+            <button onclick="closeMaterialModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400">
+                <i data-feather="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="materialList" class="space-y-2">
+                <div class="flex gap-2 items-center">
+                    <input type="text" placeholder="Nama barang" class="border border-slate-200 rounded-lg p-2 w-full text-sm name">
+                    <input type="number" placeholder="Qty" class="border border-slate-200 rounded-lg p-2 w-20 text-sm qty">
+                    <select class="border border-slate-200 rounded-lg p-2 text-sm unit">
+                        <option value="pcs">pcs</option>
+                        <option value="meter">meter</option>
+                        <option value="kg">kg</option>
                     </select>
                 </div>
             </div>
-
-            <!-- ++ SUB KATEGORI (muncul setelah pilih kategori) ++ -->
-            <div id="formSubCategoryWrapper" class="hidden">
-                <label class="text-xs text-gray-500 block mb-1">Sub Kategori</label>
-                <select id="formSubCategory"
-                    class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    <option value="">Pilih Sub Kategori</option>
-                </select>
+            <button onclick="addMaterialField()" class="flex items-center gap-1.5 text-indigo-600 text-sm font-medium mt-3 hover:text-indigo-700">
+                <i data-feather="plus-circle" class="w-4 h-4"></i> Tambah item
+            </button>
+            <div class="flex gap-2 mt-5">
+                <button onclick="closeMaterialModal()" class="btn flex-1 border border-slate-200 text-slate-500 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50">Batal</button>
+                <button onclick="submitMaterial()" class="btn flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-sm font-semibold">Submit Material</button>
             </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Tanggal Pelaksanaan</label>
-                    <input id="formDate" type="date"
-                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300" />
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Periode</label>
-                    <select id="formPeriod"
-                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-                        <option value="weekly">Mingguan</option>
-                        <option value="monthly">Bulanan</option>
-                        <option value="quarterly">Triwulan</option>
-                        <option value="yearly">Tahunan</option>
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <label class="text-xs text-gray-500 block mb-1">Penugasan Tukang</label>
-                <select id="formWorker"
-                    class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-                </select>
-            </div>
-
-            <div>
-                <label class="text-xs text-gray-500 block mb-1">Catatan / Instruksi</label>
-                <textarea id="formNote" rows="3"
-                    placeholder="Tambahkan instruksi khusus untuk tukang..."
-                    class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"></textarea>
-            </div>
-
-        </div>
-
-        <div class="flex justify-end gap-2 mt-5">
-            <button onclick="closeCreateModal()"
-                class="text-sm px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
-                Batal
-            </button>
-            <button onclick="createSchedule()"
-                class="text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                Simpan & Kirim Notifikasi
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ===================== MODAL UBAH TUKANG ===================== -->
-<div id="reassignModal"
-     class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"
-     style="display: none; align-items: center; justify-content: center;">
-
-    <div class="bg-white rounded-2xl w-full max-w-sm mx-4 p-6 shadow-xl">
-        <h2 class="font-semibold text-base mb-4">Ubah Penugasan Tukang</h2>
-
-        <div>
-            <label class="text-xs text-gray-500 block mb-1">Pilih Tukang</label>
-            <select id="reassignWorker"
-                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none">
-            </select>
-        </div>
-
-        <div class="flex justify-end gap-2 mt-5">
-            <button onclick="closeReassignModal()"
-                class="text-sm px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
-                Batal
-            </button>
-            <button onclick="confirmReassign()"
-                class="text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                Simpan
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ===================== MODAL LAPORAN SELESAI ===================== -->
-<div id="reportModal"
-     class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"
-     style="display: none; align-items: center; justify-content: center;">
-
-    <div class="bg-white rounded-2xl w-full max-w-sm mx-4 p-6 shadow-xl">
-        <h2 class="font-semibold text-base mb-4">Laporan Penyelesaian</h2>
-        <div id="reportContent" class="text-sm text-gray-600 space-y-2"></div>
-
-        <div class="flex justify-end mt-5">
-            <button onclick="closeReportModal()"
-                class="text-sm px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
-                Tutup
-            </button>
         </div>
     </div>
 </div>
 
 <script>
-const token    = localStorage.getItem('token');
-const user     = JSON.parse(localStorage.getItem('user'));
-const initials = n => n ? n.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '??';
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '/login';
 
-const AVATAR_COLORS = [
-    { bg: 'bg-blue-100',   text: 'text-blue-700' },
-    { bg: 'bg-green-100',  text: 'text-green-700' },
-    { bg: 'bg-amber-100',  text: 'text-amber-700' },
-    { bg: 'bg-pink-100',   text: 'text-pink-700' },
-    { bg: 'bg-purple-100', text: 'text-purple-700' },
-];
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+if (user.name) document.getElementById('techName').textContent = user.name;
 
-const STATUS_MAP = {
-    pending:     { label: 'Menunggu Konfirmasi', cls: 'bg-amber-100 text-amber-700' },
-    confirmed:   { label: 'Dikonfirmasi',        cls: 'bg-blue-100 text-blue-700' },
-    in_progress: { label: 'Sedang Berjalan',     cls: 'bg-blue-100 text-blue-700' },
-    done:        { label: 'Selesai',             cls: 'bg-green-100 text-green-700' },
+let selectedId        = null;
+let selectedSchedId   = null;
+let currentRepairFilter    = 'all';
+let currentScheduledFilter = 'all';
+
+/* ── STATUS MAPS ── */
+const repairStatusLabel = {
+    approved: 'Disetujui', scheduled: 'Terjadwal',
+    waiting_material: 'Menunggu Material', on_progress: 'Sedang Dikerjakan',
+    done: 'Selesai', material_ready: 'Material Siap', verified: 'Terverifikasi'
+};
+const repairStatusStyle = {
+    approved: 'bg-green-100 text-green-700', scheduled: 'bg-blue-100 text-blue-700',
+    waiting_material: 'bg-orange-100 text-orange-700', material_ready: 'bg-cyan-100 text-cyan-700',
+    on_progress: 'bg-purple-100 text-purple-700', done: 'bg-slate-100 text-slate-500',
+    verified: 'bg-teal-100 text-teal-700',
+};
+
+const schedStatusLabel = {
+    pending: 'Menunggu Konfirmasi', confirmed: 'Dikonfirmasi',
+    in_progress: 'Sedang Berjalan', done: 'Selesai'
+};
+const schedStatusStyle = {
+    pending: 'bg-amber-100 text-amber-700', confirmed: 'bg-blue-100 text-blue-700',
+    in_progress: 'bg-purple-100 text-purple-700', done: 'bg-green-100 text-green-700',
 };
 
 const PERIOD_MAP = {
-    weekly:    'Mingguan',
-    monthly:   'Bulanan',
-    quarterly: 'Triwulan',
-    yearly:    'Tahunan',
+    weekly: 'Mingguan', monthly: 'Bulanan', quarterly: 'Triwulan', yearly: 'Tahunan'
 };
 
-if (!user) { window.location.href = '/login'; }
-document.getElementById('userInfo').innerText = user.name + ' (' + user.role + ')';
+/* ══════════════════════════════════════
+   SECTION 1 — PERBAIKAN GEDUNG
+══════════════════════════════════════ */
 
-let selectedScheduleId = null;
-let workers = [];
-
-/* ─── INIT ─── */
-document.addEventListener('DOMContentLoaded', async () => {
-    feather.replace();
-    await loadCategories();
-    await loadWorkers();
-    await loadSchedules();
-});
-
-/* ─── LOAD CATEGORIES ─── */
-async function loadCategories() {
-    const res  = await fetch('/api/categories', {
-        headers: { Authorization: 'Bearer ' + token }
+function filterRepair(status) {
+    currentRepairFilter = status;
+    document.querySelectorAll('.rtab').forEach(b => {
+        b.className = 'rtab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200';
     });
-    const data = await res.json();
+    document.getElementById('rtab-' + status).className = 'rtab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white';
+    renderRepair(window.repairData || []);
+}
 
-    if (!Array.isArray(data)) {
-        console.error('Categories error:', data);
+function renderRepair(data) {
+    const filtered  = currentRepairFilter === 'all' ? data : data.filter(j => j.status === currentRepairFilter);
+    const list      = document.getElementById('repairList');
+    const empty     = document.getElementById('repairEmpty');
+
+    if (!filtered.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        feather.replace();
         return;
     }
+    empty.classList.add('hidden');
 
-    // Isi dropdown form & filter kategori
-    ['formCategory', 'filterCategory'].forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.innerHTML = id === 'filterCategory'
-            ? '<option value="">Semua kategori</option>'
-            : '<option value="">Pilih Kategori</option>';
-
-        data.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.name;
-            el.appendChild(opt);
-        });
-    });
-}
-
-/* ─── LOAD SUB CATEGORIES (reusable) ─── */
-async function loadSubCategories(categoryId, targetElId, placeholderText) {
-    const el = document.getElementById(targetElId);
-    if (!el) return;
-
-    el.innerHTML = `<option value="">${placeholderText}</option>`;
-
-    if (!categoryId) return;
-
-    const res  = await fetch(`/api/scheduled-sub-categories?category_id=${categoryId}`, {
-        headers: { Authorization: 'Bearer ' + token }
-    });
-    const data = await res.json();
-
-    if (!Array.isArray(data) || !data.length) return;
-
-    data.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.name;
-        el.appendChild(opt);
-    });
-}
-
-/* ─── EVENT: FORM CATEGORY CHANGE ─── */
-async function onFormCategoryChange() {
-    const categoryId = document.getElementById('formCategory').value;
-    const wrapper    = document.getElementById('formSubCategoryWrapper');
-
-    if (!categoryId) {
-        wrapper.classList.add('hidden');
-        document.getElementById('formSubCategory').innerHTML = '<option value="">Pilih Sub Kategori</option>';
-        return;
-    }
-
-    await loadSubCategories(categoryId, 'formSubCategory', 'Pilih Sub Kategori');
-    wrapper.classList.remove('hidden');
-}
-
-/* ─── EVENT: FILTER CATEGORY CHANGE ─── */
-async function onFilterCategoryChange() {
-    const categoryId    = document.getElementById('filterCategory').value;
-    const filterSubEl   = document.getElementById('filterSubCategory');
-
-    // Reset filter sub category
-    filterSubEl.innerHTML = '<option value="">Semua sub kategori</option>';
-
-    if (!categoryId) {
-        filterSubEl.classList.add('hidden');
-        loadSchedules();
-        return;
-    }
-
-    await loadSubCategories(categoryId, 'filterSubCategory', 'Semua sub kategori');
-    filterSubEl.classList.remove('hidden');
-    loadSchedules();
-}
-
-/* ─── LOAD WORKERS ─── */
-async function loadWorkers() {
-    const res  = await fetch('/api/workers', { headers: { 'Authorization': 'Bearer ' + token } });
-    workers    = await res.json();
-
-    ['formWorker', 'filterWorker', 'reassignWorker'].forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.innerHTML = id === 'filterWorker'
-            ? '<option value="">Semua tukang</option>'
-            : '';
-
-        workers.forEach(w => {
-            const opt = document.createElement('option');
-            opt.value = w.id;
-            opt.textContent = w.name;
-            el.appendChild(opt);
-        });
-    });
-}
-
-/* ─── LOAD JADWAL ─── */
-async function loadSchedules() {
-    const status      = document.getElementById('filterStatus').value;
-    const worker      = document.getElementById('filterWorker').value;
-    const month       = document.getElementById('filterMonth').value;
-    const category    = document.getElementById('filterCategory').value;
-    const subCategory = document.getElementById('filterSubCategory').value;
-
-    const params = new URLSearchParams();
-    if (status)      params.append('status', status);
-    if (worker)      params.append('worker_id', worker);
-    if (month)       params.append('month', month);
-    if (category)    params.append('category_id', category);
-    if (subCategory) params.append('scheduled_sub_category_id', subCategory);
-
-    const res  = await fetch('/api/scheduled-maintenances?' + params.toString(), {
-        headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data = await res.json();
-
-    updateStats(data);
-    renderList(data);
-}
-
-/* ─── UPDATE STAT CARDS ─── */
-function updateStats(data) {
-    document.getElementById('statTotal').innerText   = data.length;
-    document.getElementById('statPending').innerText = data.filter(d => d.status === 'pending').length;
-    document.getElementById('statOngoing').innerText = data.filter(d => ['confirmed','in_progress'].includes(d.status)).length;
-    document.getElementById('statDone').innerText    = data.filter(d => d.status === 'done').length;
-}
-
-/* ─── RENDER LIST ─── */
-function renderList(data) {
-    const container = document.getElementById('scheduleList');
-    container.innerHTML = '';
-
-    if (!data.length) {
-        container.innerHTML = '<p class="text-gray-400 text-sm">Belum ada jadwal maintenance.</p>';
-        return;
-    }
-
-    data.forEach((item, i) => {
-        const st     = STATUS_MAP[item.status] || { label: item.status, cls: 'bg-gray-100 text-gray-600' };
-        const col    = AVATAR_COLORS[i % AVATAR_COLORS.length];
-        const period = PERIOD_MAP[item.period] || item.period;
-
-        // Tampilkan sub category jika ada
-        const subCatBadge = item.sub_category_name
-            ? `<span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">${item.sub_category_name}</span>`
-            : '';
-
-        // Tombol SPK
-        const spkBtn = item.spk_sent_at
-            ? `<button onclick="openWorkOrder(${item.id})"
-                  class="text-xs px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                  Lihat SPK
-               </button>`
-            : item.worker_confirmed_at
-            ? `<button onclick="openSpkConfirmSched(${item.id})"
-                  class="text-xs px-3 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                  Kirim SPK
-               </button>`
-            : '';
-
-        const actionBtn = item.status === 'done'
-            ? `<button onclick="openReport(${item.id})"
-                  class="text-xs px-3 py-1 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition">
-                  Lihat laporan
-               </button>`
-            : `<button onclick="openReassign(${item.id})"
-                  class="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition">
-                  Ubah tukang
-               </button>`;
-
-        const confirmNote = item.worker_confirmed_at
-            ? `<p class="text-xs text-gray-400 mt-1">Dikonfirmasi tukang: ${formatDate(item.worker_confirmed_at)}</p>`
-            : '';
-
-        const doneNote = item.completed_at
-            ? `<p class="text-xs text-gray-400 mt-1">Selesai: ${formatDate(item.completed_at)}</p>`
-            : '';
-
-        container.innerHTML += `
-            <div class="bg-white rounded-xl shadow-sm p-4">
-                <div class="flex justify-between items-start gap-3">
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <p class="font-medium text-sm text-gray-800 truncate">${item.title}</p>
-                            ${subCatBadge}
-                        </div>
-                        <p class="text-xs text-gray-400 mt-0.5">
-                            ${item.category_name ?? item.category} &middot; ${period} &middot; ${formatDate(item.scheduled_date)}
-                        </p>
-                        ${confirmNote}
-                        ${doneNote}
+    list.innerHTML = filtered.map(job => {
+        let action = '';
+        if (job.status === 'approved') {
+            action = `
+                <div class="flex gap-2 items-center">
+                    <input type="date" id="date-${job.id}" class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs flex-1">
+                    <button onclick="setSchedule(${job.id})" class="btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">Jadwalkan</button>
+                </div>`;
+        } else if (job.status === 'scheduled') {
+            action = `
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="inspectJob(${job.id}, false)" class="btn bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                        <i data-feather="play" class="w-3 h-3"></i> Langsung Kerja
+                    </button>
+                    <button onclick="needMaterial(${job.id})" class="btn bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                        <i data-feather="package" class="w-3 h-3"></i> Butuh Material
+                    </button>
+                </div>`;
+        } else if (job.status === 'waiting_material') {
+            action = `
+                <div class="space-y-2">
+                    <div class="flex gap-2">
+                        <button onclick="openMaterialForm(${job.id})" class="btn bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                            <i data-feather="clipboard" class="w-3 h-3"></i> Ajukan Material
+                        </button>
+                        <button onclick="startJob(${job.id})" class="btn bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                            <i data-feather="play" class="w-3 h-3"></i> Mulai
+                        </button>
                     </div>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${st.cls}">
-                        ${st.label}
+                    <div class="flex gap-2 items-center">
+                        <input type="date" id="res-${job.id}" class="border border-slate-200 rounded-lg px-2 py-1.5 text-xs flex-1">
+                        <button onclick="reschedule(${job.id})" class="btn bg-slate-500 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">Reschedule</button>
+                    </div>
+                </div>`;
+        } else if (job.status === 'material_ready') {
+            action = `
+                <div class="flex gap-2">
+                    <button onclick="openMaterialForm(${job.id})" class="btn bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                        <i data-feather="clipboard" class="w-3 h-3"></i> Ajukan Material
+                    </button>
+                    <button onclick="startJob(${job.id})" class="btn bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                        <i data-feather="play" class="w-3 h-3"></i> Mulai Kerja
+                    </button>
+                </div>`;
+        } else if (job.status === 'on_progress') {
+            action = `
+                <button onclick="completeJob(${job.id})" class="btn bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                    <i data-feather="check-circle" class="w-3 h-3"></i> Tandai Selesai
+                </button>`;
+        }
+
+        return `
+        <div class="card bg-white rounded-2xl shadow-sm border border-l-4 border-orange-200 overflow-hidden">
+            ${job.photo ? `
+                <div class="relative h-36 overflow-hidden cursor-pointer" onclick="openImage('/storage/${job.photo}')">
+                    <img src="/storage/${job.photo}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                </div>
+            ` : `<div class="h-1.5 bg-gradient-to-r from-orange-300 to-amber-200"></div>`}
+            <div class="p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-bold text-slate-800 text-sm leading-tight flex-1">${job.title ?? '-'}</h3>
+                    <span class="text-xs px-2.5 py-1 rounded-full font-semibold ml-2 whitespace-nowrap ${repairStatusStyle[job.status] ?? 'bg-slate-100 text-slate-500'}">
+                        ${repairStatusLabel[job.status] ?? job.status}
+                    </span>
+                </div>
+                <div class="flex flex-col gap-1 mb-3">
+                    <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                        <i data-feather="map-pin" class="w-3 h-3"></i>
+                        <span>${job.branch ?? '-'}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                        <i data-feather="tag" class="w-3 h-3"></i>
+                        <span>${job.category ?? '-'}</span>
+                    </div>
+                </div>
+                <div class="border-t border-slate-50 pt-3 space-y-2">
+                    ${action}
+                    ${job.spk_sent_at ? `
+                    <button onclick="openWorkOrder(${job.id}, 'repair')" class="btn w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                        <i data-feather="file-text" class="w-3 h-3"></i> Lihat SPK — ${job.spk_number ?? ''}
+                    </button>` : ''}
+                    <button onclick="openDetail(${job.id})" class="btn w-full border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                        <i data-feather="info" class="w-3 h-3"></i> Lihat Detail
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    feather.replace();
+}
+
+async function loadRepairJobs() {
+    try {
+        const res  = await fetch('/api/technician/jobs', { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+        if (!res.ok) { alert(data.message || 'Gagal load data'); return; }
+        window.repairData = data;
+        renderRepair(data);
+    } catch (err) { console.error(err); }
+}
+
+/* ══════════════════════════════════════
+   SECTION 2 — MAINTENANCE TERJADWAL
+══════════════════════════════════════ */
+
+function filterScheduled(status) {
+    currentScheduledFilter = status;
+    document.querySelectorAll('.stab').forEach(b => {
+        b.className = 'stab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-500 border border-slate-200';
+    });
+    document.getElementById('stab-' + status).className = 'stab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white';
+    renderScheduled(window.scheduledData || []);
+}
+
+function renderScheduled(data) {
+    const filtered = currentScheduledFilter === 'all' ? data : data.filter(j => j.status === currentScheduledFilter);
+    const list     = document.getElementById('scheduledList');
+    const empty    = document.getElementById('scheduledEmpty');
+
+    if (!filtered.length) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        feather.replace();
+        return;
+    }
+    empty.classList.add('hidden');
+
+    list.innerHTML = filtered.map(item => {
+        const st     = schedStatusStyle[item.status] ?? 'bg-slate-100 text-slate-500';
+        const stLbl  = schedStatusLabel[item.status] ?? item.status;
+        const period = PERIOD_MAP[item.period] ?? item.period;
+
+        // Tombol aksi per status
+        let action = '';
+        if (item.status === 'pending') {
+            action = `
+                <button onclick="confirmScheduled(${item.id})" class="btn w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                    <i data-feather="check" class="w-3 h-3"></i> Konfirmasi Tugas
+                </button>`;
+        } else if (item.status === 'confirmed') {
+            action = `
+                <button onclick="startScheduled(${item.id})" class="btn w-full bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                    <i data-feather="play" class="w-3 h-3"></i> Mulai Pekerjaan
+                </button>`;
+        } else if (item.status === 'in_progress') {
+            action = `
+                <button onclick="openCompleteScheduled(${item.id})" class="btn w-full bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                    <i data-feather="check-circle" class="w-3 h-3"></i> Tandai Selesai
+                </button>`;
+        }
+
+        const subCat = item.sub_category_name
+            ? `<span class="text-xs bg-blue-50 text-blue-500 px-2 py-0.5 rounded-full">${item.sub_category_name}</span>`
+            : '';
+
+        return `
+        <div class="card bg-white rounded-2xl shadow-sm border border-l-4 border-blue-200 overflow-hidden">
+            <div class="h-1.5 bg-gradient-to-r from-blue-400 to-indigo-300"></div>
+            <div class="p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-bold text-slate-800 text-sm leading-tight">${item.title ?? '-'}</h3>
+                        ${subCat ? `<div class="mt-1">${subCat}</div>` : ''}
+                    </div>
+                    <span class="text-xs px-2.5 py-1 rounded-full font-semibold ml-2 whitespace-nowrap ${st}">
+                        ${stLbl}
                     </span>
                 </div>
 
-                ${item.note ? `<p class="text-xs text-gray-500 mt-2 border-l-2 border-gray-200 pl-2">${item.note}</p>` : ''}
-
-                ${item.spk_sent_at ? `
-                <div class="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg px-2.5 py-1 mt-2 w-fit">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    ${item.spk_number}
-                </div>` : ''}
-
-                <div class="flex justify-between items-center pt-3 mt-3 border-t border-gray-100">
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${col.bg} ${col.text}">
-                            ${initials(item.worker_name)}
-                        </div>
-                        <p class="text-xs text-gray-500">${item.worker_name || '-'}</p>
+                <div class="flex flex-col gap-1 mb-3">
+                    <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                        <i data-feather="layers" class="w-3 h-3"></i>
+                        <span>${item.category_name ?? item.category ?? '-'}</span>
                     </div>
-                    <div class="flex items-center gap-1.5">
-                        ${spkBtn}
-                        ${actionBtn}
+                    <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                        <i data-feather="refresh-cw" class="w-3 h-3"></i>
+                        <span>${period}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                        <i data-feather="calendar" class="w-3 h-3"></i>
+                        <span>${formatDate(item.scheduled_date)}</span>
                     </div>
                 </div>
+
+                ${item.note ? `<p class="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 mb-3 border-l-2 border-slate-200">${item.note}</p>` : ''}
+
+                <div class="border-t border-slate-50 pt-3 space-y-2">
+                    ${action}
+                    ${item.spk_sent_at ? `
+                    <button onclick="openWorkOrder(${item.id}, 'scheduled')" class="btn w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                        <i data-feather="file-text" class="w-3 h-3"></i> Lihat SPK — ${item.spk_number ?? ''}
+                    </button>` : ''}
+                    <button onclick="openScheduledDetail(${item.id})" class="btn w-full border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                        <i data-feather="info" class="w-3 h-3"></i> Lihat Detail
+                    </button>
+                </div>
             </div>
-        `;
-    });
+        </div>`;
+    }).join('');
+
+    feather.replace();
 }
 
-/* ─── FORMAT DATE ─── */
+async function loadScheduledTasks() {
+    try {
+        const res  = await fetch('/api/scheduled-maintenances/my-tasks', { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+        if (!res.ok) { console.error('Scheduled tasks error:', data); return; }
+        window.scheduledData = Array.isArray(data) ? data : (data.data ?? []);
+        renderScheduled(window.scheduledData);
+    } catch (err) { console.error(err); }
+}
+
+/* Konfirmasi tugas scheduled */
+async function confirmScheduled(id) {
+    const res  = await fetch(`/api/scheduled-maintenances/${id}/confirm`, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message ?? 'Gagal konfirmasi');
+    alert('Tugas dikonfirmasi!');
+    loadScheduledTasks();
+}
+
+/* Mulai pekerjaan scheduled — ubah status ke in_progress via confirm jika belum ada endpoint start */
+async function startScheduled(id) {
+    // Gunakan endpoint complete dengan status in_progress, atau endpoint khusus start jika ada
+    const res  = await fetch(`/api/scheduled-maintenances/${id}/confirm`, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message ?? 'Gagal memulai');
+    alert('Pekerjaan dimulai!');
+    loadScheduledTasks();
+}
+
+/* Modal laporan selesai */
+function openCompleteScheduled(id) {
+    selectedSchedId = id;
+    document.getElementById('completeNote').value  = '';
+    document.getElementById('completePhoto').value = '';
+    document.getElementById('completeScheduledModal').classList.remove('hidden');
+    document.getElementById('completeScheduledModal').classList.add('flex');
+}
+function closeCompleteScheduled() {
+    document.getElementById('completeScheduledModal').classList.add('hidden');
+    document.getElementById('completeScheduledModal').classList.remove('flex');
+}
+
+async function submitCompleteScheduled() {
+    const note  = document.getElementById('completeNote').value.trim();
+    const photo = document.getElementById('completePhoto').files[0];
+
+    const form = new FormData();
+    form.append('completion_note', note);
+    if (photo) form.append('completion_photo', photo);
+
+    const res  = await fetch(`/api/scheduled-maintenances/${selectedSchedId}/complete`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: form,
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message ?? 'Gagal submit laporan');
+    alert('Laporan berhasil dikirim!');
+    closeCompleteScheduled();
+    loadScheduledTasks();
+}
+
+/* Modal detail scheduled */
+function openScheduledDetail(id) {
+    const item = (window.scheduledData || []).find(j => j.id === id);
+    if (!item) return;
+
+    const period = PERIOD_MAP[item.period] ?? item.period;
+
+    document.getElementById('scheduledDetailContent').innerHTML = `
+        <div class="flex justify-between items-start">
+            <h4 class="font-bold text-slate-800">${item.title}</h4>
+            <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${schedStatusStyle[item.status] ?? ''}">${schedStatusLabel[item.status] ?? item.status}</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+            <i data-feather="layers" class="w-4 h-4"></i>
+            ${item.category_name ?? item.category ?? '-'}
+            ${item.sub_category_name ? `<span class="text-blue-500">/ ${item.sub_category_name}</span>` : ''}
+        </div>
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+            <i data-feather="refresh-cw" class="w-4 h-4"></i> ${period}
+        </div>
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+            <i data-feather="calendar" class="w-4 h-4"></i> ${formatDate(item.scheduled_date)}
+        </div>
+        ${item.note ? `<p class="text-sm text-slate-600 bg-slate-50 rounded-lg p-3 border-l-2 border-slate-200">${item.note}</p>` : ''}
+        ${item.worker_confirmed_at ? `<p class="text-xs text-slate-400">Dikonfirmasi: ${formatDate(item.worker_confirmed_at)}</p>` : ''}
+        ${item.completed_at ? `<p class="text-xs text-slate-400">Selesai: ${formatDate(item.completed_at)}</p>` : ''}
+    `;
+
+    document.getElementById('scheduledDetailModal').classList.remove('hidden');
+    document.getElementById('scheduledDetailModal').classList.add('flex');
+    feather.replace();
+}
+function closeScheduledDetail() {
+    document.getElementById('scheduledDetailModal').classList.add('hidden');
+    document.getElementById('scheduledDetailModal').classList.remove('flex');
+}
+
+/* ══════════════════════════════════════
+   PERBAIKAN GEDUNG — ACTIONS
+══════════════════════════════════════ */
+
+function openDetail(id) {
+    const job = (window.repairData || []).find(j => j.id === id);
+    if (!job) return;
+    document.getElementById('detailContent').innerHTML = `
+        <div class="flex justify-between items-start">
+            <h4 class="font-bold text-slate-800">${job.title}</h4>
+            <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${repairStatusStyle[job.status] ?? ''}">${repairStatusLabel[job.status] ?? job.status}</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+            <i data-feather="map-pin" class="w-4 h-4"></i> ${job.branch}
+        </div>
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+            <i data-feather="tag" class="w-4 h-4"></i> ${job.category}
+        </div>
+        <p class="text-sm text-slate-600 bg-slate-50 rounded-lg p-3">${job.description ?? '-'}</p>
+        ${job.photo ? `<img src="/storage/${job.photo}" onclick="openImage('/storage/${job.photo}')" class="w-full h-44 object-cover rounded-xl cursor-pointer hover:opacity-90 transition-opacity">` : ''}
+    `;
+    document.getElementById('detailModal').classList.remove('hidden');
+    document.getElementById('detailModal').classList.add('flex');
+    feather.replace();
+}
+function closeDetail() {
+    document.getElementById('detailModal').classList.add('hidden');
+    document.getElementById('detailModal').classList.remove('flex');
+}
+
+function openImage(src) {
+    document.getElementById('modalImage').src = src;
+    document.getElementById('imageModal').classList.remove('hidden');
+    document.getElementById('imageModal').classList.add('flex');
+}
+function closeImage() {
+    document.getElementById('imageModal').classList.add('hidden');
+    document.getElementById('imageModal').classList.remove('flex');
+}
+
+async function needMaterial(id) {
+    const res  = await fetch(`/api/technician/inspect/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ needs_material: true, notes: 'Butuh material' })
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message);
+    openMaterialForm(id);
+}
+
+async function setSchedule(id) {
+    const date = document.getElementById(`date-${id}`).value;
+    if (!date) return alert('Pilih tanggal dulu!');
+    const res  = await fetch(`/api/technician/schedule/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ schedule_date: date })
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message);
+    alert('Jadwal berhasil diset');
+    loadRepairJobs();
+}
+
+async function inspectJob(id, needsMaterial) {
+    const res  = await fetch(`/api/technician/inspect/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ needs_material: needsMaterial, notes: 'Hasil pengecekan' })
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message);
+    alert('Inspection selesai');
+    loadRepairJobs();
+}
+
+async function startJob(id) {
+    const res  = await fetch(`/api/technician/start/${id}`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message);
+    alert('Pekerjaan dimulai');
+    loadRepairJobs();
+}
+
+async function completeJob(id) {
+    const res  = await fetch(`/api/technician/complete/${id}`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message);
+    alert('Pekerjaan selesai');
+    loadRepairJobs();
+}
+
+async function reschedule(id) {
+    const date = document.getElementById(`res-${id}`).value;
+    if (!date) return alert('Pilih tanggal dulu!');
+    const res  = await fetch(`/api/technician/schedule/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ schedule_date: date })
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message);
+    alert('Reschedule berhasil');
+    loadRepairJobs();
+}
+
+function openMaterialForm(id) {
+    selectedId = id;
+    document.getElementById('materialModal').classList.remove('hidden');
+    document.getElementById('materialModal').classList.add('flex');
+    feather.replace();
+}
+function closeMaterialModal() {
+    document.getElementById('materialModal').classList.remove('flex');
+    document.getElementById('materialModal').classList.add('hidden');
+}
+function addMaterialField() {
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+        <input type="text" placeholder="Nama barang" class="border border-slate-200 rounded-lg p-2 w-full text-sm name">
+        <input type="number" placeholder="Qty" class="border border-slate-200 rounded-lg p-2 w-20 text-sm qty">
+        <select class="border border-slate-200 rounded-lg p-2 text-sm unit">
+            <option value="pcs">pcs</option>
+            <option value="meter">meter</option>
+            <option value="kg">kg</option>
+        </select>`;
+    document.getElementById('materialList').appendChild(div);
+}
+async function submitMaterial() {
+    const names = document.querySelectorAll('.name');
+    const qtys  = document.querySelectorAll('.qty');
+    const units = document.querySelectorAll('.unit');
+    let items = [];
+    for (let i = 0; i < names.length; i++) {
+        if (names[i].value && qtys[i].value) {
+            items.push({ name: names[i].value, qty: qtys[i].value, unit: units[i].value });
+        }
+    }
+    if (!items.length) return alert('Isi minimal 1 item');
+    const res  = await fetch(`/api/technician/material/${selectedId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ items })
+    });
+    const data = await res.json();
+    if (!res.ok) return alert(data.message);
+    alert('Material diajukan');
+    closeMaterialModal();
+    loadRepairJobs();
+}
+
+/* ── HELPERS ── */
 function formatDate(str) {
     if (!str) return '-';
     return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-/* ─── MODAL: BUAT JADWAL ─── */
-function openCreateModal() {
-    document.getElementById('createModal').style.display = 'flex';
-}
-function closeCreateModal() {
-    document.getElementById('createModal').style.display = 'none';
-    ['formTitle', 'formDate', 'formNote'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('formCategory').value = '';
-    document.getElementById('formSubCategory').innerHTML = '<option value="">Pilih Sub Kategori</option>';
-    document.getElementById('formSubCategoryWrapper').classList.add('hidden');
+function openWorkOrder(id, type) {
+    window.open(`/work-order/${type}/${id}`, '_blank');
 }
 
-async function createSchedule() {
-    const payload = {
-        title:                     document.getElementById('formTitle').value,
-        category_id:               document.getElementById('formCategory').value,
-        scheduled_sub_category_id: document.getElementById('formSubCategory').value || null,
-        scheduled_date:            document.getElementById('formDate').value,
-        period:                    document.getElementById('formPeriod').value,
-        worker_id:                 document.getElementById('formWorker').value,
-        note:                      document.getElementById('formNote').value,
-    };
-
-    if (!payload.title || !payload.scheduled_date || !payload.worker_id) {
-        alert('Judul, tanggal, dan tukang wajib diisi!');
-        return;
-    }
-
-    await fetch('/api/scheduled-maintenances', {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-    });
-
-    alert('Jadwal berhasil dibuat. Notifikasi dikirim ke tukang.');
-    closeCreateModal();
-    loadSchedules();
-}
-
-function goToDashboard() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user?.role === 'pic') {
-        window.location.href = '/dashboard-pic';
-    } else if (user?.system_type === 'lite') {
-        window.location.href = '/dashboard-lite';
-    } else {
-        window.location.href = '/dashboard-full';
-    }
-}
-
-/* ─── MODAL: UBAH TUKANG ─── */
-function openReassign(id) {
-    selectedScheduleId = id;
-    document.getElementById('reassignModal').style.display = 'flex';
-}
-function closeReassignModal() {
-    document.getElementById('reassignModal').style.display = 'none';
-    selectedScheduleId = null;
-}
-async function confirmReassign() {
-    const workerId = document.getElementById('reassignWorker').value;
-    await fetch(`/api/scheduled-maintenances/${selectedScheduleId}/assign`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ worker_id: workerId }),
-    });
-
-    alert('Penugasan tukang berhasil diperbarui.');
-    closeReassignModal();
-    loadSchedules();
-}
-
-/* ─── MODAL: LAPORAN SELESAI ─── */
-async function openReport(id) {
-    const res  = await fetch(`/api/scheduled-maintenances/${id}`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const item = await res.json();
-
-    document.getElementById('reportContent').innerHTML = `
-        <div class="space-y-2">
-            <p><span class="text-gray-400">Pekerjaan:</span> ${item.title}</p>
-            <p><span class="text-gray-400">Kategori:</span> ${item.category_name ?? '-'} ${item.sub_category_name ? '/ ' + item.sub_category_name : ''}</p>
-            <p><span class="text-gray-400">Tukang:</span> ${item.worker_name}</p>
-            <p><span class="text-gray-400">Selesai pada:</span> ${formatDate(item.completed_at)}</p>
-            ${item.completion_note ? `<p><span class="text-gray-400">Catatan tukang:</span> ${item.completion_note}</p>` : ''}
-            ${item.completion_photo ? `<img src="/storage/${item.completion_photo}" class="w-full rounded-lg border mt-2" />` : ''}
-        </div>
-    `;
-    document.getElementById('reportModal').style.display = 'flex';
-}
-function closeReportModal() {
-    document.getElementById('reportModal').style.display = 'none';
-}
-
-function goTo(url) {
-    window.location.href = url;
-}
-
-/* ═══════════════════════════════════════════
-   SPK — MAINTENANCE TERJADWAL
-═══════════════════════════════════════════ */
-
-let spkSchedTargetId = null;
-
-function openSpkConfirmSched(id) {
-    spkSchedTargetId = id;
-    const item = (window.scheduleData || []).find(s => s.id === id);
-    document.getElementById('spkSchedInfo').innerHTML = item ? `
-        <div class="flex justify-between text-sm"><span class="text-gray-400">Pekerjaan</span><span class="font-semibold">${item.title}</span></div>
-        <div class="flex justify-between text-sm"><span class="text-gray-400">Tukang</span><span class="font-semibold">${item.worker_name ?? '-'}</span></div>
-        <div class="flex justify-between text-sm"><span class="text-gray-400">Jadwal</span><span class="font-semibold">${formatDate(item.scheduled_date)}</span></div>
-        <div class="flex justify-between text-sm"><span class="text-gray-400">Periode</span><span class="font-semibold">${PERIOD_MAP[item.period] ?? item.period}</span></div>
-    ` : '';
-    document.getElementById('spkSchedModal').style.display = 'flex';
-}
-
-function closeSpkSchedModal() {
-    document.getElementById('spkSchedModal').style.display = 'none';
-    spkSchedTargetId = null;
-}
-
-async function submitSendSpkSched() {
-    const res  = await fetch(`/api/scheduled-maintenances/${spkSchedTargetId}/send-spk`, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data = await res.json();
-    if (!res.ok) { alert(data.message ?? 'Gagal kirim SPK'); return; }
-
-    closeSpkSchedModal();
-    await loadSchedules();
-
-    // Langsung buka WO setelah kirim
-    openWorkOrder(spkSchedTargetId);
-}
-
-function openWorkOrder(id) {
-    window.open(`/work-order/scheduled/${id}`, '_blank');
-}
-
-/* ═══════════════════════════════════════════
-   KELOLA SUB KATEGORI
-═══════════════════════════════════════════ */
-
-let editingSubCatId = null;
-
-async function openSubCatModal() {
-    document.getElementById('subCatModal').style.display = 'flex';
-    resetSubCatForm();
-    await loadSubCatCategories();
-}
-
-function closeSubCatModal() {
-    document.getElementById('subCatModal').style.display = 'none';
-    resetSubCatForm();
-}
-
-function resetSubCatForm() {
-    editingSubCatId = null;
-    document.getElementById('subCatFormCategory').value = '';
-    document.getElementById('subCatFormName').value     = '';
-    document.getElementById('subCatFormDesc').value     = '';
-    document.getElementById('subCatFormBtn').textContent = 'Tambah';
-    document.getElementById('subCatCancelEdit').classList.add('hidden');
-    document.getElementById('subCatList').innerHTML     = '';
-}
-
-/* Isi dropdown kategori di dalam modal */
-async function loadSubCatCategories() {
-    const res  = await fetch('/api/categories', { headers: { Authorization: 'Bearer ' + token } });
-    const data = await res.json();
-    if (!Array.isArray(data)) return;
-
-    const el = document.getElementById('subCatFormCategory');
-    el.innerHTML = '<option value="">Pilih Kategori</option>';
-    data.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = c.name;
-        el.appendChild(opt);
-    });
-}
-
-/* Load daftar sub cat berdasarkan kategori yang dipilih di modal */
-async function onSubCatCategoryChange() {
-    const categoryId = document.getElementById('subCatFormCategory').value;
-    const listEl     = document.getElementById('subCatList');
-    listEl.innerHTML = '';
-
-    if (!categoryId) return;
-
-    const res  = await fetch(`/api/scheduled-sub-categories?category_id=${categoryId}`, {
-        headers: { Authorization: 'Bearer ' + token }
-    });
-    const data = await res.json();
-
-    if (!Array.isArray(data) || !data.length) {
-        listEl.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Belum ada sub kategori untuk kategori ini.</p>';
-        return;
-    }
-
-    data.forEach(s => {
-        const row = document.createElement('div');
-        row.id = `subcat-row-${s.id}`;
-        row.className = 'flex justify-between items-center py-2 border-b border-gray-100 last:border-0';
-        row.innerHTML = `
-            <div>
-                <p class="text-sm text-gray-700 font-medium">${s.name}</p>
-                ${s.description ? `<p class="text-xs text-gray-400">${s.description}</p>` : ''}
-            </div>
-            <div class="flex gap-2 shrink-0">
-                <button onclick="editSubCat(${s.id}, '${s.name.replace(/'/g, "\\'")}', '${(s.description ?? '').replace(/'/g, "\\'")}', ${s.category_id})"
-                    class="text-xs px-2 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition">
-                    Edit
-                </button>
-                <button onclick="deleteSubCat(${s.id})"
-                    class="text-xs px-2 py-1 rounded-lg border border-red-100 text-red-400 hover:bg-red-50 transition">
-                    Hapus
-                </button>
-            </div>
-        `;
-        listEl.appendChild(row);
-    });
-}
-
-/* Isi form untuk mode edit */
-function editSubCat(id, name, desc, categoryId) {
-    editingSubCatId = id;
-    document.getElementById('subCatFormCategory').value  = categoryId;
-    document.getElementById('subCatFormName').value      = name;
-    document.getElementById('subCatFormDesc').value      = desc;
-    document.getElementById('subCatFormBtn').textContent = 'Simpan Perubahan';
-    document.getElementById('subCatCancelEdit').classList.remove('hidden');
-    document.getElementById('subCatFormName').focus();
-}
-
-/* Batal edit → balik ke mode tambah */
-function cancelEditSubCat() {
-    editingSubCatId = null;
-    document.getElementById('subCatFormName').value      = '';
-    document.getElementById('subCatFormDesc').value      = '';
-    document.getElementById('subCatFormBtn').textContent = 'Tambah';
-    document.getElementById('subCatCancelEdit').classList.add('hidden');
-}
-
-/* Simpan — handle tambah & edit */
-async function saveSubCat() {
-    const categoryId = document.getElementById('subCatFormCategory').value;
-    const name       = document.getElementById('subCatFormName').value.trim();
-    const desc       = document.getElementById('subCatFormDesc').value.trim();
-
-    if (!categoryId || !name) {
-        alert('Kategori dan nama sub kategori wajib diisi!');
-        return;
-    }
-
-    const isEdit = !!editingSubCatId;
-    const url    = isEdit
-        ? `/api/scheduled-sub-categories/${editingSubCatId}`
-        : '/api/scheduled-sub-categories';
-
-    await fetch(url, {
-        method: isEdit ? 'PUT' : 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ category_id: categoryId, name, description: desc }),
-    });
-
-    cancelEditSubCat();
-    await onSubCatCategoryChange(); // refresh list di modal
-
-    // Refresh juga dropdown filter & form buat jadwal
-    const filterCatId = document.getElementById('filterCategory').value;
-    if (filterCatId) {
-        await loadSubCategories(filterCatId, 'filterSubCategory', 'Semua sub kategori');
-    }
-    const formCatId = document.getElementById('formCategory').value;
-    if (formCatId) {
-        await loadSubCategories(formCatId, 'formSubCategory', 'Pilih Sub Kategori');
-    }
-}
-
-/* Hapus sub kategori */
-async function deleteSubCat(id) {
-    if (!confirm('Yakin hapus sub kategori ini?')) return;
-
-    await fetch(`/api/scheduled-sub-categories/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token },
-    });
-
-    await onSubCatCategoryChange();
-}
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', () => {
+    feather.replace();
+    loadRepairJobs();
+    loadScheduledTasks();
+});
 </script>
-
-<!-- ===================== MODAL KELOLA SUB KATEGORI ===================== -->
-<div id="subCatModal"
-     class="fixed inset-0 bg-black bg-opacity-50 z-50"
-     style="display: none; align-items: flex-start; justify-content: center; padding-top: 60px;">
-
-    <div class="bg-white rounded-2xl w-full max-w-md mx-4 shadow-xl overflow-hidden">
-
-        <!-- Header -->
-        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
-            <h2 class="font-semibold text-base">Kelola Sub Kategori</h2>
-            <button onclick="closeSubCatModal()" class="text-gray-400 hover:text-gray-600 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-
-        <div class="p-6 space-y-5 max-h-[72vh] overflow-y-auto">
-
-            <!-- Form tambah / edit -->
-            <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tambah / Edit Sub Kategori</p>
-
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Kategori Induk</label>
-                    <select id="subCatFormCategory" onchange="onSubCatCategoryChange()"
-                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300">
-                        <option value="">Pilih Kategori</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Nama Sub Kategori</label>
-                    <input id="subCatFormName" type="text" placeholder="Cth: Servis Berkala AC"
-                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300" />
-                </div>
-
-                <div>
-                    <label class="text-xs text-gray-500 block mb-1">Deskripsi <span class="text-gray-400">(opsional)</span></label>
-                    <input id="subCatFormDesc" type="text" placeholder="Cth: Dilakukan setiap 3 bulan sekali"
-                        class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-300" />
-                </div>
-
-                <div class="flex gap-2 pt-1">
-                    <button id="subCatCancelEdit" onclick="cancelEditSubCat()"
-                        class="hidden text-sm px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
-                        Batal
-                    </button>
-                    <button id="subCatFormBtn" onclick="saveSubCat()"
-                        class="flex-1 text-sm bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                        Tambah
-                    </button>
-                </div>
-            </div>
-
-            <!-- Daftar sub kategori -->
-            <div>
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                    Daftar Sub Kategori
-                </p>
-                <div id="subCatList">
-                    <p class="text-xs text-gray-400 text-center py-3">Pilih kategori di atas untuk melihat daftarnya.</p>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<!-- ===================== MODAL KONFIRMASI KIRIM SPK ===================== -->
-<div id="spkSchedModal"
-     class="fixed inset-0 bg-black bg-opacity-50 z-50"
-     style="display: none; align-items: center; justify-content: center;">
-
-    <div class="bg-white rounded-2xl w-full max-w-sm mx-4 p-6 shadow-xl">
-        <div class="text-center mb-4">
-            <div class="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                </svg>
-            </div>
-            <h3 class="font-bold text-gray-800 text-base">Kirim SPK ke Tukang?</h3>
-            <p class="text-gray-400 text-xs mt-1">Nomor SPK akan digenerate otomatis</p>
-        </div>
-
-        <div id="spkSchedInfo" class="bg-gray-50 rounded-xl p-4 space-y-2 mb-5 text-sm text-gray-600"></div>
-
-        <div class="flex gap-2">
-            <button onclick="closeSpkSchedModal()"
-                class="flex-1 text-sm px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
-                Batal
-            </button>
-            <button onclick="submitSendSpkSched()"
-                class="flex-1 text-sm bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                </svg>
-                Kirim SPK
-            </button>
-        </div>
-    </div>
-</div>
 
 </body>
 </html>

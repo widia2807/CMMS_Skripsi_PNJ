@@ -3,416 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Order — {{ $wo->wo_number }}</title>
+    <title>Work Order</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Times New Roman', serif; font-size: 11pt; color: #111; background: #f5f5f5; }
 
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 11pt;
-            color: #111;
-            background: #fff;
-        }
-
-        /* ── PAGE SETUP ── */
         @page { size: A4; margin: 2cm 2.5cm; }
         @media print {
-            body { -webkit-print-color-adjust: exact; }
+            body { background: #fff; -webkit-print-color-adjust: exact; }
             .no-print { display: none !important; }
-            .page-break { page-break-before: always; }
         }
 
-        .page {
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto;
-            padding: 1.5cm 2cm;
-            background: #fff;
-        }
-
-        /* ── HEADER / KOP ── */
-        .kop {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding-bottom: 12px;
-            border-bottom: 3px double #111;
-            margin-bottom: 4px;
-        }
-        .kop img { width: 70px; height: 70px; object-fit: contain; }
-        .kop-text { flex: 1; text-align: center; }
-        .kop-text .instansi  { font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kop-text .alamat    { font-size: 9pt; color: #333; margin-top: 2px; }
-        .kop-text .telp      { font-size: 9pt; color: #333; }
-        .kop-divider         { border: none; border-top: 1px solid #111; margin: 4px 0 16px; }
-
-        /* ── JUDUL DOKUMEN ── */
-        .doc-title {
-            text-align: center;
-            margin-bottom: 14px;
-        }
-        .doc-title h1 {
-            font-size: 14pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .doc-title .wo-type-badge {
-            display: inline-block;
-            font-size: 9pt;
-            font-weight: bold;
-            padding: 2px 12px;
-            border-radius: 20px;
-            margin-top: 4px;
-            letter-spacing: 0.5px;
-        }
-        .badge-repair     { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
-        .badge-scheduled  { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
-
-        /* ── NOMOR & TANGGAL ── */
-        .wo-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10pt;
-            margin-bottom: 16px;
-            padding: 8px 12px;
-            background: #f8f8f8;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        /* ── SECTION TITLES ── */
-        .section-title {
-            font-size: 10pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: #222;
-            color: #fff;
-            padding: 4px 10px;
-            margin: 14px 0 8px;
-        }
-
-        /* ── INFO TABLE ── */
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10.5pt;
-            margin-bottom: 6px;
-        }
-        .info-table td {
-            padding: 4px 6px;
-            vertical-align: top;
-        }
-        .info-table td.label {
-            width: 38%;
-            font-weight: bold;
-            color: #333;
-        }
-        .info-table td.sep    { width: 3%;  }
-        .info-table td.value  { width: 59%; }
-        .info-table tr:nth-child(even) td { background: #fafafa; }
-
-        /* ── FULL BORDER TABLE ── */
-        .grid-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10pt;
-            margin-bottom: 8px;
-        }
-        .grid-table th, .grid-table td {
-            border: 1px solid #aaa;
-            padding: 5px 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-        .grid-table th {
-            background: #eee;
-            font-weight: bold;
-            text-align: center;
-        }
-        .grid-table td.center { text-align: center; }
-        .grid-table td.num    { text-align: right; }
-
-        /* ── STATUS BADGE ── */
-        .status-badge {
-            display: inline-block;
-            font-size: 9pt;
-            font-weight: bold;
-            padding: 1px 10px;
-            border-radius: 20px;
-            border: 1px solid #ccc;
-        }
-
-        /* ── CHECKLIST ── */
-        .checklist { list-style: none; padding-left: 4px; }
-        .checklist li { display: flex; align-items: flex-start; gap: 6px; padding: 2px 0; font-size: 10.5pt; }
-        .checklist li::before {
-            content: '☐';
-            font-size: 12pt;
-            line-height: 1;
-            flex-shrink: 0;
-        }
-
-        /* ── NOTES BOX ── */
-        .notes-box {
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            padding: 8px 10px;
-            min-height: 50px;
-            font-size: 10.5pt;
-            color: #333;
-            margin-bottom: 8px;
-            background: #fafafa;
-        }
-
-        /* ── INSTRUCTION BOX (maintenance) ── */
-        .instruction-box {
-            border-left: 4px solid #1565c0;
-            background: #f3f8ff;
-            padding: 8px 12px;
-            font-size: 10.5pt;
-            margin-bottom: 8px;
-            border-radius: 0 4px 4px 0;
-        }
-
-        /* ── COMPLETION BOX ── */
-        .completion-box {
-            border: 1px dashed #aaa;
-            border-radius: 4px;
-            padding: 10px 12px;
-            font-size: 10.5pt;
-            margin-top: 6px;
-            background: #fffde7;
-        }
-        .completion-box .comp-label { font-size: 9pt; color: #666; font-weight: bold; margin-bottom: 4px; }
-        .completion-box .comp-value { font-size: 11pt; }
-
-        /* ── PERIOD BADGE ── */
-        .period-badge {
-            display: inline-block;
-            font-size: 9pt;
-            padding: 1px 8px;
-            background: #e8f4fd;
-            color: #1565c0;
-            border: 1px solid #90caf9;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-
-        /* ── SIGNATURE ── */
-        .signature-section {
-            margin-top: 24px;
-            display: flex;
-            gap: 0;
-            border-top: 1px solid #ddd;
-            padding-top: 16px;
-        }
-        .sig-box {
-            flex: 1;
-            text-align: center;
-            padding: 0 12px;
-            border-right: 1px dashed #ccc;
-        }
-        .sig-box:last-child { border-right: none; }
-        .sig-box .sig-title  { font-size: 9.5pt; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
-        .sig-box .sig-role   { font-size: 9pt; color: #555; margin-bottom: 60px; }
-        .sig-box .sig-line   { border-top: 1px solid #333; margin: 0 10%; }
-        .sig-box .sig-name   { font-size: 10pt; font-weight: bold; margin-top: 4px; }
-        .sig-box .sig-nip    { font-size: 9pt; color: #444; }
-
-        /* ── FOOTER ── */
-        .doc-footer {
-            margin-top: 20px;
-            border-top: 1px solid #ccc;
-            padding-top: 8px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 8.5pt;
-            color: #888;
-        }
-
-        /* ── PRINT BUTTON ── */
+        /* ── PRINT BAR ── */
         .print-bar {
-            position: fixed;
-            top: 16px; right: 16px;
-            z-index: 100;
-            display: flex;
-            gap: 8px;
+            position: fixed; top: 16px; right: 16px; z-index: 100;
+            display: flex; gap: 8px;
         }
         .print-bar button {
-            padding: 8px 18px;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
+            padding: 9px 20px; border: none; border-radius: 9px;
+            font-size: 13px; font-weight: 700; cursor: pointer; font-family: sans-serif;
         }
-        .btn-print  { background: #1a1a1a; color: #fff; }
-        .btn-close  { background: #eee; color: #333; }
-        .btn-print:hover { background: #333; }
-    </style>
-</head>
+        .btn-print  { background: #1e293b; color: #fff; }
+        .btn-settings { background: #6366f1; color: #fff; }
+        .btn-close  { background: #e2e8f0; color: #334155; }
+        .btn-print:hover { background: #334155; }
+        .btn-settings:hover { background: #4f46e5; }
 
+        /* ── SETTINGS PANEL ── */
+        .settings-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5); z-index: 200;
+            align-items: center; justify-content: center;
+        }
+        .settings-panel {
+            background: #fff; border-radius: 16px; padding: 28px;
+            width: 100%; max-width: 500px; max-height: 85vh;
+            overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .settings-panel h2 { font-size: 16px; font-weight: 700; margin-bottom: 20px; color: #1e293b; }
+        .field-group { margin-bottom: 14px; }
+        .field-group label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 5px; }
+        .field-group input[type="text"],
+        .field-group input[type="email"] {
+            width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 9px 12px; font-size: 13px; outline: none;
+        }
+        .field-group input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        .upload-box {
+            border: 2px dashed #e2e8f0; border-radius: 10px;
+            padding: 16px; text-align: center; cursor: pointer;
+            background: #fafafa; transition: all 0.2s;
+        }
+        .upload-box:hover { border-color: #6366f1; background: #f5f3ff; }
+        .upload-box input { display: none; }
+        .upload-box p { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .preview-img { max-height: 80px; margin-top: 8px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .btn-save-settings {
+            width: 100%; background: #1e293b; color: #fff;
+            border: none; border-radius: 10px; padding: 12px;
+            font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px;
+        }
+        .btn-save-settings:hover { background: #334155; }
+        .btn-cancel-settings {
+            width: 100%; background: transparent; color: #94a3b8;
+            border: none; padding: 10px; font-size: 13px; cursor: pointer; margin-top: 4px;
+        }
+
+        /* ── DOKUMEN ── */
+        .page {
+            width: 210mm; min-height: 297mm;
+            margin: 20px auto; padding: 2cm 2.5cm;
+            background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        @media print { .page { margin: 0; box-shadow: none; } }
+
+        /* KOP */
+        .kop { display: flex; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 3px double #111; }
+        .kop img.logo { width: 70px; height: 70px; object-fit: contain; }
+        .kop-text { flex: 1; text-align: center; }
+        .kop-text .instansi { font-size: 14pt; font-weight: bold; text-transform: uppercase; }
+        .kop-text .sub      { font-size: 9pt; color: #444; margin-top: 2px; }
+        .kop-divider { border: none; border-top: 1px solid #111; margin: 4px 0 16px; }
+
+        /* JUDUL */
+        .doc-title { text-align: center; margin-bottom: 14px; }
+        .doc-title h1 { font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .type-badge {
+            display: inline-block; font-size: 9pt; font-weight: bold;
+            padding: 2px 12px; border-radius: 20px; margin-top: 4px;
+        }
+        .badge-repair    { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+        .badge-scheduled { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
+
+        /* META */
+        .wo-meta {
+            display: flex; justify-content: space-between; font-size: 10pt;
+            margin-bottom: 16px; padding: 8px 12px;
+            background: #f8f8f8; border: 1px solid #ddd; border-radius: 4px;
+        }
+
+        /* SECTION */
+        .section-title {
+            font-size: 10pt; font-weight: bold; text-transform: uppercase;
+            background: #222; color: #fff; padding: 4px 10px; margin: 14px 0 8px;
+        }
+
+        /* INFO TABLE */
+        .info-table { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
+        .info-table td { padding: 4px 6px; vertical-align: top; }
+        .info-table td.label { width: 38%; font-weight: bold; color: #333; }
+        .info-table td.sep   { width: 3%; }
+        .info-table td.value { width: 59%; }
+        .info-table tr:nth-child(even) td { background: #fafafa; }
+
+        /* GRID TABLE */
+        .grid-table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 8px; }
+        .grid-table th, .grid-table td { border: 1px solid #aaa; padding: 5px 8px; }
+        .grid-table th { background: #eee; font-weight: bold; text-align: center; }
+        .grid-table td.center { text-align: center; }
+
+        /* CHECKLIST */
+        .checklist { list-style: none; padding-left: 4px; }
+        .checklist li { display: flex; align-items: flex-start; gap: 6px; padding: 2px 0; font-size: 10.5pt; }
+        .checklist li::before { content: '☐'; font-size: 12pt; line-height: 1; flex-shrink: 0; }
+
+        /* NOTES */
+        .notes-box {
+            border: 1px solid #bbb; border-radius: 4px; padding: 8px 10px;
+            min-height: 50px; font-size: 10.5pt; color: #333;
+            margin-bottom: 8px; background: #fafafa;
+        }
+
+        /* KETENTUAN */
+        .ketentuan { font-size: 10.5pt; padding-left: 18px; line-height: 1.7; }
+
+        /* TANDA TANGAN */
+        .signature-section {
+            margin-top: 24px; display: flex; gap: 0;
+            border-top: 1px solid #ddd; padding-top: 16px;
+        }
+        .sig-box { flex: 1; text-align: center; padding: 0 12px; border-right: 1px dashed #ccc; }
+        .sig-box:last-child { border-right: none; }
+        .sig-box .sig-title { font-size: 9.5pt; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+        .sig-box .sig-role  { font-size: 9pt; color: #555; margin-bottom: 12px; }
+        .sig-box .sig-img   { height: 60px; object-fit: contain; margin-bottom: 4px; }
+        .sig-box .sig-line  { border-top: 1px solid #333; margin: 0 10%; }
+        .sig-box .sig-name  { font-size: 10pt; font-weight: bold; margin-top: 4px; }
+        .sig-empty-space    { height: 60px; } /* ruang kosong TTD tukang */
+
+        /* FOOTER */
+        .doc-footer {
+            margin-top: 20px; border-top: 1px solid #ccc; padding-top: 8px;
+            display: flex; justify-content: space-between; font-size: 8.5pt; color: #888;
+        }
+
+        /* STATUS BADGE */
+        .status-badge {
+            display: inline-block; font-size: 9pt; font-weight: bold;
+            padding: 1px 10px; border-radius: 20px; border: 1px solid #ccc;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
 <body>
 
-{{-- ── PRINT BAR (tidak tercetak) ── --}}
+<!-- ══ PRINT BAR ══ -->
 <div class="print-bar no-print">
-    <button class="btn-print" onclick="window.print()">🖨 Cetak</button>
+    <button class="btn-settings" onclick="openSettings()">⚙ Pengaturan Perusahaan</button>
+    <button class="btn-print" onclick="window.print()">🖨 Cetak SPK</button>
     <button class="btn-close" onclick="window.history.back()">✕ Tutup</button>
 </div>
 
-<div class="page">
+<!-- ══ SETTINGS OVERLAY ══ -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOnOverlay(event)">
+    <div class="settings-panel">
+        <h2>⚙ Pengaturan Perusahaan</h2>
 
-    {{-- ══════════════════════════════════════
-         KOP SURAT
-    ══════════════════════════════════════ --}}
-    <div class="kop">
-        @if($company->logo)
-            <img src="{{ asset('storage/' . $company->logo) }}" alt="Logo">
-        @endif
-        <div class="kop-text">
-            <div class="instansi">{{ $company->name ?? 'Nama Instansi' }}</div>
-            <div class="alamat">{{ $company->address ?? 'Alamat Instansi' }}</div>
-            <div class="telp">
-                Telp: {{ $company->phone ?? '-' }}
-                @if($company->email) &nbsp;|&nbsp; Email: {{ $company->email }} @endif
+        <div class="field-group">
+            <label>Nama Perusahaan / Instansi</label>
+            <input type="text" id="set_name" placeholder="PT. Nama Perusahaan">
+        </div>
+        <div class="field-group">
+            <label>Alamat</label>
+            <input type="text" id="set_address" placeholder="Jl. Contoh No. 1, Kota">
+        </div>
+        <div class="field-group">
+            <label>Telepon</label>
+            <input type="text" id="set_phone" placeholder="021-1234567">
+        </div>
+        <div class="field-group">
+            <label>Email</label>
+            <input type="email" id="set_email" placeholder="info@perusahaan.com">
+        </div>
+        <div class="field-group">
+            <label>Nama Manager / Penanggung Jawab GA</label>
+            <input type="text" id="set_manager_name" placeholder="Nama Manager GA">
+        </div>
+
+        <!-- Upload Logo -->
+        <div class="field-group">
+            <label>Logo Perusahaan</label>
+            <div class="upload-box" onclick="document.getElementById('logoInput').click()">
+                <input type="file" id="logoInput" accept="image/*" onchange="previewFile(this,'logoPreview','logoFile')">
+                <p>Klik untuk upload logo (PNG/JPG)</p>
+                <img id="logoPreview" class="preview-img" style="display:none">
             </div>
+        </div>
+
+        <!-- Upload TTD Manager GA -->
+        <div class="field-group">
+            <label>Tanda Tangan Manager GA <span style="font-weight:400;color:#94a3b8">(PNG transparan)</span></label>
+            <div class="upload-box" onclick="document.getElementById('sigInput').click()">
+                <input type="file" id="sigInput" accept="image/*" onchange="previewFile(this,'sigPreview','sigFile')">
+                <p>Klik untuk upload tanda tangan</p>
+                <img id="sigPreview" class="preview-img" style="display:none">
+            </div>
+        </div>
+
+        <button class="btn-save-settings" onclick="saveSettings()">💾 Simpan Pengaturan</button>
+        <button class="btn-cancel-settings" onclick="closeSettings()">Batal</button>
+    </div>
+</div>
+
+<!-- ══ DOKUMEN SPK ══ -->
+<div class="page" id="woPage">
+
+    <!-- KOP SURAT -->
+    <div class="kop">
+        <img id="docLogo" class="logo" src="" alt="Logo" style="display:none">
+        <div class="kop-text">
+            <div class="instansi" id="docName">Nama Instansi</div>
+            <div class="sub" id="docAddress">Alamat Instansi</div>
+            <div class="sub" id="docContact"></div>
         </div>
     </div>
     <hr class="kop-divider">
 
-    {{-- ══════════════════════════════════════
-         JUDUL DOKUMEN
-    ══════════════════════════════════════ --}}
+    <!-- JUDUL -->
     <div class="doc-title">
         <h1>Surat Perintah Kerja (Work Order)</h1>
-        @if($wo->type === 'scheduled')
-            <div class="wo-type-badge badge-scheduled">🗓 Maintenance Terjadwal</div>
-        @else
-            <div class="wo-type-badge badge-repair">🔧 Perbaikan Gedung</div>
-        @endif
+        <div class="type-badge" id="typeBadge"></div>
     </div>
 
-    {{-- ── NOMOR & TANGGAL ── --}}
+    <!-- META -->
     <div class="wo-meta">
-        <div><strong>Nomor WO</strong> &nbsp;:&nbsp; {{ $wo->wo_number }}</div>
-        <div><strong>Tanggal Terbit</strong> &nbsp;:&nbsp; {{ \Carbon\Carbon::parse($wo->created_at)->isoFormat('D MMMM Y') }}</div>
-        <div>
-            <strong>Status</strong> &nbsp;:&nbsp;
-            <span class="status-badge">
-                @switch($wo->status)
-                    @case('pending')      Menunggu Konfirmasi @break
-                    @case('confirmed')    Dikonfirmasi        @break
-                    @case('in_progress')  Sedang Berjalan     @break
-                    @case('approved')     Disetujui           @break
-                    @case('scheduled')    Terjadwal           @break
-                    @case('on_progress')  Sedang Dikerjakan   @break
-                    @case('done')         Selesai             @break
-                    @default              {{ $wo->status }}
-                @endswitch
-            </span>
-        </div>
+        <div><strong>Nomor WO</strong> &nbsp;:&nbsp; <span id="docWoNumber">-</span></div>
+        <div><strong>Tanggal Terbit</strong> &nbsp;:&nbsp; <span id="docCreatedAt">-</span></div>
+        <div><strong>Status</strong> &nbsp;:&nbsp; <span class="status-badge" id="docStatus">-</span></div>
     </div>
 
-    {{-- ══════════════════════════════════════
-         A. INFORMASI PEKERJAAN
-    ══════════════════════════════════════ --}}
+    <!-- A. INFORMASI PEKERJAAN -->
     <div class="section-title">A. Informasi Pekerjaan</div>
-
-    <table class="info-table">
-        <tr>
-            <td class="label">Judul Pekerjaan</td>
-            <td class="sep">:</td>
-            <td class="value"><strong>{{ $wo->title }}</strong></td>
-        </tr>
-        <tr>
-            <td class="label">Kategori</td>
-            <td class="sep">:</td>
-            <td class="value">
-                {{ $wo->category->name ?? '-' }}
-                @if(isset($wo->subCategory) && $wo->subCategory)
-                    &nbsp;/&nbsp; <em>{{ $wo->subCategory->name }}</em>
-                @endif
-            </td>
-        </tr>
-
-        @if($wo->type === 'scheduled')
-        {{-- ── KHUSUS MAINTENANCE TERJADWAL ── --}}
-        <tr>
-            <td class="label">Periode Maintenance</td>
-            <td class="sep">:</td>
-            <td class="value">
-                <span class="period-badge">
-                    @switch($wo->period)
-                        @case('weekly')    Mingguan  @break
-                        @case('monthly')   Bulanan   @break
-                        @case('quarterly') Triwulan  @break
-                        @case('yearly')    Tahunan   @break
-                        @default           {{ $wo->period }}
-                    @endswitch
-                </span>
-            </td>
-        </tr>
-        <tr>
-            <td class="label">Tanggal Pelaksanaan</td>
-            <td class="sep">:</td>
-            <td class="value">{{ \Carbon\Carbon::parse($wo->scheduled_date)->isoFormat('D MMMM Y') }}</td>
-        </tr>
-        @else
-        {{-- ── KHUSUS PERBAIKAN GEDUNG ── --}}
-        <tr>
-            <td class="label">Lokasi / Gedung</td>
-            <td class="sep">:</td>
-            <td class="value">{{ $wo->branch->name ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="label">Ruangan</td>
-            <td class="sep">:</td>
-            <td class="value">{{ $wo->room ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="label">Tanggal Pengajuan</td>
-            <td class="sep">:</td>
-            <td class="value">{{ \Carbon\Carbon::parse($wo->created_at)->isoFormat('D MMMM Y') }}</td>
-        </tr>
-        @if($wo->schedule_date)
-        <tr>
-            <td class="label">Tanggal Dijadwalkan</td>
-            <td class="sep">:</td>
-            <td class="value">{{ \Carbon\Carbon::parse($wo->schedule_date)->isoFormat('D MMMM Y') }}</td>
-        </tr>
-        @endif
-        @endif
-
-        <tr>
-            <td class="label">Prioritas</td>
-            <td class="sep">:</td>
-            <td class="value">
-                @if(isset($wo->priority))
-                    @switch($wo->priority)
-                        @case('high')   <strong style="color:#c62828">🔴 Tinggi</strong>   @break
-                        @case('medium') <strong style="color:#f57c00">🟡 Sedang</strong>   @break
-                        @case('low')    <strong style="color:#388e3c">🟢 Rendah</strong>   @break
-                        @default        {{ $wo->priority }}
-                    @endswitch
-                @else
-                    —
-                @endif
-            </td>
-        </tr>
+    <table class="info-table" id="infoTable">
+        <!-- diisi JS -->
     </table>
 
-    {{-- ══════════════════════════════════════
-         B. PENUGASAN PELAKSANA
-    ══════════════════════════════════════ --}}
+    <!-- B. PENUGASAN PELAKSANA -->
     <div class="section-title">B. Penugasan Pelaksana</div>
-
     <table class="info-table">
         <tr>
             <td class="label">Nama Teknisi / Tukang</td>
             <td class="sep">:</td>
-            <td class="value"><strong>{{ $wo->worker->name ?? '-' }}</strong></td>
+            <td class="value"><strong id="docWorker">-</strong></td>
         </tr>
         <tr>
             <td class="label">Jabatan</td>
@@ -422,166 +275,292 @@
         <tr>
             <td class="label">Ditugaskan Oleh</td>
             <td class="sep">:</td>
-            <td class="value">{{ $wo->assignedBy->name ?? $wo->createdBy->name ?? '-' }}</td>
+            <td class="value" id="docCreatedBy">-</td>
         </tr>
-        @if($wo->type === 'scheduled' && $wo->worker_confirmed_at)
-        <tr>
-            <td class="label">Dikonfirmasi Tukang</td>
-            <td class="sep">:</td>
-            <td class="value">{{ \Carbon\Carbon::parse($wo->worker_confirmed_at)->isoFormat('D MMMM Y, HH:mm') }} WIB</td>
-        </tr>
-        @endif
     </table>
 
-    {{-- ══════════════════════════════════════
-         C. DESKRIPSI / INSTRUKSI PEKERJAAN
-    ══════════════════════════════════════ --}}
+    <!-- C. DESKRIPSI & INSTRUKSI -->
     <div class="section-title">C. Deskripsi & Instruksi Pekerjaan</div>
+    <div id="docDescription"></div>
 
-    @if($wo->type === 'scheduled')
-        {{-- Maintenance: tampilkan instruksi dengan styling biru --}}
-        <div class="instruction-box">
-            <strong>Instruksi Khusus:</strong><br>
-            {{ $wo->note ?? 'Laksanakan maintenance sesuai SOP yang berlaku dan checklist terlampir.' }}
-        </div>
+    <!-- D. MATERIAL (jika ada) -->
+    <div id="materialSection" style="display:none">
+        <div class="section-title">D. Kebutuhan Material</div>
+        <table class="grid-table">
+            <thead>
+                <tr>
+                    <th style="width:5%">No</th>
+                    <th>Nama Material / Suku Cadang</th>
+                    <th style="width:15%">Satuan</th>
+                    <th style="width:10%">Qty</th>
+                </tr>
+            </thead>
+            <tbody id="materialBody"></tbody>
+        </table>
+    </div>
 
-        {{-- Checklist standar maintenance --}}
-        <p style="font-size:10pt; font-weight:bold; margin-bottom:6px;">Checklist Pelaksanaan:</p>
-        <ul class="checklist">
-            <li>Periksa kondisi awal peralatan / area sebelum pekerjaan dimulai</li>
-            <li>Laksanakan pekerjaan sesuai prosedur standar (SOP)</li>
-            <li>Catat temuan selama pelaksanaan (kerusakan, kebocoran, anomali, dll)</li>
-            <li>Pastikan area/peralatan dalam kondisi bersih dan aman setelah selesai</li>
-            <li>Ambil foto dokumentasi kondisi sebelum dan sesudah</li>
-            <li>Laporkan selesai melalui aplikasi CMMS</li>
-        </ul>
-    @else
-        {{-- Perbaikan: tampilkan deskripsi kerusakan --}}
-        <p style="font-size:10pt; font-weight:bold; margin-bottom:4px;">Deskripsi Kerusakan / Keluhan:</p>
-        <div class="notes-box">{{ $wo->description ?? '-' }}</div>
-
-        @if($wo->note)
-        <p style="font-size:10pt; font-weight:bold; margin: 8px 0 4px;">Instruksi Tambahan:</p>
-        <div class="notes-box">{{ $wo->note }}</div>
-        @endif
-
-        {{-- Checklist standar perbaikan --}}
-        <p style="font-size:10pt; font-weight:bold; margin-bottom:6px; margin-top:8px;">Checklist Pelaksanaan:</p>
-        <ul class="checklist">
-            <li>Identifikasi dan dokumentasikan sumber kerusakan</li>
-            <li>Lakukan perbaikan sesuai standar teknis yang berlaku</li>
-            <li>Gunakan material/suku cadang sesuai spesifikasi</li>
-            <li>Uji fungsi setelah perbaikan selesai</li>
-            <li>Bersihkan area kerja setelah pekerjaan selesai</li>
-            <li>Laporkan hasil perbaikan melalui aplikasi CMMS</li>
-        </ul>
-    @endif
-
-    {{-- ══════════════════════════════════════
-         D. MATERIAL (hanya jika ada)
-    ══════════════════════════════════════ --}}
-    @if(isset($materials) && count($materials) > 0)
-    <div class="section-title">D. Kebutuhan Material</div>
-
-    <table class="grid-table">
-        <thead>
-            <tr>
-                <th style="width:5%">No</th>
-                <th>Nama Material / Suku Cadang</th>
-                <th style="width:15%">Satuan</th>
-                <th style="width:12%">Qty</th>
-                <th style="width:20%">Keterangan</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($materials as $i => $mat)
-            <tr>
-                <td class="center">{{ $i + 1 }}</td>
-                <td>{{ $mat->name }}</td>
-                <td class="center">{{ $mat->unit }}</td>
-                <td class="center">{{ $mat->qty }}</td>
-                <td>{{ $mat->note ?? '-' }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-    @endif
-
-    {{-- ══════════════════════════════════════
-         E. KETENTUAN PELAKSANAAN
-    ══════════════════════════════════════ --}}
-    <div class="section-title">{{ isset($materials) && count($materials) > 0 ? 'E' : 'D' }}. Ketentuan Pelaksanaan</div>
-
-    <ol style="font-size:10.5pt; padding-left:18px; line-height:1.7;">
+    <!-- E. KETENTUAN -->
+    <div class="section-title" id="ketentuanTitle">D. Ketentuan Pelaksanaan</div>
+    <ol class="ketentuan">
         <li>Surat Perintah Kerja ini berlaku sejak tanggal diterbitkan hingga pekerjaan dinyatakan selesai.</li>
         <li>Pelaksana wajib melaksanakan pekerjaan sesuai standar keselamatan kerja (K3) yang berlaku.</li>
         <li>Setiap perubahan lingkup pekerjaan harus mendapat persetujuan tertulis dari penanggung jawab.</li>
         <li>Apabila ditemukan kerusakan tambahan di luar lingkup WO ini, pelaksana wajib melaporkan sebelum bertindak.</li>
-        <li>Pekerjaan dinyatakan selesai setelah diverifikasi oleh pengawas dan laporan diunggah ke sistem.</li>
-        <li>Keterlambatan penyelesaian tanpa alasan yang sah akan menjadi catatan evaluasi kinerja.</li>
+        <li>Pekerjaan dinyatakan selesai setelah diverifikasi dan laporan diunggah ke sistem.</li>
     </ol>
 
-    {{-- ══════════════════════════════════════
-         F. LAPORAN PENYELESAIAN (jika sudah done)
-    ══════════════════════════════════════ --}}
-    @if(in_array($wo->status, ['done', 'verified']) && $wo->completed_at)
-    <div class="section-title" style="background:#1b5e20;">
-        {{ isset($materials) && count($materials) > 0 ? 'F' : 'E' }}. Laporan Penyelesaian
-    </div>
-
-    <div class="completion-box">
-        <div class="comp-label">Tanggal Selesai</div>
-        <div class="comp-value">{{ \Carbon\Carbon::parse($wo->completed_at)->isoFormat('D MMMM Y, HH:mm') }} WIB</div>
-
-        @if($wo->completion_note)
-        <div class="comp-label" style="margin-top:8px;">Catatan Penyelesaian</div>
-        <div class="comp-value">{{ $wo->completion_note }}</div>
-        @endif
-
-        @if($wo->completion_photo)
-        <div class="comp-label" style="margin-top:8px;">Foto Dokumentasi</div>
-        <img src="{{ asset('storage/' . $wo->completion_photo) }}"
-             style="max-width:280px; max-height:200px; border-radius:6px; border:1px solid #ccc; margin-top:4px;">
-        @endif
-    </div>
-    @endif
-
-    {{-- ══════════════════════════════════════
-         TANDA TANGAN
-    ══════════════════════════════════════ --}}
+    <!-- TANDA TANGAN -->
     <div class="signature-section">
+        <!-- Dibuat Oleh (Admin GA) -->
         <div class="sig-box">
             <div class="sig-title">Dibuat Oleh</div>
-            <div class="sig-role">Admin / Koordinator</div>
+            <div class="sig-role">Manager / Penanggung Jawab GA</div>
+            <!-- TTD Manager GA dari database -->
+            <img id="docManagerSig" class="sig-img" src="" alt="TTD" style="display:none">
+            <div id="docManagerSigEmpty" class="sig-empty-space"></div>
             <div class="sig-line"></div>
-            <div class="sig-name">{{ $wo->createdBy->name ?? '___________________' }}</div>
-            <div class="sig-nip">NIP / NIK : ___________________</div>
+            <div class="sig-name" id="docManagerName">___________________</div>
+            <div style="font-size:9pt;color:#555">NIP / NIK : ___________________</div>
         </div>
 
+        <!-- Pelaksana (Tukang) — TTD KOSONG untuk tanda tangan manual -->
         <div class="sig-box">
             <div class="sig-title">Pelaksana</div>
             <div class="sig-role">Teknisi / Tukang</div>
+            <div class="sig-empty-space"></div><!-- kosong, tanda tangan manual -->
             <div class="sig-line"></div>
-            <div class="sig-name">{{ $wo->worker->name ?? '___________________' }}</div>
-            <div class="sig-nip">NIP / NIK : ___________________</div>
+            <div class="sig-name" id="docWorkerSig">___________________</div>
+            <div style="font-size:9pt;color:#555">NIP / NIK : ___________________</div>
         </div>
 
+        <!-- Mengetahui -->
         <div class="sig-box">
             <div class="sig-title">Mengetahui</div>
             <div class="sig-role">Pejabat Penanggung Jawab</div>
+            <div class="sig-empty-space"></div>
             <div class="sig-line"></div>
             <div class="sig-name">___________________</div>
-            <div class="sig-nip">NIP / NIK : ___________________</div>
+            <div style="font-size:9pt;color:#555">NIP / NIK : ___________________</div>
         </div>
     </div>
 
-    {{-- ── FOOTER ── --}}
+    <!-- FOOTER -->
     <div class="doc-footer">
-        <span>Dokumen ini diterbitkan otomatis oleh sistem CMMS &mdash; {{ $company->name ?? '' }}</span>
-        <span>WO/{{ $wo->type === 'scheduled' ? 'SCH' : 'REP' }}/{{ \Carbon\Carbon::now()->format('Y') }} &mdash; Hal. 1 dari 1</span>
+        <span>Dokumen ini diterbitkan otomatis oleh sistem CMMS &mdash; <span id="footerCompany"></span></span>
+        <span id="footerCode">Hal. 1 dari 1</span>
     </div>
 
-</div>{{-- end .page --}}
+</div><!-- end .page -->
 
+<script>
+const token  = localStorage.getItem('token');
+const woId   = window.location.pathname.split('/').pop(); // ambil ID dari URL /work-order/{type}/{id}
+const woType = window.location.pathname.split('/')[2];    // 'repair' atau 'scheduled'
+
+// ── LOAD DATA ────────────────────────────────────────────────────────
+async function loadWO() {
+    const res  = await fetch(`/api/work-orders/${woId}`, {
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!res.ok) {
+        document.getElementById('woPage').innerHTML = '<p style="color:red;text-align:center;margin-top:40px">Data tidak ditemukan</p>';
+        return;
+    }
+    const { wo, company, materials } = await res.json();
+
+    renderCompany(company);
+    renderWO(wo, materials);
+}
+
+// ── RENDER PERUSAHAAN ─────────────────────────────────────────────────
+function renderCompany(c) {
+    if (c.logo_url) {
+        const logo = document.getElementById('docLogo');
+        logo.src   = c.logo_url;
+        logo.style.display = 'block';
+    }
+    document.getElementById('docName').textContent    = c.name ?? 'Nama Instansi';
+    document.getElementById('docAddress').textContent = c.address ?? '';
+    document.getElementById('docContact').textContent = [
+        c.phone ? 'Telp: ' + c.phone : '',
+        c.email ? 'Email: ' + c.email : '',
+    ].filter(Boolean).join('  |  ');
+    document.getElementById('footerCompany').textContent = c.name ?? '';
+
+    // TTD Manager GA
+    if (c.manager_sig_url) {
+        const sig = document.getElementById('docManagerSig');
+        sig.src   = c.manager_sig_url;
+        sig.style.display = 'block';
+        document.getElementById('docManagerSigEmpty').style.display = 'none';
+    }
+    if (c.manager_name) {
+        document.getElementById('docManagerName').textContent = c.manager_name;
+    }
+}
+
+// ── RENDER WORK ORDER ─────────────────────────────────────────────────
+function renderWO(wo, materials) {
+    const isRepair    = wo.type === 'repair';
+    const typeBadge   = document.getElementById('typeBadge');
+    typeBadge.textContent = isRepair ? '🔧 Perbaikan Gedung' : '🗓 Maintenance Terjadwal';
+    typeBadge.className   = 'type-badge ' + (isRepair ? 'badge-repair' : 'badge-scheduled');
+
+    document.getElementById('docWoNumber').textContent  = wo.wo_number ?? '-';
+    document.getElementById('docCreatedAt').textContent = formatDate(wo.created_at);
+    document.getElementById('docStatus').textContent    = statusLabel(wo.status);
+    document.getElementById('docWorker').textContent    = wo.worker?.name ?? '-';
+    document.getElementById('docWorkerSig').textContent = wo.worker?.name ?? '___________________';
+    document.getElementById('docCreatedBy').textContent = wo.created_by_user?.name ?? '-';
+    document.getElementById('footerCode').textContent   = `WO/${isRepair ? 'REP' : 'SCH'}/${new Date().getFullYear()} — Hal. 1 dari 1`;
+
+    // Informasi Pekerjaan
+    const rows = [
+        ['Judul Pekerjaan', `<strong>${wo.title}</strong>`],
+        ['Kategori', [wo.category?.name, wo.sub_category?.name].filter(Boolean).join(' / ') || '-'],
+    ];
+    if (isRepair) {
+        rows.push(['Lokasi / Gedung', wo.repair_request?.branch?.name ?? '-']);
+        rows.push(['Tanggal Dijadwalkan', wo.schedule_date ? formatDate(wo.schedule_date) : '-']);
+        if (wo.urgency) rows.push(['Prioritas', urgencyLabel(wo.urgency)]);
+    } else {
+        rows.push(['Periode Maintenance', periodLabel(wo.period)]);
+        rows.push(['Tanggal Pelaksanaan', wo.schedule_date ? formatDate(wo.schedule_date) : '-']);
+    }
+
+    document.getElementById('infoTable').innerHTML = rows.map(([label, value]) => `
+        <tr>
+            <td class="label">${label}</td>
+            <td class="sep">:</td>
+            <td class="value">${value}</td>
+        </tr>
+    `).join('');
+
+    // Deskripsi / instruksi
+    const descEl = document.getElementById('docDescription');
+    if (isRepair) {
+        descEl.innerHTML = `
+            <p style="font-size:10pt;font-weight:bold;margin-bottom:4px">Deskripsi Kerusakan / Keluhan:</p>
+            <div class="notes-box">${wo.description ?? '-'}</div>
+            ${wo.note ? `<p style="font-size:10pt;font-weight:bold;margin:8px 0 4px">Instruksi Tambahan:</p><div class="notes-box">${wo.note}</div>` : ''}
+            <p style="font-size:10pt;font-weight:bold;margin:8px 0 6px">Checklist Pelaksanaan:</p>
+            <ul class="checklist">
+                <li>Identifikasi dan dokumentasikan sumber kerusakan</li>
+                <li>Lakukan perbaikan sesuai standar teknis yang berlaku</li>
+                <li>Gunakan material/suku cadang sesuai spesifikasi</li>
+                <li>Uji fungsi setelah perbaikan selesai</li>
+                <li>Bersihkan area kerja setelah pekerjaan selesai</li>
+                <li>Laporkan hasil perbaikan melalui aplikasi CMMS</li>
+            </ul>
+        `;
+    } else {
+        descEl.innerHTML = `
+            <div style="border-left:4px solid #1565c0;background:#f3f8ff;padding:8px 12px;font-size:10.5pt;margin-bottom:8px;border-radius:0 4px 4px 0">
+                <strong>Instruksi:</strong><br>${wo.note ?? 'Laksanakan maintenance sesuai SOP.'}
+            </div>
+            <p style="font-size:10pt;font-weight:bold;margin-bottom:6px">Checklist Pelaksanaan:</p>
+            <ul class="checklist">
+                <li>Periksa kondisi awal peralatan / area sebelum pekerjaan dimulai</li>
+                <li>Laksanakan pekerjaan sesuai prosedur standar (SOP)</li>
+                <li>Catat temuan selama pelaksanaan</li>
+                <li>Pastikan area/peralatan dalam kondisi bersih dan aman setelah selesai</li>
+                <li>Ambil foto dokumentasi kondisi sebelum dan sesudah</li>
+                <li>Laporkan selesai melalui aplikasi CMMS</li>
+            </ul>
+        `;
+    }
+
+    // Material
+    if (materials && materials.length > 0) {
+        document.getElementById('materialSection').style.display = 'block';
+        document.getElementById('ketentuanTitle').textContent = 'E. Ketentuan Pelaksanaan';
+        document.getElementById('materialBody').innerHTML = materials.map((m, i) => `
+            <tr>
+                <td class="center">${i+1}</td>
+                <td>${m.item_name ?? m.name}</td>
+                <td class="center">${m.unit ?? '-'}</td>
+                <td class="center">${m.qty}</td>
+            </tr>
+        `).join('');
+    }
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────────
+function openSettings() {
+    // Pre-fill dari data yang sudah tampil
+    document.getElementById('set_name').value    = document.getElementById('docName').textContent;
+    document.getElementById('set_address').value = document.getElementById('docAddress').textContent;
+    document.getElementById('settingsOverlay').style.display = 'flex';
+}
+function closeSettings() {
+    document.getElementById('settingsOverlay').style.display = 'none';
+}
+function closeSettingsOnOverlay(e) {
+    if (e.target === document.getElementById('settingsOverlay')) closeSettings();
+}
+
+// Preview file sebelum upload
+function previewFile(input, previewId, fileId) {
+    const file    = input.files[0];
+    const preview = document.getElementById(previewId);
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+async function saveSettings() {
+    const fd = new FormData();
+    fd.append('name',         document.getElementById('set_name').value);
+    fd.append('address',      document.getElementById('set_address').value);
+    fd.append('phone',        document.getElementById('set_phone').value);
+    fd.append('email',        document.getElementById('set_email').value);
+    fd.append('manager_name', document.getElementById('set_manager_name').value);
+
+    const logoFile = document.getElementById('logoInput').files[0];
+    const sigFile  = document.getElementById('sigInput').files[0];
+    if (logoFile) fd.append('logo', logoFile);
+    if (sigFile)  fd.append('manager_signature', sigFile);
+
+    const res = await fetch('/api/company-settings', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token },
+        body: fd,
+    });
+    if (!res.ok) {
+        alert('Gagal menyimpan pengaturan');
+        return;
+    }
+
+    closeSettings();
+    loadWO(); // reload agar tampil update
+    alert('✅ Pengaturan berhasil disimpan');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function formatDate(str) {
+    if (!str) return '-';
+    return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+function statusLabel(s) {
+    const map = { issued: 'Diterbitkan', confirmed: 'Dikonfirmasi', done: 'Selesai', approved: 'Disetujui', on_progress: 'Sedang Dikerjakan' };
+    return map[s] ?? s;
+}
+function urgencyLabel(u) {
+    const map = { high: '🔴 Prioritas / Tinggi', medium: '🟡 Segera / Sedang', low: '🟢 Santai / Rendah' };
+    return map[u] ?? u;
+}
+function periodLabel(p) {
+    const map = { weekly: 'Mingguan', monthly: 'Bulanan', quarterly: 'Triwulan', yearly: 'Tahunan' };
+    return map[p] ?? p;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+loadWO();
+</script>
 </body>
 </html>

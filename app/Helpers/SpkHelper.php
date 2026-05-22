@@ -2,28 +2,23 @@
 
 namespace App\Helpers;
 
-use App\Models\MaintenanceRequest;
-use App\Models\ScheduledMaintenance;
+use App\Models\WorkOrder;
 
 class SpkHelper
 {
+    
     public static function generate(string $type): string
     {
-        $year  = now()->format('Y');
-        $month = now()->format('m');
+        $prefix = $type === 'repair' ? 'REP' : 'SCH';
+        $year   = now()->format('Y');
 
-        if ($type === 'repair') {
-            $count = MaintenanceRequest::whereNotNull('spk_number')
-                ->whereYear('spk_sent_at', $year)
-                ->count() + 1;
-            $prefix = 'SPK/REP';
-        } else {
-            $count = ScheduledMaintenance::whereNotNull('spk_number')
-                ->whereYear('spk_sent_at', $year)
-                ->count() + 1;
-            $prefix = 'SPK/SCH';
-        }
+        // Hitung jumlah WO tahun ini dengan prefix yg sama
+        $count  = WorkOrder::whereYear('created_at', $year)
+                           ->where('type', $type)
+                           ->count();
 
-        return sprintf('%s/%s/%s/%04d', $prefix, $year, $month, $count);
+        $seq    = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+
+        return "SPK-{$prefix}-{$year}-{$seq}";
     }
 }
