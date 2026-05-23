@@ -317,15 +317,21 @@ function renderRepair(data) {
                     <button onclick="setSchedule(${job.id})" class="btn bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">Jadwalkan</button>
                 </div>`;
         } else if (job.status === 'scheduled') {
-            action = `
-                <div class="flex gap-2 flex-wrap">
-                    <button onclick="inspectJob(${job.id}, false)" class="btn bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
-                        <i data-feather="play" class="w-3 h-3"></i> Langsung Kerja
-                    </button>
-                    <button onclick="needMaterial(${job.id})" class="btn bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
-                        <i data-feather="package" class="w-3 h-3"></i> Butuh Material
-                    </button>
-                </div>`;
+            if (!job.spk_sent_at) {
+                // SPK belum dikirim — tampilkan pesan menunggu
+                action = `<p class="text-xs text-amber-600 font-medium">⏳ Menunggu SPK dari admin GA</p>`;
+            } else {
+                // SPK sudah ada — baru boleh mulai
+                action = `
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="inspectJob(${job.id}, false)" class="btn bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                            <i data-feather="play" class="w-3 h-3"></i> Langsung Kerja
+                        </button>
+                        <button onclick="needMaterial(${job.id})" class="btn bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
+                            <i data-feather="package" class="w-3 h-3"></i> Butuh Material
+                        </button>
+                    </div>`;
+            }
         } else if (job.status === 'waiting_material') {
             action = `
                 <div class="space-y-2">

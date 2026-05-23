@@ -28,7 +28,12 @@ class RequestController extends Controller
         'description' => 'required|string',
         'category_id' => 'required|exists:categories,id',
         'sub_category_id' => 'required|exists:sub_categories,id',
-        'photo' => 'nullable|image|max:2048'
+        'photo' => 'nullable|image|max:2048',
+         'technician_id'   => $req->technician_id,
+        'technician_name' => $req->technician->name ?? '-',
+        'schedule_date'   => $req->schedule_date,
+        'spk_sent_at'    => $req->spk_sent_at,
+        'spk_number'     => $req->spk_number,
     ]);
 
     // tambahan data otomatis
@@ -54,37 +59,36 @@ public function index()
     $user = auth()->user();
 
     if (!$user) {
-        return response()->json([
-            'message' => 'Unauthenticated'
-        ], 401);
+        return response()->json(['message' => 'Unauthenticated'], 401);
     }
 
-    
     if ($user->role === 'pic') {
-        $data = RequestModel::with('categoryRelation')
+        $data = RequestModel::with(['categoryRelation', 'technician'])
             ->where('user_id', $user->id)
             ->latest()
             ->get();
-    } 
-    
-    else {
-        $data = RequestModel::with('categoryRelation')
+    } else {
+        $data = RequestModel::with(['categoryRelation', 'technician'])
             ->where('company_id', $user->company_id)
             ->latest()
             ->get();
     }
 
-    
     return $data->map(function ($req) {
         return [
-            'id' => $req->id,
-            'title' => $req->title,
-            'description' => $req->description,
-            'status' => $req->status,
-            'photo' => $req->photo,
-            'category_id' => $req->category_id,
-           
-            'category' => $req->categoryRelation->name ?? '-',
+            'id'             => $req->id,
+            'title'          => $req->title,
+            'description'    => $req->description,
+            'status'         => $req->status,
+            'photo'          => $req->photo,
+            'category_id'    => $req->category_id,
+            'category'       => $req->categoryRelation->name ?? '-',
+            'urgency'        => $req->urgency,
+            'technician_id'  => $req->technician_id,
+            'technician_name'=> $req->technician->name ?? '-',
+            'schedule_date'  => $req->schedule_date,
+            'spk_sent_at'    => $req->spk_sent_at,
+            'spk_number'     => $req->spk_number,
         ];
     });
 }

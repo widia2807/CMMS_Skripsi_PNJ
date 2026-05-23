@@ -42,15 +42,17 @@ class TechnicianDashboardController extends Controller
         ->get()
         ->map(function ($req) {
             return [
-                'id' => $req->id,
-                'title' => $req->title,
+                'id'          => $req->id,
+                'title'       => $req->title,
                 'description' => $req->description,
-                'status' => $req->status,
-                'photo' => $req->photo,
-
-                // 🔥 INI YANG KAMU BUTUH
-                'branch' => $req->branch->name ?? '-',
-                'category' => $req->categoryRelation->name ?? '-',
+                'status'      => $req->status,
+                'photo'       => $req->photo,
+                'branch'      => $req->branch->name ?? '-',
+                'category'    => $req->categoryRelation->name ?? '-',
+                // ↓ TAMBAH INI
+                'spk_sent_at' => $req->spk_sent_at,
+                'spk_number'  => $req->spk_number,
+                'schedule_date' => $req->schedule_date,
             ];
         });
 }
