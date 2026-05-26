@@ -81,9 +81,9 @@
     <table class="w-full text-sm">
         <thead>
             <tr class="bg-slate-50 border-b border-slate-100">
-                <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Asset</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Asset dan Lokasi</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Cabang</th>
-                <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tanggal</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Tanggal dan Alasan</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Status</th>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Aksi</th>
             </tr>
@@ -126,15 +126,29 @@ function renderTable(data){
     const table = document.getElementById('borrowTable');
 
     if(!data.length){
-        table.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-400">Tidak ada data</td></tr>`;
+        table.innerHTML = `<tr><td colspan="6" class="text-center py-10 text-slate-400">Tidak ada data</td></tr>`;
         return;
     }
 
     table.innerHTML = data.map(b => `
         <tr class="border-b border-slate-50">
-            <td class="px-5 py-4 font-semibold text-slate-700">${b.asset?.name ?? '-'}</td>
-            <td class="px-5 py-4 text-slate-500">${b.request_branch?.name ?? '-'}</td>
-            <td class="px-5 py-4 text-slate-500">${b.start_date} - ${b.end_date}</td>
+            <td class="px-5 py-4">
+                <p class="font-semibold text-slate-700">${b.asset?.name ?? '-'}</p>
+                <p class="text-xs text-slate-400 mt-0.5">
+                    Cabang: ${b.asset?.branch?.name ?? '-'} &middot; 
+                    Ruangan: ${b.asset?.room?.name ?? '-'}
+                </p>
+                ${b.qty ? `<p class="text-xs text-slate-400">Qty: ${b.qty}</p>` : ''}
+            </td>
+            <td class="px-5 py-4">
+                <p class="text-slate-700 font-medium">${b.user?.name ?? '-'}</p>
+                <p class="text-xs text-slate-400">${b.request_branch?.name ?? '-'}</p>
+            </td>
+            <td class="px-5 py-4 text-slate-500 text-xs">
+                <p>${b.start_date} - ${b.end_date}</p>
+                ${b.reason ? `<p class="mt-0.5 text-slate-400 italic">"${b.reason}"</p>` : ''}
+                ${b.notes ? `<p class="mt-0.5 text-slate-400">${b.notes}</p>` : ''}
+            </td>
             <td class="px-5 py-4">${statusBadge(b.status)}</td>
             <td class="px-5 py-4">
                 <div class="flex gap-2 flex-wrap">
@@ -142,11 +156,9 @@ function renderTable(data){
                         <button onclick="approve(${b.id})" class="btn bg-green-50 text-green-600 px-3 py-1 rounded-lg text-xs border border-green-200">Approve</button>
                         <button onclick="reject(${b.id})" class="btn bg-red-50 text-red-600 px-3 py-1 rounded-lg text-xs border border-red-200">Reject</button>
                     ` : ''}
-
                     ${b.status === 'approved' ? `
                         <button onclick="markPicked(${b.id})" class="btn bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-xs border border-indigo-200">Dipakai</button>
                     ` : ''}
-
                     ${b.status === 'picked' ? `
                         <button onclick="markReturned(${b.id})" class="btn bg-green-50 text-green-600 px-3 py-1 rounded-lg text-xs border border-green-200">Selesai</button>
                     ` : ''}

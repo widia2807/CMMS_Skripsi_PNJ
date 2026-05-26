@@ -19,7 +19,12 @@ class BorrowingController extends Controller
     // Admin → semua data
     public function index()
     {
-        return Borrowing::with(['asset','requestBranch'])
+         return Borrowing::with([
+            'asset.branch',     
+            'asset.room',        
+            'requestBranch',
+            'user',             
+            ])
             ->latest()
             ->get();
     }
@@ -46,9 +51,12 @@ class BorrowingController extends Controller
 
         $data = Borrowing::create([
             'asset_id' => $request->asset_id,
+            'user_id'           => auth()->id(),
             'request_branch_id' => auth()->user()->branch_id,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
+            'qty'               => $request->qty ?? 1,             
+            'reason'            => $request->reason,
             'notes' => $request->notes
         ]);
 

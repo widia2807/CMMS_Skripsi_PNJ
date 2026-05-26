@@ -23,12 +23,17 @@ class ScheduledMaintenance extends Model
         'completed_at',
         'completion_note',
         'completion_photo',
+        'company_id',    
+        'spk_number',    
+        'spk_sent_at',   
+        'spk_sent_by', 
     ];
 
     protected $casts = [
         'scheduled_date'      => 'date',
         'worker_confirmed_at' => 'datetime',
         'completed_at'        => 'datetime',
+        'spk_sent_at'         => 'datetime',
     ];
 
     /* ─── RELASI ─── */

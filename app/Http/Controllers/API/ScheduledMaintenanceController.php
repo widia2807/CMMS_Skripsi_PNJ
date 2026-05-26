@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use App\Helpers\SpkHelper;
 
 class ScheduledMaintenanceController extends Controller
 {
@@ -19,6 +20,7 @@ class ScheduledMaintenanceController extends Controller
     public function index(Request $request)
     {
         $schedules = ScheduledMaintenance::with(['worker:id,name', 'creator:id,name'])
+            ->where('company_id', auth()->user()->company_id)
             ->byStatus($request->status)
             ->byWorker($request->worker_id)
             ->byMonth($request->month)
@@ -63,40 +65,37 @@ class ScheduledMaintenanceController extends Controller
      *  POST /api/scheduled-maintenances
      * ═══════════════════════════════════════════ */
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'title'          => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'period'         => 'required|in:weekly,monthly,quarterly,yearly',
-            'scheduled_date' => 'required|date',
-            'worker_id'      => 'required|exists:users,id',
-            'note'           => 'nullable|string',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'title'          => 'required|string|max:255',
+        'category_id'    => 'required|exists:categories,id',
+        'period'         => 'required|in:weekly,monthly,quarterly,yearly',
+        'scheduled_date' => 'required|date',
+        'worker_id'      => 'required|exists:users,id',
+        'note'           => 'nullable|string',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $schedule = ScheduledMaintenance::create([
-            'title'          => $request->title,
-            'category_id' => $request->category_id,
-            'period'         => $request->period,
-            'scheduled_date' => $request->scheduled_date,
-            'worker_id'      => $request->worker_id,
-            'note'           => $request->note,
-            'created_by'     => $request->user()->id,
-            'status'         => 'pending',
-        ]);
-
-        // TODO: kirim notifikasi ke tukang (push notification / email)
-        // Notification::send($schedule->worker, new MaintenanceAssigned($schedule));
-
-        return response()->json([
-            'message' => 'Jadwal berhasil dibuat.',
-            'data'    => $this->formatItem($schedule->load('worker:id,name')),
-        ], 201);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
 
+    $schedule = ScheduledMaintenance::create([
+        'title'          => $request->title,
+        'category_id'    => $request->category_id,
+        'period'         => $request->period,
+        'scheduled_date' => $request->scheduled_date,
+        'worker_id'      => $request->worker_id,
+        'note'           => $request->note,
+        'created_by'     => $request->user()->id,
+        'status'         => 'pending',
+        'company_id'     => $request->user()->company_id, // ← tambah ini
+    ]);
+
+    return response()->json([
+        'message' => 'Jadwal berhasil dibuat.',
+        'data'    => $this->formatItem($schedule->load('worker:id,name')),
+    ], 201);
+}
     /* ═══════════════════════════════════════════
      *  ADMIN GA — Ubah tukang (reassign)
      *  PUT /api/scheduled-maintenances/{id}/assign
@@ -217,30 +216,46 @@ class ScheduledMaintenanceController extends Controller
     }
 
     // POST /api/scheduled-maintenances/{id}/send-spk
-public function sendSpk($id)
-{
-    $scheduled = ScheduledMaintenance::with([
-        'category', 'scheduledSubCategory', 'worker', 'createdBy'
-    ])->findOrFail($id);
+    public function sendSpk($id)
+    {
+        $scheduled = ScheduledMaintenance::findOrFail($id);
 
-    // Cek syarat: tukang harus sudah konfirmasi
-    if (!$scheduled->worker_confirmed_at) {
-        return response()->json(['message' => 'Tukang belum konfirmasi tugas'], 422);
+        if (!$scheduled->worker_confirmed_at) {
+            return response()->json(['message' => 'Tukang belum konfirmasi tugas'], 422);
+        }
+
+        if (!$scheduled->spk_number) {
+            $scheduled->spk_number = SpkHelper::generate('scheduled');
+        }
+
+        $scheduled->spk_sent_at = Carbon::now();
+        $scheduled->spk_sent_by = auth()->id();
+        $scheduled->save();
+
+        // Buat work order jika belum ada
+        $wo = \App\Models\WorkOrder::updateOrCreate(
+            ['scheduled_maintenance_id' => $scheduled->id],
+            [
+                'wo_number'    => $scheduled->spk_number,
+                'type'         => 'scheduled',
+                'title'        => $scheduled->title,
+                'note'         => $scheduled->note,
+                'status'       => 'issued',
+                'company_id'   => auth()->user()->company_id,
+                'category_id'  => $scheduled->category_id,
+                'worker_id'    => $scheduled->worker_id,
+                'created_by'   => auth()->id(),
+                'schedule_date'=> $scheduled->scheduled_date,
+                'period'       => $scheduled->period,
+            ]
+        );
+
+        return response()->json([
+            'message'    => 'SPK berhasil dikirim',
+            'spk_number' => $scheduled->spk_number,
+            'wo_id'      => $wo->id, // ← ini yang dibutuhkan JS
+        ]);
     }
-
-    if (!$scheduled->spk_number) {
-        $scheduled->spk_number = SpkHelper::generate('scheduled');
-    }
-
-    $scheduled->spk_sent_at = Carbon::now();
-    $scheduled->spk_sent_by = auth()->id();
-    $scheduled->save();
-
-    return response()->json([
-        'message'    => 'SPK berhasil dikirim',
-        'spk_number' => $scheduled->spk_number,
-    ]);
-}
 
 // GET /api/scheduled-maintenances/{id}/work-order
 public function workOrder($id)
@@ -278,24 +293,36 @@ public function workOrder($id)
      *  HELPER — Format item untuk response JSON
      * ═══════════════════════════════════════════ */
     private function formatItem(ScheduledMaintenance $item): array
-    {
-        return [
-            'id'                  => $item->id,
-            'title'               => $item->title,
-            'category'            => $item->category,
-            'note'                => $item->note,
-            'period'              => $item->period,
-            'scheduled_date'      => $item->scheduled_date?->toDateString(),
-            'status'              => $item->status,
-            'worker_id'           => $item->worker_id,
-            'worker_name'         => $item->worker?->name,
-            'created_by'          => $item->created_by,
-            'created_by_name'     => $item->creator?->name,
-            'worker_confirmed_at' => $item->worker_confirmed_at?->toDateTimeString(),
-            'completed_at'        => $item->completed_at?->toDateTimeString(),
-            'completion_note'     => $item->completion_note,
-            'completion_photo'    => $item->completion_photo,
-            'created_at'          => $item->created_at?->toDateTimeString(),
-        ];
+{
+    $woId = null;
+    try {
+        $wo   = \App\Models\WorkOrder::where('scheduled_maintenance_id', $item->id)->first();
+        $woId = $wo?->id;
+    } catch (\Exception $e) {
+        $woId = null;
     }
+
+    return [
+        'id'                  => $item->id,
+        'wo_id'               => $woId,
+        'title'               => $item->title,
+        'category'            => $item->category,
+        'category_name'       => $item->category_name ?? $item->category,
+        'note'                => $item->note,
+        'period'              => $item->period,
+        'scheduled_date'      => $item->scheduled_date?->toDateString(),
+        'status'              => $item->status,
+        'worker_id'           => $item->worker_id,
+        'worker_name'         => $item->worker?->name,
+        'created_by'          => $item->created_by,
+        'created_by_name'     => $item->creator?->name,
+        'worker_confirmed_at' => $item->worker_confirmed_at?->toDateTimeString(),
+        'completed_at'        => $item->completed_at?->toDateTimeString(),
+        'completion_note'     => $item->completion_note,
+        'completion_photo'    => $item->completion_photo,
+        'created_at'          => $item->created_at?->toDateTimeString(),
+        'spk_sent_at'         => $item->spk_sent_at?->toDateTimeString(),
+        'spk_number'          => $item->spk_number,
+    ];
+}
 }

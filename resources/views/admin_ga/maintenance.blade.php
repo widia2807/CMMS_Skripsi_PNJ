@@ -420,15 +420,32 @@ function renderList(data) {
             ? `<span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">${item.sub_category_name}</span>`
             : '';
 
+                
+       
+                const spkBtn = item.spk_sent_at
+                    ? `<button onclick="openWorkOrder(${item.wo_id}, 'scheduled')"
+                    class="text-xs px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition">
+                    📄 Lihat SPK
+                </button>`
+                : (item.worker_confirmed_at && !item.spk_sent_at)
+                // ↑ ganti kondisi — cek worker_confirmed_at bukan scheduled_date
+                ? `<button onclick="sendScheduledSpk(${item.id})"
+                    class="text-xs px-3 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition">
+                    📤 Kirim SPK
+                </button>`
+                : item.worker_id && !item.worker_confirmed_at
+                ? `<span class="text-xs text-amber-600">⏳ Menunggu konfirmasi tukang</span>`
+                : '';
+
         const actionBtn = item.status === 'done'
             ? `<button onclick="openReport(${item.id})"
-                  class="text-xs px-3 py-1 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition">
-                  Lihat laporan
-               </button>`
+                class="text-xs px-3 py-1 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition">
+                Lihat laporan
+            </button>`
             : `<button onclick="openReassign(${item.id})"
-                  class="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition">
-                  Ubah tukang
-               </button>`;
+                class="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition">
+                Ubah tukang
+            </button>`;
 
         const confirmNote = item.worker_confirmed_at
             ? `<p class="text-xs text-gray-400 mt-1">Dikonfirmasi tukang: ${formatDate(item.worker_confirmed_at)}</p>`
@@ -447,7 +464,7 @@ function renderList(data) {
                             ${subCatBadge}
                         </div>
                         <p class="text-xs text-gray-400 mt-0.5">
-                            ${item.category_name ?? item.category} &middot; ${period} &middot; ${formatDate(item.scheduled_date)}
+                            ${getCategoryName(item)} &middot; ${period} &middot; ${formatDate(item.scheduled_date)}
                         </p>
                         ${confirmNote}
                         ${doneNote}
@@ -466,7 +483,10 @@ function renderList(data) {
                         </div>
                         <p class="text-xs text-gray-500">${item.worker_name || '-'}</p>
                     </div>
-                    ${actionBtn}
+                    <div class="flex gap-2">
+                        ${spkBtn}
+                        ${actionBtn}
+                    </div>
                 </div>
             </div>
         `;
@@ -478,7 +498,11 @@ function formatDate(str) {
     if (!str) return '-';
     return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-
+function getCategoryName(item) {
+    if (item.category_name && typeof item.category_name === 'string') return item.category_name;
+    if (item.category) return typeof item.category === 'object' ? (item.category.name ?? '-') : item.category;
+    return '-';
+}
 /* ─── MODAL: BUAT JADWAL ─── */
 function openCreateModal() {
     document.getElementById('createModal').style.display = 'flex';
@@ -520,7 +544,21 @@ async function createSchedule() {
     closeCreateModal();
     loadSchedules();
 }
+async function sendScheduledSpk(id) {
+    if (!confirm('Kirim SPK ke tukang?')) return;
+    const res  = await fetch(`/api/scheduled-maintenances/${id}/send-spk`, {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.message ?? 'Gagal kirim SPK'); return; }
+    await loadSchedules();
+    openWorkOrder(data.wo_id, 'scheduled');
+}
 
+function openWorkOrder(id, type) {
+    window.open(`/work-order/${type}/${id}`);
+}
 function goToDashboard() {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user?.role === 'pic') {
@@ -557,18 +595,43 @@ async function confirmReassign() {
     loadSchedules();
 }
 
-/* ─── MODAL: LAPORAN SELESAI ─── */
 async function openReport(id) {
     const res  = await fetch(`/api/scheduled-maintenances/${id}`, {
         headers: { 'Authorization': 'Bearer ' + token }
     });
     const item = await res.json();
+    console.log(item); // cek struktur di browser console
+
+    // Ambil nama kategori dari berbagai kemungkinan struktur API
+    let categoryName = '-';
+    if (item.category_name && typeof item.category_name === 'string') {
+        categoryName = item.category_name;
+    } else if (item.category) {
+        categoryName = typeof item.category === 'object'
+            ? (item.category.name ?? '-')
+            : item.category;
+    }
+
+    // Ambil nama sub kategori
+    let subCategoryName = '';
+    if (item.sub_category_name && typeof item.sub_category_name === 'string') {
+        subCategoryName = item.sub_category_name;
+    } else if (item.sub_category) {
+        subCategoryName = typeof item.sub_category === 'object'
+            ? (item.sub_category.name ?? '')
+            : item.sub_category;
+    }
+
+    // Ambil nama tukang
+    const workerName = item.worker_name
+        ?? item.worker?.name
+        ?? '-';
 
     document.getElementById('reportContent').innerHTML = `
         <div class="space-y-2">
-            <p><span class="text-gray-400">Pekerjaan:</span> ${item.title}</p>
-            <p><span class="text-gray-400">Kategori:</span> ${item.category_name ?? '-'} ${item.sub_category_name ? '/ ' + item.sub_category_name : ''}</p>
-            <p><span class="text-gray-400">Tukang:</span> ${item.worker_name}</p>
+            <p><span class="text-gray-400">Pekerjaan:</span> ${item.title ?? '-'}</p>
+            <p><span class="text-gray-400">Kategori:</span> ${categoryName}${subCategoryName ? ' / ' + subCategoryName : ''}</p>
+            <p><span class="text-gray-400">Tukang:</span> ${workerName}</p>
             <p><span class="text-gray-400">Selesai pada:</span> ${formatDate(item.completed_at)}</p>
             ${item.completion_note ? `<p><span class="text-gray-400">Catatan tukang:</span> ${item.completion_note}</p>` : ''}
             ${item.completion_photo ? `<img src="/storage/${item.completion_photo}" class="w-full rounded-lg border mt-2" />` : ''}

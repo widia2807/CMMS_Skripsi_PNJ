@@ -170,60 +170,8 @@
 
 <!-- ══ PRINT BAR ══ -->
 <div class="print-bar no-print">
-    <button class="btn-settings" onclick="openSettings()">⚙ Pengaturan Perusahaan</button>
     <button class="btn-print" onclick="window.print()">🖨 Cetak SPK</button>
-    <button class="btn-close" onclick="window.history.back()">✕ Tutup</button>
-</div>
-
-<!-- ══ SETTINGS OVERLAY ══ -->
-<div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsOnOverlay(event)">
-    <div class="settings-panel">
-        <h2>⚙ Pengaturan Perusahaan</h2>
-
-        <div class="field-group">
-            <label>Nama Perusahaan / Instansi</label>
-            <input type="text" id="set_name" placeholder="PT. Nama Perusahaan">
-        </div>
-        <div class="field-group">
-            <label>Alamat</label>
-            <input type="text" id="set_address" placeholder="Jl. Contoh No. 1, Kota">
-        </div>
-        <div class="field-group">
-            <label>Telepon</label>
-            <input type="text" id="set_phone" placeholder="021-1234567">
-        </div>
-        <div class="field-group">
-            <label>Email</label>
-            <input type="email" id="set_email" placeholder="info@perusahaan.com">
-        </div>
-        <div class="field-group">
-            <label>Nama Manager / Penanggung Jawab GA</label>
-            <input type="text" id="set_manager_name" placeholder="Nama Manager GA">
-        </div>
-
-        <!-- Upload Logo -->
-        <div class="field-group">
-            <label>Logo Perusahaan</label>
-            <div class="upload-box" onclick="document.getElementById('logoInput').click()">
-                <input type="file" id="logoInput" accept="image/*" onchange="previewFile(this,'logoPreview','logoFile')">
-                <p>Klik untuk upload logo (PNG/JPG)</p>
-                <img id="logoPreview" class="preview-img" style="display:none">
-            </div>
-        </div>
-
-        <!-- Upload TTD Manager GA -->
-        <div class="field-group">
-            <label>Tanda Tangan Manager GA <span style="font-weight:400;color:#94a3b8">(PNG transparan)</span></label>
-            <div class="upload-box" onclick="document.getElementById('sigInput').click()">
-                <input type="file" id="sigInput" accept="image/*" onchange="previewFile(this,'sigPreview','sigFile')">
-                <p>Klik untuk upload tanda tangan</p>
-                <img id="sigPreview" class="preview-img" style="display:none">
-            </div>
-        </div>
-
-        <button class="btn-save-settings" onclick="saveSettings()">💾 Simpan Pengaturan</button>
-        <button class="btn-cancel-settings" onclick="closeSettings()">Batal</button>
-    </div>
+    <button class="btn-close" onclick="window.close()">✕ Tutup</button>
 </div>
 
 <!-- ══ DOKUMEN SPK ══ -->
@@ -491,61 +439,6 @@ function renderWO(wo, materials) {
     }
 }
 
-// ── SETTINGS ─────────────────────────────────────────────────────────
-function openSettings() {
-    // Pre-fill dari data yang sudah tampil
-    document.getElementById('set_name').value    = document.getElementById('docName').textContent;
-    document.getElementById('set_address').value = document.getElementById('docAddress').textContent;
-    document.getElementById('settingsOverlay').style.display = 'flex';
-}
-function closeSettings() {
-    document.getElementById('settingsOverlay').style.display = 'none';
-}
-function closeSettingsOnOverlay(e) {
-    if (e.target === document.getElementById('settingsOverlay')) closeSettings();
-}
-
-// Preview file sebelum upload
-function previewFile(input, previewId, fileId) {
-    const file    = input.files[0];
-    const preview = document.getElementById(previewId);
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-async function saveSettings() {
-    const fd = new FormData();
-    fd.append('name',         document.getElementById('set_name').value);
-    fd.append('address',      document.getElementById('set_address').value);
-    fd.append('phone',        document.getElementById('set_phone').value);
-    fd.append('email',        document.getElementById('set_email').value);
-    fd.append('manager_name', document.getElementById('set_manager_name').value);
-
-    const logoFile = document.getElementById('logoInput').files[0];
-    const sigFile  = document.getElementById('sigInput').files[0];
-    if (logoFile) fd.append('logo', logoFile);
-    if (sigFile)  fd.append('manager_signature', sigFile);
-
-    const res = await fetch('/api/company-settings', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + token },
-        body: fd,
-    });
-    if (!res.ok) {
-        alert('Gagal menyimpan pengaturan');
-        return;
-    }
-
-    closeSettings();
-    loadWO(); // reload agar tampil update
-    alert('✅ Pengaturan berhasil disimpan');
-}
 
 // ── HELPERS ───────────────────────────────────────────────────────────
 function formatDate(str) {

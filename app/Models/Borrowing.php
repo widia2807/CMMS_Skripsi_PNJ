@@ -7,11 +7,14 @@ class Borrowing extends Model
 {
     protected $fillable = [
         'asset_id',
+        'user_id', 
         'request_branch_id',
         'source_branch_id',
         'status',
         'start_date',
         'end_date',
+        'qty',              
+        'reason', 
         'notes'
     ];
 
@@ -28,5 +31,10 @@ class Borrowing extends Model
     public function sourceBranch()
     {
         return $this->belongsTo(Branch::class, 'source_branch_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

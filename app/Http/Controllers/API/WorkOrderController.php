@@ -159,8 +159,7 @@ class WorkOrderController extends Controller
     {
         $user  = auth()->user();
         $sched = ScheduledMaintenance::with(['category', 'worker'])
-                     ->where('company_id', $user->company_id)
-                     ->findOrFail($id);
+            ->findOrFail($id);
 
         if (!$sched->worker_id) {
             return response()->json(['message' => 'Tukang belum ditentukan'], 422);

@@ -57,10 +57,10 @@
     <table class="w-full text-sm">
         <thead>
             <tr class="bg-slate-50 border-b">
-                <th class="px-5 py-3 text-left text-xs text-slate-500 uppercase">Asset</th>
-                <th class="px-5 py-3 text-left text-xs text-slate-500 uppercase">Tanggal</th>
-                <th class="px-5 py-3 text-left text-xs text-slate-500 uppercase">Status</th>
-            </tr>
+            <th class="px-5 py-3 text-left text-xs text-slate-500 uppercase">Asset & Alasan</th>
+            <th class="px-5 py-3 text-left text-xs text-slate-500 uppercase">Tanggal</th>
+            <th class="px-5 py-3 text-left text-xs text-slate-500 uppercase">Status</th>
+        </tr>
         </thead>
         <tbody id="borrowTable"></tbody>
     </table>
@@ -92,6 +92,19 @@
         <input type="date" id="start_date" class="w-full border rounded-lg px-3 py-2 text-sm">
         <input type="date" id="end_date" class="w-full border rounded-lg px-3 py-2 text-sm">
 
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="text-xs text-slate-500 block mb-1">Jumlah</label>
+                <input type="number" id="qty" min="1" value="1"
+                    class="w-full border rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+                <label class="text-xs text-slate-500 block mb-1">Alasan Peminjaman</label>
+                <input type="text" id="reason" placeholder="Cth: Untuk event..."
+                    class="w-full border rounded-lg px-3 py-2 text-sm">
+            </div>
+        </div>
+
         <textarea id="notes" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Keterangan"></textarea>
 
         <button onclick="submitBorrow()" 
@@ -102,6 +115,7 @@
     </div>
 </div>
 </div>
+
 
 <script>
 const token = localStorage.getItem('token');
@@ -140,6 +154,8 @@ async function submitBorrow(){
         asset_id: document.getElementById('asset_id').value,
         start_date: document.getElementById('start_date').value,
         end_date: document.getElementById('end_date').value,
+        qty: document.getElementById('qty').value,           
+        reason: document.getElementById('reason').value,
         notes: document.getElementById('notes').value
     };
 
@@ -179,12 +195,19 @@ async function loadBorrowings(){
     empty.classList.add('hidden');
 
     table.innerHTML = data.map(b=>`
-        <tr class="border-b">
-            <td class="px-5 py-4 font-semibold text-slate-700">${b.asset?.name ?? '-'}</td>
-            <td class="px-5 py-4 text-slate-500">${b.start_date} - ${b.end_date}</td>
-            <td class="px-5 py-4">${statusBadge(b.status)}</td>
-        </tr>
-    `).join('');
+    <tr class="border-b">
+        <td class="px-5 py-4">
+            <p class="font-semibold text-slate-700">${b.asset?.name ?? '-'}</p>
+            ${b.qty ? `<p class="text-xs text-slate-400 mt-0.5">Qty: ${b.qty}</p>` : ''}
+            ${b.reason ? `<p class="text-xs text-slate-400 italic">"${b.reason}"</p>` : ''}
+        </td>
+        <td class="px-5 py-4 text-slate-500 text-xs">
+            <p>${b.start_date} - ${b.end_date}</p>
+            ${b.notes ? `<p class="mt-0.5 text-slate-400">${b.notes}</p>` : ''}
+        </td>
+        <td class="px-5 py-4">${statusBadge(b.status)}</td>
+    </tr>
+`).join('');
 }
 function goTo(url) {
     window.location.href = url;
