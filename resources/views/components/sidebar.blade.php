@@ -85,10 +85,12 @@
 
     </ul>
 </div>
+
 <div id="sidebarOverlay" 
     onclick="toggleSidebar()" 
     class="fixed inset-0 bg-black/40 hidden z-40 md:hidden">
 </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -102,31 +104,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // tampilkan role di atas
     document.getElementById('roleText').innerText = user.role.toUpperCase();
 
+    // isi nama user di topbar jika ada elemen topbarUserName
+    const topbarName = document.getElementById('topbarUserName');
+    if (topbarName) topbarName.textContent = user.name ?? '-';
+
     const menuConfig = {
-    admin: [
-        'menu-perbaikan',
-        'menu-maintenance',
-        'menu-assets',
-        'menu-tools',
-        'menu-spk',
-        'menu-report'
-    ],
-
-    super_admin: [
-        'menu-user',
-        'menu-cabang'
-    ],
-
-    pic: [
-        'menu-pic',
-        'menu-status',
-        'menu-tools'
-    ],
-
-    technician: [
-        'menu-pekerjaan'
-    ]
-};
+        admin: [
+            'menu-perbaikan',
+            'menu-maintenance',
+            'menu-assets',
+            'menu-tools',
+            'menu-spk',
+            'menu-report'
+        ],
+        super_admin: [
+            'menu-user',
+            'menu-cabang'
+        ],
+        pic: [
+            'menu-pic',
+            'menu-status',
+            'menu-tools'
+        ],
+        technician: [
+            'menu-pekerjaan'
+        ]
+    };
 
     // tampilkan menu sesuai role
     if (menuConfig[user.role]) {
@@ -144,22 +147,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     feather.replace();
 });
+
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
-
     sidebar.classList.toggle('-translate-x-full');
     overlay.classList.toggle('hidden');
 }
+
 function goToBorrowing() {
     const user = JSON.parse(localStorage.getItem('user'));
-
     if (user.role === 'admin') {
         window.location.href = '/admin/peminjaman';
     } else {
         window.location.href = '/peminjaman';
     }
 }
+
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -173,5 +177,9 @@ function goToDashboard() {
     else if (user?.role === 'super_admin') window.location.href = '/dashboard-full';
     else if (user?.system_type === 'lite') window.location.href = '/dashboard-lite';
     else                                   window.location.href = '/dashboard-admin';
+}
+
+function goTo(url) {
+    window.location.href = url;
 }
 </script>
