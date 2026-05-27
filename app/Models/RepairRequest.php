@@ -68,4 +68,9 @@ protected static function booted()
         }
     });
 }
+
+public function workOrder()
+{
+    return $this->hasOne(\App\Models\WorkOrder::class, 'repair_request_id');
+}
 }

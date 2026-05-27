@@ -12,45 +12,36 @@ use App\Models\RepairRequest as RequestModel;
 
 class RequestController extends Controller
 {
-    public function store(Request $request)
+   public function store(Request $request)
 {
     $user = auth()->user();
 
-    // hanya PIC
     if ($user->role !== 'pic') {
-        return response()->json([
-            'message' => 'Hanya PIC yang bisa mengajukan'
-        ], 403);
+        return response()->json(['message' => 'Hanya PIC yang bisa mengajukan'], 403);
     }
 
     $data = $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'required|string',
-        'category_id' => 'required|exists:categories,id',
+        'title'           => 'required|string|max:255',
+        'description'     => 'required|string',
+        'category_id'     => 'required|exists:categories,id',
         'sub_category_id' => 'required|exists:sub_categories,id',
-        'photo' => 'nullable|image|max:2048',
-         'technician_id'   => $req->technician_id,
-        'technician_name' => $req->technician->name ?? '-',
-        'schedule_date'   => $req->schedule_date,
-        'spk_sent_at'    => $req->spk_sent_at,
-        'spk_number'     => $req->spk_number,
+        'photo'           => 'nullable|image|max:2048',
     ]);
 
-    // tambahan data otomatis
-    $data['user_id'] = $user->id;
-    $data['branch_id'] = $user->branch_id; 
-    $data['status'] = 'pending';
+    $data['user_id']    = $user->id;
+    $data['branch_id']  = $user->branch_id;
+    $data['company_id'] = $user->company_id;
+    $data['status']     = 'pending';
 
-    // upload foto
     if ($request->hasFile('photo')) {
         $data['photo'] = $request->file('photo')->store('requests', 'public');
     }
-    $data['company_id'] = $user->company_id;
+
     $req = RequestModel::create($data);
 
     return response()->json([
         'message' => 'Pengajuan berhasil dibuat',
-        'data' => $req
+        'data'    => $req
     ]);
 }
 

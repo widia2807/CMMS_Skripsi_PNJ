@@ -36,7 +36,7 @@ class TechnicianDashboardController extends Controller
 {
     $user = auth()->user();
 
-    return WorkRequest::with(['branch', 'categoryRelation'])
+    return WorkRequest::with(['branch', 'categoryRelation', 'workOrder'])
         ->where('technician_id', $user->id)
         ->latest()
         ->get()
@@ -49,7 +49,7 @@ class TechnicianDashboardController extends Controller
                 'photo'       => $req->photo,
                 'branch'      => $req->branch->name ?? '-',
                 'category'    => $req->categoryRelation->name ?? '-',
-                // ↓ TAMBAH INI
+                'wo_id'         => $req->workOrder->id ?? null,
                 'spk_sent_at' => $req->spk_sent_at,
                 'spk_number'  => $req->spk_number,
                 'schedule_date' => $req->schedule_date,
@@ -179,28 +179,40 @@ class TechnicianDashboardController extends Controller
     return response()->json(['message' => 'Pekerjaan dimulai']);
 }
 
-    // ================= COMPLETE =================
-    public function completeJob($id)
-    {
-        $user = auth()->user();
+   // ================= COMPLETE =================
+public function completeJob(Request $request, $id)
+{
+    $request->validate([
+        'completion_note'  => 'required|string',
+        'completion_photo' => 'required|image|max:5120',
+        'material_used'    => 'nullable|string',
+    ]);
 
-        $req = WorkRequest::where('id', $id)
-            ->where('technician_id', $user->id)
-            ->first();
+    $user = auth()->user();
 
-        if ($req->status !== 'on_progress') {
-            return response()->json([
-                'message' => 'Pekerjaan belum dimulai'
-            ], 400);
-        }
+    $req = WorkRequest::where('id', $id)
+        ->where('technician_id', $user->id)
+        ->first();
 
-        $req->status = 'done';
-        $req->save();
-
-        return response()->json([
-            'message' => 'Pekerjaan selesai'
-        ]);
+    if (!$req) {
+        return response()->json(['message' => 'Job tidak ditemukan'], 404);
     }
+
+    if ($req->status !== 'on_progress') {
+        return response()->json(['message' => 'Pekerjaan belum dimulai'], 400);
+    }
+
+    $photoPath = $request->file('completion_photo')->store('completion-photos', 'public');
+
+    $req->status           = 'done';
+    $req->completion_note  = $request->completion_note;
+    $req->completion_photo = $photoPath;
+    $req->material_used    = $request->material_used;
+    $req->completed_at     = now();
+    $req->save();
+
+    return response()->json(['message' => 'Pekerjaan selesai']);
+}
 
     // ================= VERIFY (PIC) =================
     public function verifyJob($id)

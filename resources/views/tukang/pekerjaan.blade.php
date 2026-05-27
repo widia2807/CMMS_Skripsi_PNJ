@@ -200,7 +200,53 @@
         </div>
     </div>
 </div>
-
+<!-- ══════════════ MODAL LAPORAN SELESAI PERBAIKAN ══════════════ -->
+<div id="completeRepairModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl modal-box">
+        <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
+            <div>
+                <h3 class="font-bold text-slate-800">Laporan Penyelesaian Perbaikan</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Wajib diisi sebelum ditandai selesai</p>
+            </div>
+            <button onclick="closeCompleteRepair()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-400">
+                <i data-feather="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-4">
+            <div>
+                <label class="text-xs text-slate-500 block mb-1">
+                    Deskripsi pekerjaan yang dilakukan <span class="text-red-400">*</span>
+                </label>
+                <textarea id="repairCompleteNote" rows="3" placeholder="Jelaskan apa saja yang sudah dikerjakan..."
+                    class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-400"></textarea>
+            </div>
+            <div>
+                <label class="text-xs text-slate-500 block mb-1">
+                    Material yang digunakan <span class="text-slate-400">(opsional)</span>
+                </label>
+                <input id="repairCompleteMaterial" type="text" placeholder="Contoh: cat tembok 2 liter, kuas 1 pcs"
+                    class="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-400" />
+            </div>
+            <div>
+                <label class="text-xs text-slate-500 block mb-1">
+                    Foto sesudah perbaikan <span class="text-red-400">*</span>
+                </label>
+                <input id="repairCompletePhoto" type="file" accept="image/*"
+                    class="w-full text-xs border border-slate-200 rounded-xl px-3 py-2 file:mr-3 file:text-xs file:border-0 file:bg-purple-50 file:text-purple-600 file:rounded-lg file:px-2 file:py-1" />
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeCompleteRepair()"
+                    class="flex-1 btn border border-slate-200 text-slate-500 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50">
+                    Batal
+                </button>
+                <button onclick="submitCompleteRepair()"
+                    class="flex-1 btn bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-sm font-semibold">
+                    Kirim Laporan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- ══════════════ MODAL IMAGE ══════════════ -->
 <div id="imageModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50">
     <img id="modalImage" class="max-w-[90%] max-h-[85vh] rounded-xl shadow-2xl object-contain">
@@ -393,7 +439,7 @@ function renderRepair(data) {
                 <div class="border-t border-slate-50 pt-3 space-y-2">
                     ${action}
                     ${job.spk_sent_at ? `
-                    <button onclick="openWorkOrder(${job.id}, 'repair')" class="btn w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                    <button onclick="openWorkOrder(${job.wo_id}, 'repair')" class="btn w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
                         <i data-feather="file-text" class="w-3 h-3"></i> Lihat SPK — ${job.spk_number ?? ''}
                     </button>` : ''}
                     <button onclick="openDetail(${job.id})" class="btn w-full border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
@@ -505,7 +551,7 @@ function renderScheduled(data) {
                 <div class="border-t border-slate-50 pt-3 space-y-2">
                     ${action}
                     ${item.spk_sent_at ? `
-                    <button onclick="openWorkOrder(${item.id}, 'scheduled')" class="btn w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+                    <button onclick="openWorkOrder(${item.wo_id}, 'scheduled')" class="btn w-full border border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
                         <i data-feather="file-text" class="w-3 h-3"></i> Lihat SPK — ${item.spk_number ?? ''}
                     </button>` : ''}
                     <button onclick="openScheduledDetail(${item.id})" class="btn w-full border border-slate-200 text-slate-600 hover:bg-slate-50 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
@@ -709,11 +755,45 @@ async function startJob(id) {
     loadRepairJobs();
 }
 
-async function completeJob(id) {
-    const res  = await fetch(`/api/technician/complete/${id}`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+let selectedRepairId = null;
+
+function completeJob(id) {
+    selectedRepairId = id;
+    document.getElementById('repairCompleteNote').value   = '';
+    document.getElementById('repairCompleteMaterial').value = '';
+    document.getElementById('repairCompletePhoto').value  = '';
+    document.getElementById('completeRepairModal').classList.remove('hidden');
+    document.getElementById('completeRepairModal').classList.add('flex');
+}
+
+function closeCompleteRepair() {
+    document.getElementById('completeRepairModal').classList.add('hidden');
+    document.getElementById('completeRepairModal').classList.remove('flex');
+}
+
+async function submitCompleteRepair() {
+    const note  = document.getElementById('repairCompleteNote').value.trim();
+    const photo = document.getElementById('repairCompletePhoto').files[0];
+
+    if (!note)  return alert('Deskripsi pekerjaan wajib diisi!');
+    if (!photo) return alert('Foto sesudah perbaikan wajib diupload!');
+
+    const form = new FormData();
+    form.append('completion_note', note);
+    form.append('completion_photo', photo);
+
+    const material = document.getElementById('repairCompleteMaterial').value.trim();
+    if (material) form.append('material_used', material);
+
+    const res  = await fetch(`/api/technician/complete/${selectedRepairId}`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: form,
+    });
     const data = await res.json();
-    if (!res.ok) return alert(data.message);
-    alert('Pekerjaan selesai');
+    if (!res.ok) return alert(data.message ?? 'Gagal submit laporan');
+    alert('Laporan berhasil dikirim!');
+    closeCompleteRepair();
     loadRepairJobs();
 }
 
@@ -784,9 +864,9 @@ function formatDate(str) {
 }
 
 function openWorkOrder(id, type) {
+    if (!id) return alert('Work Order belum tersedia');
     window.open(`/work-order/${type}/${id}`, '_blank');
 }
-
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
