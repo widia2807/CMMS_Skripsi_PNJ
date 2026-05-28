@@ -56,14 +56,7 @@
                         <h1 class="font-bold text-slate-800 text-lg">Pengaturan Template SPK</h1>
                         <p class="text-xs text-slate-400 mt-0.5">Konfigurasi kop surat, logo, tanda tangan & penomoran</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div id="userBadge" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                        <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center">
-                            <span id="userInitial" class="text-white font-bold text-xs"></span>
-                        </div>
-                        <span id="userInfo" class="text-sm font-medium text-slate-600"></span>
-                    </div>
-                </div>
+                
             </div>
 
 <div class="p-8 max-w-5xl mx-auto space-y-6">

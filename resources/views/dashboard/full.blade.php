@@ -101,45 +101,28 @@
     </div>
 
     <div class="flex-1 md:ml-64">
-<!-- TOPBAR -->
-<div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
-    <div class="flex items-center gap-3">
-        <!-- Hamburger mobile -->
-        <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
-            <i data-feather="menu" class="w-5 h-5"></i>
-        </button>
-        <div>
-            <h1 class="font-bold text-slate-800 text-lg">Dashboard</h1>
-            <p class="text-xs text-slate-400 mt-0.5">CMMS — General Affairs Management System</p>
-        </div>
-    </div>
-    <div class="flex items-center gap-3">
-        <div id="userBadge" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-            <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center">
-                <span id="userInitial" class="text-white font-bold text-xs"></span>
-            </div>
-            <span id="userInfo" class="text-sm font-medium text-slate-600"></span>
-        </div>
-    </div>
-</div>
         <!-- TOPBAR -->
-        <div class="bg-white border-b border-slate-100 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
-            <div>
-                <h1 class="font-bold text-slate-800 text-lg">Dashboard</h1>
-                <p class="text-xs text-slate-400 mt-0.5">CMMS — General Affairs Management System</p>
-            </div>
+        <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
             <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-slate-600">
+                <!-- Hamburger mobile -->
+                <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
                     <i data-feather="menu" class="w-5 h-5"></i>
                 </button>
-                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                <div>
+                    <h1 class="font-bold text-slate-800 text-lg">Dashboard</h1>
+                    <p class="text-xs text-slate-400 mt-0.5">CMMS — General Affairs Management System</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="userBadge" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
                     <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center">
-                        <span class="text-white font-bold text-xs">SA</span>
+                        <span id="userInitial" class="text-white font-bold text-xs"></span>
                     </div>
-                    <span class="text-sm font-medium text-slate-600">Super Admin</span>
+                    <span id="userInfo" class="text-sm font-medium text-slate-600"></span>
                 </div>
             </div>
         </div>
+        
 
         <div class="p-8">
 
@@ -245,7 +228,7 @@
                     <div class="card p-6">
                         <h2 class="font-bold text-slate-800 text-base mb-4">Aksi Cepat</h2>
                         <div class="space-y-2">
-                            <a href="/branches" class="btn-blue w-full justify-start">
+                            <a href="/cabang" class="btn-blue w-full justify-start">
                                 <div class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
                                     <i data-feather="git-branch" class="w-3.5 h-3.5 text-blue-600"></i>
                                 </div>
@@ -284,7 +267,11 @@
 <script>
 const token = localStorage.getItem('token');
 if (!token) { localStorage.clear(); window.location.href = '/login'; }
-
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+const userInfoEl = document.getElementById('userInfo');
+const userInitialEl = document.getElementById('userInitial');
+if (userInfoEl) userInfoEl.textContent = user.name + ' · ' + (user.role ?? '');
+if (userInitialEl) userInitialEl.textContent = user.name ? user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : '??';
 document.getElementById('todayDate').innerText = new Date().toLocaleDateString('id-ID', {
     day: 'numeric', month: 'short', year: 'numeric'
 });

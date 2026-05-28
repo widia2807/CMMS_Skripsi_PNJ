@@ -51,7 +51,7 @@ Route::get('/admin/peminjaman', function () {
 Route::get('/spk', function () {
     return view('admin_ga.spk_list');
 });
-// routes/web.php — TAMBAH ini, jangan hapus yang /spk
+
 Route::get('/work-order/{type}/{id}', function () {
     return view('admin_ga.work_order');
 });
@@ -81,7 +81,13 @@ Route::get('/dashboard-technician', function () {
         'user' => auth()->user()
     ]);
 });
+Route::get('/dashboard-management', function () {
+    return view('dashboard.dashboard_management');
+});
 
+Route::get('/reports', function () {
+    return view('management.laporan');
+});
 Route::get('/dashboard-lite', fn() => view('dashboard.lite', [
     'user' => auth()->user()
 ]));

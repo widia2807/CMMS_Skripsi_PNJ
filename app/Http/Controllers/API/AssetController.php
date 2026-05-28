@@ -13,8 +13,12 @@ class AssetController extends Controller
 {
     public function index()
 {
+    $user = auth()->user();
     return response()->json(
-        Asset::with(['category','subCategory','branch'])->latest()->get()
+        Asset::with(['category', 'subCategory', 'branch'])
+            ->whereHas('branch', fn($q) => $q->where('company_id', $user->company_id))
+            ->latest()
+            ->get()
     );
 }
 

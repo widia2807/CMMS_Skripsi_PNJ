@@ -173,7 +173,11 @@
 
 <script>
 const token = localStorage.getItem('token');
-const user = JSON.parse(localStorage.getItem('user'));
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+const userInfoEl = document.getElementById('userInfo');
+const userInitialEl = document.getElementById('userInitial');
+if (userInfoEl) userInfoEl.textContent = user.name + ' · ' + (user.role ?? '');
+if (userInitialEl) userInitialEl.textContent = user.name ? user.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : '??';
 
 if (!user || !token) window.location.href = '/login';
 

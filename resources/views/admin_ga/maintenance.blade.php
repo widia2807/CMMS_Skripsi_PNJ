@@ -559,16 +559,6 @@ async function sendScheduledSpk(id) {
 function openWorkOrder(id, type) {
     window.open(`/work-order/${type}/${id}`);
 }
-function goToDashboard() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user?.role === 'pic') {
-        window.location.href = '/dashboard-pic';
-    } else if (user?.system_type === 'lite') {
-        window.location.href = '/dashboard-lite';
-    } else {
-        window.location.href = '/dashboard-full';
-    }
-}
 
 /* ─── MODAL: UBAH TUKANG ─── */
 function openReassign(id) {

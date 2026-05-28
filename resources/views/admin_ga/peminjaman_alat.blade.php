@@ -42,14 +42,7 @@
                         <p class="text-xs text-slate-400 mt-0.5">Kelola peminjaman antar cabang</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div id="userBadge" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                        <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center">
-                            <span id="userInitial" class="text-white font-bold text-xs"></span>
-                        </div>
-                        <span id="userInfo" class="text-sm font-medium text-slate-600"></span>
-                    </div>
-                </div>
+                
             </div>
 
 

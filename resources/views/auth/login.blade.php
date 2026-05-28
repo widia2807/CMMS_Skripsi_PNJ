@@ -74,6 +74,14 @@ async function login() {
     else if (user.role === 'technician') {
         window.location.href = '/dashboard-technician';
     }
+
+    else if (user.role === 'management') {
+    window.location.href = '/dashboard-management';
+}
+
+else {
+    alert('Role tidak dikenali: ' + user.role);
+}
 }
 </script>
 </body>

@@ -45,14 +45,6 @@
                         <p class="text-xs text-slate-400 mt-0.5">Daftar pekerjaan yang ditugaskan</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div id="userBadge" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                        <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center">
-                            <span id="userInitial" class="text-white font-bold text-xs"></span>
-                        </div>
-                        <span id="userInfo" class="text-sm font-medium text-slate-600"></span>
-                    </div>
-                </div>
             </div>
 
 <div class="p-8 space-y-10">
@@ -302,7 +294,8 @@ const token = localStorage.getItem('token');
 if (!token) window.location.href = '/login';
 
 const user = JSON.parse(localStorage.getItem('user') || '{}');
-if (user.name) document.getElementById('techName').textContent = user.name;
+const techNameEl = document.getElementById('techName');
+if (user.name && techNameEl) techNameEl.textContent = user.name;
 
 let selectedId        = null;
 let selectedSchedId   = null;
@@ -464,6 +457,7 @@ async function loadRepairJobs() {
     try {
         const res  = await fetch('/api/technician/jobs', { headers: { 'Authorization': 'Bearer ' + token } });
         const data = await res.json();
+        console.log('repair jobs:', data);
         if (!res.ok) { alert(data.message || 'Gagal load data'); return; }
         window.repairData = data;
         renderRepair(data);

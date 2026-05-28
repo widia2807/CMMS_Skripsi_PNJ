@@ -701,17 +701,6 @@ function resetForm() {
 function goTo(url) {
     window.location.href = url;
 }
-function goToDashboard() {
-    const user = JSON.parse(localStorage.getItem('user'));
-
-    if (user?.role === 'pic') {
-        window.location.href = '/dashboard-pic';
-    } else if (user?.system_type === 'lite') {
-        window.location.href = '/dashboard-lite';
-    } else {
-        window.location.href = '/dashboard-full';
-    }
-}
 function openCategoryModal() { document.getElementById('categoryModal').classList.remove('hidden'); feather.replace(); }
 function closeCategoryModal() { document.getElementById('categoryModal').classList.add('hidden'); }
 function openSubCategoryModal() { document.getElementById('subCategoryModal').classList.remove('hidden'); loadCategoryForSub(); feather.replace(); }

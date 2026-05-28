@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'menu-assets',
             'menu-tools',
             'menu-spk',
-            'menu-report'
+            
         ],
         super_admin: [
             'menu-user',
@@ -128,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         technician: [
             'menu-pekerjaan'
+        ],
+        management: [
+            'menu-report'
         ]
     };
 
@@ -176,6 +179,7 @@ function goToDashboard() {
     else if (user?.role === 'technician')  window.location.href = '/dashboard-technician';
     else if (user?.role === 'super_admin') window.location.href = '/dashboard-full';
     else if (user?.system_type === 'lite') window.location.href = '/dashboard-lite';
+    else if (user?.role === 'management') window.location.href = '/dashboard-management';
     else                                   window.location.href = '/dashboard-admin';
 }
 
