@@ -54,12 +54,12 @@ public function index()
     }
 
     if ($user->role === 'pic') {
-        $data = RequestModel::with(['categoryRelation', 'technician'])
+        $data = RequestModel::with(['categoryRelation', 'technician', 'branch', 'subCategory', 'materials'])
             ->where('user_id', $user->id)
             ->latest()
             ->get();
     } else {
-        $data = RequestModel::with(['categoryRelation', 'technician'])
+        $data = RequestModel::with(['categoryRelation', 'technician', 'branch', 'subCategory', 'materials'])
             ->where('company_id', $user->company_id)
             ->latest()
             ->get();
@@ -67,19 +67,33 @@ public function index()
 
     return $data->map(function ($req) {
         return [
-            'id'             => $req->id,
-            'title'          => $req->title,
-            'description'    => $req->description,
-            'status'         => $req->status,
-            'photo'          => $req->photo,
-            'category_id'    => $req->category_id,
-            'category'       => $req->categoryRelation->name ?? '-',
-            'urgency'        => $req->urgency,
-            'technician_id'  => $req->technician_id,
-            'technician_name'=> $req->technician->name ?? '-',
-            'schedule_date'  => $req->schedule_date,
-            'spk_sent_at'    => $req->spk_sent_at,
-            'spk_number'     => $req->spk_number,
+            'id'              => $req->id,
+            'title'           => $req->title,
+            'description'     => $req->description,
+            'status'          => $req->status,
+            'photo'           => $req->photo,
+            'category_id'     => $req->category_id,
+            'category'        => $req->categoryRelation->name ?? '-',
+            'sub_category_id' => $req->sub_category_id,
+            'sub_category'    => $req->subCategory->name ?? '-',
+            'branch_id'       => $req->branch_id,
+            'branch'          => $req->branch->name ?? '-',
+            'urgency'         => $req->urgency,
+            'technician_id'   => $req->technician_id,
+            'technician_name' => $req->technician->name ?? '-',
+            'schedule_date'   => $req->schedule_date,
+            'completion_note' => $req->completion_note,
+            'completed_at'    => $req->completed_at,
+            'material_used'   => $req->material_used,
+            'materials'       => $req->materials->map(fn($m) => [
+                'item_name' => $m->item_name,
+                'qty'       => $m->qty,
+                'unit'      => $m->unit,
+                'status'    => $m->status,
+            ]),
+            'spk_sent_at'     => $req->spk_sent_at,
+            'spk_number'      => $req->spk_number,
+            'created_at'      => $req->created_at,
         ];
     });
 }

@@ -292,8 +292,12 @@ const token = localStorage.getItem('token');
 if (!token) window.location.href = '/login';
 
 const user = JSON.parse(localStorage.getItem('user') || '{}');
-if (user.name) document.getElementById('picName').textContent = user.name;
 
+const picName = document.getElementById('picName');
+
+if (user.name && picName) {
+    picName.textContent = user.name;
+}
 let allAssets = [];
 let allBranches = [];
 let allCategories = [];

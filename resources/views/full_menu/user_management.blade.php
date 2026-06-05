@@ -212,7 +212,7 @@ async function loadUsers() {
     if (!data.length) {
         document.getElementById('userTable').innerHTML = '';
         empty.classList.remove('hidden');
-        feather.replace();
+        
         return;
     }
     empty.classList.add('hidden');
@@ -273,7 +273,6 @@ async function loadUsers() {
         </tr>`;
     }).join('');
 
-    feather.replace();
 }
 
 async function loadBranch(filterType = null) {
@@ -391,7 +390,7 @@ function openModal() {
     document.getElementById('branch').classList.add('hidden');
     document.getElementById('categoryWrapper').classList.add('hidden');
     document.getElementById('branchWrapper').classList.remove('hidden');
-    feather.replace();
+    
 }
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 

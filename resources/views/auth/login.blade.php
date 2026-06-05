@@ -61,7 +61,7 @@ async function login() {
         if (user.system_type === 'lite') {
             window.location.href = '/dashboard-lite';
         } else {
-            window.location.href = '/dashboard-admin'; // 🔥 INI YANG BENAR
+            window.location.href = '/dashboard-admin'; 
         }
     }
 

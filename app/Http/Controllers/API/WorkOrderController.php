@@ -107,7 +107,7 @@ class WorkOrderController extends Controller
 
         // Generate nomor SPK jika belum ada
         if (!$req->spk_number) {
-            $req->spk_number = SpkHelper::generate('repair');
+            $req->spk_number = SpkHelper::generate('repair', $user->company_id);
         }
         $req->spk_sent_at = Carbon::now();
         $req->spk_sent_by = $user->id;
@@ -159,14 +159,16 @@ class WorkOrderController extends Controller
     {
         $user  = auth()->user();
         $sched = ScheduledMaintenance::with(['category', 'worker'])
-            ->findOrFail($id);
+            ->where('company_id', $user->company_id)
+            ->where('id', $id)
+            ->firstOrFail();
 
         if (!$sched->worker_id) {
             return response()->json(['message' => 'Tukang belum ditentukan'], 422);
         }
 
         if (!$sched->spk_number) {
-            $sched->spk_number = SpkHelper::generate('scheduled');
+            $sched->spk_number = SpkHelper::generate('scheduled', $user->company_id);
         }
         $sched->spk_sent_at = Carbon::now();
         $sched->spk_sent_by = $user->id;
@@ -223,7 +225,8 @@ class WorkOrderController extends Controller
                     'createdByUser',
                 ])
                 ->where('company_id', $user->company_id)
-                ->findOrFail($id);
+                ->where('id', $id)      
+                ->firstOrFail();
 
         $company = Company::findOrFail($user->company_id);
 

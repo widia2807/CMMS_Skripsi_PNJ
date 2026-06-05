@@ -154,7 +154,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Maintenance Terjadwal
     Route::post('/scheduled-maintenances/{id}/send-spk',  [ScheduledMaintenanceController::class, 'sendSpk']);
     Route::get('/scheduled-maintenances/{id}/work-order', [ScheduledMaintenanceController::class, 'workOrder']);
-
+    Route::put('scheduled-maintenances/{id}/toggle-auto', [ScheduledMaintenanceController::class, 'toggleAuto']);
     // ── COMPANY SETTINGS (logo, alamat, TTD manager) ─────────────────────
     Route::get('/company-settings',  [WorkOrderController::class, 'getSettings']);
     Route::post('/company-settings', [WorkOrderController::class, 'saveSettings']);

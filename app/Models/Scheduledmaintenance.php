@@ -19,6 +19,7 @@ class ScheduledMaintenance extends Model
         'created_by',
         'worker_id',
         'status',
+        'is_auto', 'parent_id',
         'worker_confirmed_at',
         'completed_at',
         'completion_note',

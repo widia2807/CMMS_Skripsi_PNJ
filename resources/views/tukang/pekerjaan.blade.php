@@ -570,6 +570,7 @@ async function loadScheduledTasks() {
     try {
         const res  = await fetch('/api/scheduled-maintenances/my-tasks', { headers: { 'Authorization': 'Bearer ' + token } });
         const data = await res.json();
+        console.log('scheduled tasks:', data);
         if (!res.ok) { console.error('Scheduled tasks error:', data); return; }
         window.scheduledData = Array.isArray(data) ? data : (data.data ?? []);
         renderScheduled(window.scheduledData);

@@ -172,7 +172,7 @@
         <button onclick="createBranch()" class="btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-semibold text-sm mt-2">
             Simpan
         </button>
-    </div>
+    </div> 
 </div>
 </div>
 
