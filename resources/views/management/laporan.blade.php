@@ -6,13 +6,14 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: #f1f5f9; }
         .card { background: white; border-radius: 20px; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-        .stat-card { background: white; border-radius: 16px; padding: 20px 24px; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s; }
+        .stat-card { background: white; border-radius: 16px; padding: 16px 18px; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-        .icon-box { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .icon-box { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .status-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; white-space: nowrap; }
         .btn-export { display: inline-flex; align-items: center; gap: 6px; background: #1e293b; color: white; border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 600; transition: all 0.15s; cursor: pointer; white-space: nowrap; }
         .btn-export:hover { background: #334155; transform: translateY(-1px); }
@@ -23,12 +24,29 @@
         .progress-bar { height: 8px; border-radius: 99px; background: #f1f5f9; overflow: hidden; }
         .progress-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
         .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .chart-container { position: relative; width: 100%; }
+        .chart-container { position: relative; width: 100%; max-height: 240px; }
+
+        /* ── TOPBAR MOBILE ── */
+        .topbar-row1 { display: flex; justify-content: space-between; align-items: center; }
+        .topbar-row2 { display: none; }
+
         @media (max-width: 640px) {
-            .topbar-inner { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .topbar-right { width: 100%; display: flex; gap: 8px; align-items: center; }
-            #filterMonth { flex: 1; min-width: 0; }
-            .chart-container { max-height: 260px; }
+            /* Topbar: baris 1 = menu+judul+avatar, baris 2 = filter */
+            .topbar-row2 { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+            #filterMonth { flex: 1; font-size: 13px; }
+            #btnClearFilter { font-size: 12px; }
+
+            /* Stat cards: 2 kolom penuh */
+            .stat-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+            .stat-card { padding: 14px 14px; }
+            .stat-number { font-size: 22px !important; }
+            .icon-box { width: 32px; height: 32px; }
+
+            /* Chart lebih kecil di mobile */
+            .chart-container { max-height: 200px; }
+
+            /* Sembunyikan user label di mobile topbar baris 1 */
+            .user-label { display: none; }
         }
     </style>
 </head>
@@ -40,47 +58,59 @@
 <div class="flex-1 md:ml-64">
 
     <!-- TOPBAR -->
-    <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 sticky top-0 z-30">
-        <div class="topbar-inner flex justify-between items-center gap-3">
+    <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-3 md:py-4 sticky top-0 z-30">
+        <!-- Baris 1: menu + judul + avatar -->
+        <div class="topbar-row1">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
                     <i data-feather="menu" class="w-5 h-5"></i>
                 </button>
                 <div>
-                    <h1 class="font-bold text-slate-800 text-lg">Laporan</h1>
+                    <h1 class="font-bold text-slate-800 text-base md:text-lg">Laporan</h1>
                     <p class="text-xs text-slate-400 mt-0.5">Rekap & analisis pekerjaan</p>
                 </div>
             </div>
-            <div class="topbar-right flex items-center gap-2">
-                <div class="relative flex-1 sm:flex-none">
+            <div class="flex items-center gap-2">
+                <!-- Filter hanya tampil di desktop di baris ini -->
+                <div class="hidden md:block">
                     <input type="month" id="filterMonth"
-                        class="w-full sm:w-auto text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-slate-400"
+                        class="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-slate-400"
                         onchange="applyFilter()">
                 </div>
                 <button onclick="clearFilter()" id="btnClearFilter" title="Tampilkan semua"
                     class="hidden text-xs text-slate-500 border border-slate-200 rounded-xl px-3 py-2 bg-white hover:bg-slate-50 whitespace-nowrap">
                     Semua
                 </button>
-                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-shrink-0">
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2 md:px-3 py-2 flex-shrink-0">
                     <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center">
                         <span id="userInitial" class="text-white font-bold text-xs"></span>
                     </div>
-                    <span id="userInfo" class="text-sm font-medium text-slate-600 hidden sm:inline"></span>
+                    <span id="userInfo" class="user-label text-sm font-medium text-slate-600 hidden md:inline"></span>
                 </div>
             </div>
+        </div>
+        <!-- Baris 2: filter (hanya mobile) -->
+        <div class="topbar-row2">
+            <input type="month" id="filterMonthMobile"
+                class="border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-slate-400"
+                onchange="syncFilter(this.value)">
+            <button onclick="clearFilter()" id="btnClearFilterMobile"
+                class="hidden text-xs text-slate-500 border border-slate-200 rounded-xl px-3 py-2 bg-white hover:bg-slate-50 whitespace-nowrap">
+                Semua
+            </button>
         </div>
     </div>
 
     <div class="p-4 md:p-8 space-y-6">
 
         <!-- STAT CARDS -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div class="stat-grid grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <div class="stat-card">
                 <div class="flex items-center justify-between mb-3">
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Perbaikan</p>
                     <div class="icon-box bg-orange-50"><i data-feather="tool" class="w-4 h-4 text-orange-500"></i></div>
                 </div>
-                <p id="statRepair" class="text-2xl md:text-3xl font-bold text-slate-800">0</p>
+                <p id="statRepair" class="stat-number text-2xl md:text-3xl font-bold text-slate-800">0</p>
                 <p id="statRepairPeriode" class="text-xs text-slate-400 mt-1">-</p>
             </div>
             <div class="stat-card">
@@ -88,7 +118,7 @@
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Perbaikan Selesai</p>
                     <div class="icon-box bg-green-50"><i data-feather="check-circle" class="w-4 h-4 text-green-500"></i></div>
                 </div>
-                <p id="statRepairDone" class="text-2xl md:text-3xl font-bold text-green-500">0</p>
+                <p id="statRepairDone" class="stat-number text-2xl md:text-3xl font-bold text-green-500">0</p>
                 <p id="statRepairDonePct" class="text-xs text-slate-400 mt-1">-</p>
             </div>
             <div class="stat-card">
@@ -96,7 +126,7 @@
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Total Maintenance</p>
                     <div class="icon-box bg-blue-50"><i data-feather="calendar" class="w-4 h-4 text-blue-500"></i></div>
                 </div>
-                <p id="statMaint" class="text-2xl md:text-3xl font-bold text-slate-800">0</p>
+                <p id="statMaint" class="stat-number text-2xl md:text-3xl font-bold text-slate-800">0</p>
                 <p id="statMaintPeriode" class="text-xs text-slate-400 mt-1">-</p>
             </div>
             <div class="stat-card">
@@ -104,7 +134,7 @@
                     <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Maintenance Selesai</p>
                     <div class="icon-box bg-green-50"><i data-feather="check-circle" class="w-4 h-4 text-green-500"></i></div>
                 </div>
-                <p id="statMaintDone" class="text-2xl md:text-3xl font-bold text-green-500">0</p>
+                <p id="statMaintDone" class="stat-number text-2xl md:text-3xl font-bold text-green-500">0</p>
                 <p id="statMaintDonePct" class="text-xs text-slate-400 mt-1">-</p>
             </div>
         </div>
@@ -271,13 +301,17 @@ function formatDateTime(str) {
 }
 
 function getPeriodeLabel() {
-    const month = document.getElementById('filterMonth').value;
+    const month = getFilterMonth();
     if (!month) return 'Semua Periode';
     return new Date(month + '-01').toLocaleDateString('id-ID', { month:'long', year:'numeric' });
 }
 
+function getFilterMonth() {
+    return document.getElementById('filterMonth').value;
+}
+
 function matchesMonth(dateStr) {
-    const month = document.getElementById('filterMonth').value;
+    const month = getFilterMonth();
     if (!month) return true;
     if (!dateStr) return false;
     const d = new Date(dateStr);
@@ -291,16 +325,24 @@ function buildParams() {
     return p.toString() ? '?' + p.toString() : '';
 }
 
-function applyFilter() {
-    const month = document.getElementById('filterMonth').value;
-    document.getElementById('btnClearFilter').classList.toggle('hidden', !month);
+function syncFilter(val) {
+    document.getElementById('filterMonth').value = val;
+    const mob = document.getElementById('filterMonthMobile');
+    if (mob) mob.value = val;
+    const show = !!val;
+    document.getElementById('btnClearFilter').classList.toggle('hidden', !show);
+    const btnMob = document.getElementById('btnClearFilterMobile');
+    if (btnMob) btnMob.classList.toggle('hidden', !show);
     renderAll();
 }
 
+function applyFilter() {
+    const val = document.getElementById('filterMonth').value;
+    syncFilter(val);
+}
+
 function clearFilter() {
-    document.getElementById('filterMonth').value = '';
-    document.getElementById('btnClearFilter').classList.add('hidden');
-    renderAll();
+    syncFilter('');
 }
 
 function renderAll() {
@@ -356,7 +398,7 @@ function renderRepairTable() {
     const data  = getRepairFiltered();
     const tbody = document.getElementById('repairTableBody');
     if (!data.length) {
-        tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-slate-400">Tidak ada data${document.getElementById('filterMonth').value?' untuk periode ini':''}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-slate-400">Tidak ada data${getFilterMonth()?' untuk periode ini':''}.</td></tr>`;
         return;
     }
     tbody.innerHTML = data.map(item => {
@@ -425,7 +467,7 @@ function renderMaintTable() {
     const data  = getMaintFiltered();
     const tbody = document.getElementById('maintTableBody');
     if (!data.length) {
-        tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-slate-400">Tidak ada data${document.getElementById('filterMonth').value?' untuk periode ini':''}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-slate-400">Tidak ada data${getFilterMonth()?' untuk periode ini':''}.</td></tr>`;
         return;
     }
     tbody.innerHTML = data.map(item => {
