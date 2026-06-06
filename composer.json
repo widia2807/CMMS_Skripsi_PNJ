@@ -75,10 +75,10 @@
         }
     },
     "config": {
-    "allow-plugins": {
-        "pestphp/pest-plugin": true
-    },
-    "platform-check": false
+    "platform-check": false,
+    "platform": {
+        "ext-gd": "1.0"
+    }
 },
     "config": {
         "optimize-autoloader": true,
