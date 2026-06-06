@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && docker-php-ext-install gd zip pdo pdo_mysql
 
-RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork rewrite
+RUN a2dismod mpm_event || true && a2dismod mpm_worker || true && a2enmod mpm_prefork rewrite
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
