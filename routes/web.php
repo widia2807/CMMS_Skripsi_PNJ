@@ -17,7 +17,9 @@ Route::get('/request', fn() => view('request', [
 Route::get('/cabang', fn() => view('full_menu.cabang', [
     'user' => auth()->user()
 ]));
-
+Route::get('/', function () {
+    return redirect('/login');
+});
 Route::get('/users', fn() => view('full_menu.user_management', [
     'user' => auth()->user()
 ]));
