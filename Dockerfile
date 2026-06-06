@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && docker-php-ext-install gd zip pdo pdo_mysql
 
+RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork rewrite
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
@@ -15,5 +17,7 @@ COPY . .
 RUN composer install --optimize-autoloader --no-dev --no-interaction --ignore-platform-reqs
 
 RUN cp .env.example .env && php artisan key:generate
+
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
