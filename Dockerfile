@@ -14,7 +14,7 @@ WORKDIR /var/www/html
 COPY . .
 
 RUN composer install --optimize-autoloader --no-dev --no-interaction --ignore-platform-reqs
-
+RUN composer dump-autoload --optimize --ignore-platform-reqs
 RUN cp .env.example .env && php artisan key:generate
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
