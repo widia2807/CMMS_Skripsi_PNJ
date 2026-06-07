@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class AssetCategory extends Model
 {
     protected $table = 'asset_categories';
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'company_id'];
 
 
     public function subCategories()

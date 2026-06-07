@@ -11,7 +11,9 @@ class AssetCategoryController extends Controller
     public function index()
     {
         return response()->json(
-            AssetCategory::select('id','name')->get()
+            AssetCategory::where('company_id', auth()->user()->company_id)
+            ->select('id','name')
+            ->get()
         );
     }
 
@@ -25,12 +27,10 @@ class AssetCategoryController extends Controller
         }
 
         $category = AssetCategory::create([
-            'name' => $request->name
-        ]);
+        'name'       => $request->name,
+        'company_id' => auth()->user()->company_id,
+    ]);
 
-        return response()->json([
-            'message' => 'Category berhasil dibuat',
-            'data' => $category
-        ]);
-    }
+    return response()->json(['message' => 'Category berhasil dibuat', 'data' => $category]);
+}
     }
