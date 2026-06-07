@@ -235,11 +235,13 @@
 </div>
 
 <script>
-const token = localStorage.getItem('token');
-const user  = JSON.parse(localStorage.getItem('user'));
-
-if (!user || !token) { localStorage.clear(); window.location.href = '/login'; }
-
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
+const user  = JSON.parse(getCookie('user') || 'null');
+if (!user || !token) { window.location.href = '/login'; }
 document.getElementById('userInfo').innerText    = user.name + ' · ' + user.role;
 document.getElementById('userInitial').innerText = user.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 

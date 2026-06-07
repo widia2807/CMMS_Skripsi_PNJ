@@ -56,7 +56,7 @@ async function login() {
         const user = data.user;
 
         document.cookie = `token=${data.token}; path=/; SameSite=Lax`;
-        document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/; SameSite=Lax`;
+        document.cookie = `user=${JSON.stringify(user)}; path=/; SameSite=Lax`;
 
         alert('Login berhasil! Role: ' + user.role); // ← konfirmasi dulu
 

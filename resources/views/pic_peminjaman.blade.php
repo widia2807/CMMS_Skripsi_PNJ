@@ -288,11 +288,13 @@
 </div>
 
 <script>
-const token = localStorage.getItem('token');
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
 if (!token) window.location.href = '/login';
-
-const user = JSON.parse(localStorage.getItem('user') || '{}');
-
+const user = JSON.parse(getCookie('user') || '{}');
 const picName = document.getElementById('picName');
 
 if (user.name && picName) {

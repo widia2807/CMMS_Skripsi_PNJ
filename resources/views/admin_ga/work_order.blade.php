@@ -301,7 +301,12 @@
 </div><!-- end .page -->
 
 <script>
-const token  = localStorage.getItem('token');
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
+if (!token) window.location.href = '/login';
 const parts = window.location.pathname.split('/');
 const woId  = parts.pop();     
 const woType = parts.pop();

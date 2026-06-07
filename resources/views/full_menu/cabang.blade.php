@@ -177,8 +177,13 @@
 </div>
 
 <script>
-const token = localStorage.getItem('token');
-const user = JSON.parse(localStorage.getItem('user') || '{}');
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
+const user  = JSON.parse(getCookie('user') || '{}');
+if (!user || !token) window.location.href = '/login';
 const userInfoEl = document.getElementById('userInfo');
 const userInitialEl = document.getElementById('userInitial');
 if (userInfoEl) userInfoEl.textContent = user.name + ' · ' + (user.role ?? '');

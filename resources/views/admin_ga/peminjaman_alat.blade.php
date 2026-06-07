@@ -101,7 +101,11 @@
 </div>
 
 <script>
-const token = localStorage.getItem('token');
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
 let allData = [];
 let currentFilter = 'all';
 

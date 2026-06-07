@@ -381,7 +381,7 @@
 const API = '/api/assets';
 function getCookie(name) {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? match[2] : null;
+    return match ? decodeURIComponent(match[2]) : null;  // ← tambah decode
 }
 const token = getCookie('token');
 let editId = null;

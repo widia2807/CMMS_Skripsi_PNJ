@@ -290,10 +290,13 @@
 </div>
 
 <script>
-const token = localStorage.getItem('token');
-if (!token) window.location.href = '/login';
-
-const user = JSON.parse(localStorage.getItem('user') || '{}');
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
+const user  = JSON.parse(getCookie('user') || 'null');
+if (!user || !token) { window.location.href = '/login'; }
 const techNameEl = document.getElementById('techName');
 if (user.name && techNameEl) techNameEl.textContent = user.name;
 

@@ -183,8 +183,13 @@ let selectedCategory = null;
 let selectedId       = null;
 let spkTargetId      = null;
 let currentFilter    = 'all';
-const token = localStorage.getItem('token');
-const user  = JSON.parse(localStorage.getItem('user')); // ← tambah ini
+unction getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
+const user  = JSON.parse(getCookie('user') || 'null');
+if (!token) { alert('Session habis'); window.location.href = '/login'; }
 const isAdmin = user?.role === 'admin' || user?.role === 'admin_ga';
 if (!token) { alert('Session habis'); window.location.href = '/login'; }
 
