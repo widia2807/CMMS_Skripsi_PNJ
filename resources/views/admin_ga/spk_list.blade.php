@@ -47,17 +47,16 @@
 <div class="flex-1 md:ml-64">
 <!-- TOPBAR -->
             <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
-                <div class="flex items-center gap-3">
-                    <!-- Hamburger mobile -->
-                    <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
-                        <i data-feather="menu" class="w-5 h-5"></i>
-                    </button>
-                    <div>
-                        <h1 class="font-bold text-slate-800 text-lg">Pengaturan Template SPK</h1>
-                        <p class="text-xs text-slate-400 mt-0.5">Konfigurasi kop surat, logo, tanda tangan & penomoran</p>
-                </div>
-                
-            </div>
+    <div class="flex items-center gap-3">
+        <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
+            <i data-feather="menu" class="w-5 h-5"></i>
+        </button>
+        <div>
+            <h1 class="font-bold text-slate-800 text-lg">Pengaturan Template SPK</h1>
+            <p class="text-xs text-slate-400 mt-0.5">Konfigurasi kop surat, logo, tanda tangan & penomoran</p>
+        </div>
+    </div>
+</div>
 
  <div class="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
 
@@ -237,10 +236,6 @@
         </div>
     </div>
 </div>
-
-</div>
-</div>
-</div>
 <!-- TOMBOL SIMPAN -->
 <div class="flex justify-end">
     <button id="btnSave" onclick="saveSettings()"
@@ -248,6 +243,10 @@
         <i data-feather="save" class="w-4 h-4"></i> Simpan Pengaturan
     </button>
 </div>
+</div>
+</div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast">
     <div class="bg-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
