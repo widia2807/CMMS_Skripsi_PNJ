@@ -6,11 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-   public function up()
+  public function up()
 {
     Schema::table('borrowings', function (Blueprint $table) {
         $table->unsignedBigInteger('user_id')->nullable()->after('asset_id');
-        $table->foreign('user_id')->references('id')->on('users');
     });
 }
 
