@@ -580,7 +580,7 @@ async function submitSendSpk() {
     await loadRequests();
 
     // Langsung buka WO setelah kirim
-    openWorkOrder(spkTargetId, 'repair');
+    openWorkOrder(data.wo_id, 'repair');
 }
 
 /* Buka halaman WO di tab baru */

@@ -94,6 +94,7 @@ public function index()
             'spk_sent_at'     => $req->spk_sent_at,
             'spk_number'      => $req->spk_number,
             'created_at'      => $req->created_at,
+            'wo_id'           => $req->workOrder?->id,
         ];
     });
 }
