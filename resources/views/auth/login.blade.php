@@ -48,9 +48,8 @@ async function login() {
 
     const user = data.user;
 
-    document.cookie = `token=${data.token}; path=/; SameSite=Lax`;
-    localStorage.setItem('user', JSON.stringify(user));
-
+   document.cookie = `token=${data.token}; path=/; SameSite=Lax`;
+document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/; SameSite=Lax`;
     // 🔥 SUPER ADMIN
     if (user.role === 'super_admin') {
         window.location.href = '/dashboard-full';
