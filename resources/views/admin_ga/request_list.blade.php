@@ -183,7 +183,7 @@ let selectedCategory = null;
 let selectedId       = null;
 let spkTargetId      = null;
 let currentFilter    = 'all';
-unction getCookie(name) {
+function getCookie(name) {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? decodeURIComponent(match[2]) : null;
 }
