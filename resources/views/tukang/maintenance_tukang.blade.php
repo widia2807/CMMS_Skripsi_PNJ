@@ -248,15 +248,25 @@ function cardPending(item, period) {
 
 /* ─── CARD: ONGOING ─── */
 function cardOngoing(item, period) {
+    const btnAction = item.status === 'confirmed'
+        ? `<button onclick="startWork(${item.id})"
+                class="w-full text-sm bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+                Mulai Pekerjaan
+            </button>`
+        : `<button onclick="openDoneModal(${item.id})"
+                class="w-full text-sm bg-green-700 text-white py-2 rounded-lg hover:bg-green-800 transition font-medium">
+                Tandai Selesai
+            </button>`;
+
     return `
     <div class="bg-white rounded-xl shadow-sm p-4">
         <div class="flex justify-between items-start gap-3 mb-3">
             <div class="flex-1 min-w-0">
                 <p class="font-semibold text-sm text-gray-800 truncate">${item.title}</p>
-                <p class="text-xs text-gray-400 mt-0.5">${item.category} · ${period} · ${formatDate(item.scheduled_date)}</p>
+                <p class="text-xs text-gray-400 mt-0.5">${item.category_name ?? item.category} · ${period} · ${formatDate(item.scheduled_date)}</p>
             </div>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium shrink-0">
-                Berjalan
+            <span class="text-xs px-2 py-0.5 rounded-full ${item.status === 'confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'} font-medium shrink-0">
+                ${item.status === 'confirmed' ? 'Dikonfirmasi' : 'Sedang Dikerjakan'}
             </span>
         </div>
 
@@ -267,11 +277,7 @@ function cardOngoing(item, period) {
         </div>` : ''}
 
         <div class="border-t border-gray-100 pt-3 mt-1">
-            <p class="text-xs font-medium text-gray-600 mb-2">Laporkan penyelesaian</p>
-            <button onclick="openDoneModal(${item.id})"
-                class="w-full text-sm bg-green-700 text-white py-2 rounded-lg hover:bg-green-800 transition font-medium">
-                Tandai Selesai
-            </button>
+            ${btnAction}
         </div>
     </div>`;
 }
@@ -327,7 +333,19 @@ async function confirmSchedule(id) {
     alert('Jadwal dikonfirmasi. Status pekerjaan berubah jadi Sedang Berjalan.');
     loadTasks();
 }
+async function startWork(id) {
+    if (!confirm('Mulai mengerjakan tugas ini?')) return;
 
+    const res  = await fetch(`/api/scheduled-maintenances/${id}/start`, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+
+    if (!res.ok) { alert(data.message ?? 'Gagal memulai'); return; }
+    alert('Pekerjaan dimulai!');
+    loadTasks();
+}
 /* ─── MODAL: TANDAI SELESAI ─── */
 function openDoneModal(id) {
     selectedId = id;
