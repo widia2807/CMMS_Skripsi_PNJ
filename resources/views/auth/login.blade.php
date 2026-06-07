@@ -26,61 +26,58 @@
     </p>
 </div>
 <script>
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+
 async function login() {
-    const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value
-        })
-    });
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            })
+        });
 
-    const data = await res.json();
+        const data = await res.json();
+        console.log('Response:', data); // ← lihat di console
 
-    if (!res.ok) {
-        alert(data.message);
-        return;
-    }
-
-    const user = data.user;
-
-   document.cookie = `token=${data.token}; path=/; SameSite=Lax`;
-document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/; SameSite=Lax`;
-    // 🔥 SUPER ADMIN
-    if (user.role === 'super_admin') {
-        window.location.href = '/dashboard-full';
-    }
-
-    // 🔥 ADMIN GA
-    else if (user.role === 'admin') {
-        if (user.system_type === 'lite') {
-            window.location.href = '/dashboard-lite';
-        } else {
-            window.location.href = '/dashboard-admin'; 
+        if (!res.ok) {
+            alert('Login gagal: ' + data.message);
+            return;
         }
+
+        const user = data.user;
+
+        document.cookie = `token=${data.token}; path=/; SameSite=Lax`;
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(user))}; path=/; SameSite=Lax`;
+
+        alert('Login berhasil! Role: ' + user.role); // ← konfirmasi dulu
+
+        if (user.role === 'super_admin') {
+            window.location.href = '/dashboard-full';
+        } else if (user.role === 'admin') {
+            window.location.href = user.system_type === 'lite' ? '/dashboard-lite' : '/dashboard-admin';
+        } else if (user.role === 'pic') {
+            window.location.href = '/dashboard-pic';
+        } else if (user.role === 'technician') {
+            window.location.href = '/dashboard-technician';
+        } else if (user.role === 'management') {
+            window.location.href = '/dashboard-management';
+        } else {
+            alert('Role tidak dikenali: ' + user.role);
+        }
+
+    } catch (err) {
+        alert('Error: ' + err.message); // ← ini yang penting
+        console.error(err);
     }
-
-    // 🔥 PIC
-    else if (user.role === 'pic') {
-        window.location.href = '/dashboard-pic';
-    }
-
-    // 🔥 TUKANG
-    else if (user.role === 'technician') {
-        window.location.href = '/dashboard-technician';
-    }
-
-    else if (user.role === 'management') {
-    window.location.href = '/dashboard-management';
-}
-
-else {
-    alert('Role tidak dikenali: ' + user.role);
-}
 }
 </script>
 </body>
