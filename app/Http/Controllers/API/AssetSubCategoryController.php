@@ -19,6 +19,7 @@ class AssetSubCategoryController extends Controller
 
     return response()->json(
         AssetSubCategory::where('asset_category_id', $categoryId)
+            ->where('company_id', auth()->user()->company_id)
             ->select('id', 'name')
             ->get()
     );
@@ -28,7 +29,8 @@ class AssetSubCategoryController extends Controller
 {
     return AssetSubCategory::create([
         'name' => $request->name,
-        'asset_category_id' => $request->asset_category_id
+        'asset_category_id' => $request->asset_category_id,
+        'company_id'        => auth()->user()->company_id,
     ]);
 }
 }
