@@ -594,8 +594,7 @@ async function confirmScheduled(id) {
 
 /* Mulai pekerjaan scheduled — ubah status ke in_progress via confirm jika belum ada endpoint start */
 async function startScheduled(id) {
-    // Gunakan endpoint complete dengan status in_progress, atau endpoint khusus start jika ada
-    const res  = await fetch(`/api/scheduled-maintenances/${id}/confirm`, {
+    const res  = await fetch(`/api/scheduled-maintenances/${id}/start`, {
         method: 'PUT',
         headers: { 'Authorization': 'Bearer ' + token }
     });
