@@ -307,9 +307,9 @@ function getCookie(name) {
 }
 const token = getCookie('token');
 if (!token) window.location.href = '/login';
-const parts = window.location.pathname.replace(/\/$/, '').split('/');
-const woId   = parts[parts.length - 1];
-const woType = parts[parts.length - 2]; 
+function openWorkOrder(id, type) {
+    window.open(`/work-order/${type}/${id}`);
+}
 if (!woId || isNaN(woId)) {
     document.getElementById('woPage').innerHTML = 
         '<p style="color:red;text-align:center;margin-top:40px">ID Work Order tidak valid</p>';
