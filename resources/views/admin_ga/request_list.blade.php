@@ -585,7 +585,7 @@ async function submitSendSpk() {
 
 /* Buka halaman WO di tab baru */
 function openWorkOrder(id, type) {
-    window.open(`/work-order/${type}/${id}`);
+    window.open(`/spk?type=${type}&id=${id}`);
 }
 
 /* ── IMAGE ── */
