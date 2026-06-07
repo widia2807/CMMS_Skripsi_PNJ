@@ -307,9 +307,9 @@ function getCookie(name) {
 }
 const token = getCookie('token');
 if (!token) window.location.href = '/login';
-const parts  = window.location.pathname.replace(/\/$/, '').split('/');
-const woId   = parts[parts.length - 1];
-const woType = parts[parts.length - 2];
+const params = new URLSearchParams(window.location.search);
+const woId   = params.get('id');
+const woType = params.get('type');
 
 if (!woId || isNaN(woId)) {
     document.getElementById('woPage').innerHTML = 
