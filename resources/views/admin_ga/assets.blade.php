@@ -379,7 +379,11 @@
 
 <script>
 const API = '/api/assets';
-const token = localStorage.getItem('token');
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
+const token = getCookie('token');
 let editId = null;
 
 // ─── Import ───────────────────────────────────────────────

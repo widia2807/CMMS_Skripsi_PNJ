@@ -48,7 +48,7 @@ async function login() {
 
     const user = data.user;
 
-    localStorage.setItem('token', data.token);
+    document.cookie = `token=${data.token}; path=/; SameSite=Lax`;
     localStorage.setItem('user', JSON.stringify(user));
 
     // 🔥 SUPER ADMIN
