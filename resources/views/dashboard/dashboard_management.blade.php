@@ -379,10 +379,13 @@
 </div>
 
 <script>
-const token = localStorage.getItem('token');
-if (!token) { window.location.href = '/login'; }
-
-const user = JSON.parse(localStorage.getItem('user') || '{}');
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
+const user  = JSON.parse(getCookie('user') || '{}');
+if (!token || !user) { window.location.href = '/login'; }
 document.getElementById('userInfo').textContent    = (user.name ?? '-') + ' · Management';
 document.getElementById('userInitial').textContent = user.name ? user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : 'MG';
 document.getElementById('welcomeName').textContent = user.name ?? 'Management';

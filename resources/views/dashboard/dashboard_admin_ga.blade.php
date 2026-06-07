@@ -364,10 +364,16 @@
 </div>
 
 <script>
-const token = localStorage.getItem('token');
-const user  = JSON.parse(localStorage.getItem('user'));
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
 
-if (!token || !user) { localStorage.clear(); window.location.href = '/login'; }
+const token = getCookie('token');
+const user  = JSON.parse(getCookie('user') || 'null');
+
+if (!token || !user) { window.location.href = '/login'; }
+
 
 // User info
 document.getElementById('userInfo').innerText = user.name + ' · ' + user.role;

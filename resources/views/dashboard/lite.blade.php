@@ -155,11 +155,13 @@
 </div>
 
 <script>
-const token = localStorage.getItem('token');
-const user  = JSON.parse(localStorage.getItem('user') || '{}');
-
-if (!token || !user) { localStorage.clear(); window.location.href = '/login'; }
-
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+const token = getCookie('token');
+const user  = JSON.parse(getCookie('user') || '{}');
+if (!token || !user) { window.location.href = '/login'; }
 document.getElementById('userInfo').innerText    = (user.name ?? 'Admin') + ' · ' + (user.role ?? '');
 document.getElementById('welcomeName').innerText = user.name ?? 'Admin GA';
 document.getElementById('userInitial').innerText = (user.name ?? 'A').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
