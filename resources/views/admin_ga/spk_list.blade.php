@@ -59,7 +59,7 @@
                 
             </div>
 
-<div class="p-8 max-w-5xl mx-auto space-y-6">
+ <div class="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
 
 <!-- IDENTITAS PERUSAHAAN -->
 <div class="section-card">
@@ -241,7 +241,13 @@
 </div>
 </div>
 </div>
-
+<!-- TOMBOL SIMPAN -->
+<div class="flex justify-end">
+    <button id="btnSave" onclick="saveSettings()"
+        class="btn flex items-center gap-2 bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-slate-700">
+        <i data-feather="save" class="w-4 h-4"></i> Simpan Pengaturan
+    </button>
+</div>
 <!-- TOAST -->
 <div class="toast" id="toast">
     <div class="bg-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
