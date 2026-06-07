@@ -259,7 +259,7 @@ function renderRequests(data) {
 
                 // SPK buttons — hanya admin yang bisa kirim/lihat SPK
         const spkButtons = !isAdmin ? '' : item.spk_sent_at
-            ? `<button onclick="openWorkOrder(${item.id}, 'repair')"
+            ? `<button onclick="openWorkOrder(${item.wo_id}, 'repair')"
                 class="btn flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
                 <i data-feather="file-text" class="w-3 h-3"></i> Lihat SPK
             </button>`
