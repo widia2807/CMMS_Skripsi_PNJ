@@ -307,9 +307,13 @@ function getCookie(name) {
 }
 const token = getCookie('token');
 if (!token) window.location.href = '/login';
-function openWorkOrder(id, type) {
-    window.open(`/work-order/${type}/${id}`);
-}
+const parts = window.location.pathname.replace(/\/$/, '').split('/');
+const woId   = parts[parts.length - 1];
+const woType = parts[parts.length - 2]; 
+console.log('URL:', window.location.pathname);
+console.log('parts:', parts);
+console.log('woId:', woId);
+console.log('woType:', woType);
 if (!woId || isNaN(woId)) {
     document.getElementById('woPage').innerHTML = 
         '<p style="color:red;text-align:center;margin-top:40px">ID Work Order tidak valid</p>';
