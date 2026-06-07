@@ -92,56 +92,38 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
 
-    const user = JSON.parse(localStorage.getItem('user'));
+document.addEventListener('DOMContentLoaded', () => {
+    const user = JSON.parse(getCookie('user') || 'null');
 
     if (!user) {
         window.location.href = '/login';
         return;
     }
 
-    // tampilkan role di atas
     document.getElementById('roleText').innerText = user.role.toUpperCase();
 
-    // isi nama user di topbar jika ada elemen topbarUserName
     const topbarName = document.getElementById('topbarUserName');
     if (topbarName) topbarName.textContent = user.name ?? '-';
 
     const menuConfig = {
-        admin: [
-            'menu-perbaikan',
-            'menu-maintenance',
-            'menu-assets',
-            'menu-tools',
-            'menu-spk',
-            
-        ],
-        super_admin: [
-            'menu-user',
-            'menu-cabang'
-        ],
-        pic: [
-            'menu-pic',
-            'menu-status',
-            'menu-tools'
-        ],
-        technician: [
-            'menu-pekerjaan'
-        ],
-        management: [
-            'menu-report'
-        ]
+        admin: ['menu-perbaikan','menu-maintenance','menu-assets','menu-tools','menu-spk'],
+        super_admin: ['menu-user','menu-cabang'],
+        pic: ['menu-pic','menu-status','menu-tools'],
+        technician: ['menu-pekerjaan'],
+        management: ['menu-report']
     };
 
-    // tampilkan menu sesuai role
     if (menuConfig[user.role]) {
         menuConfig[user.role].forEach(id => {
             document.getElementById(id)?.classList.remove('hidden');
         });
     }
 
-    // tambahan admin GA lite
     if (user.role === 'admin' && user.system_type === 'lite') {
         ['menu-user','menu-cabang'].forEach(id => {
             document.getElementById(id)?.classList.remove('hidden');
@@ -152,19 +134,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
+    document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    document.getElementById('sidebarOverlay').classList.toggle('hidden');
+}
+
+function getCookieUser() {
+    const match = document.cookie.match(new RegExp('(^| )user=([^;]+)'));
+    return match ? JSON.parse(decodeURIComponent(match[2])) : null;
 }
 
 function goToBorrowing() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user.role === 'admin') {
-        window.location.href = '/admin/peminjaman';
-    } else {
-        window.location.href = '/peminjaman';
-    }
+    const user = getCookieUser();
+    window.location.href = user?.role === 'admin' ? '/admin/peminjaman' : '/peminjaman';
 }
 
 function logout() {
@@ -174,16 +155,14 @@ function logout() {
 }
 
 function goToDashboard() {
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = getCookieUser();
     if (user?.role === 'pic')              window.location.href = '/dashboard-pic';
     else if (user?.role === 'technician')  window.location.href = '/dashboard-technician';
     else if (user?.role === 'super_admin') window.location.href = '/dashboard-full';
     else if (user?.system_type === 'lite') window.location.href = '/dashboard-lite';
-    else if (user?.role === 'management') window.location.href = '/dashboard-management';
+    else if (user?.role === 'management')  window.location.href = '/dashboard-management';
     else                                   window.location.href = '/dashboard-admin';
 }
 
-function goTo(url) {
-    window.location.href = url;
-}
+function goTo(url) { window.location.href = url; }
 </script>
