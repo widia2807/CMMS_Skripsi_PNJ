@@ -248,15 +248,26 @@ function cardPending(item, period) {
 
 /* ─── CARD: ONGOING ─── */
 function cardOngoing(item, period) {
-    const btnAction = item.status === 'confirmed'
-        ? `<button onclick="startWork(${item.id})"
-                class="w-full text-sm bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">
-                Mulai Pekerjaan
-            </button>`
-        : `<button onclick="openDoneModal(${item.id})"
+    let btnAction;
+    if (item.status === 'in_progress') {
+        btnAction = `
+            <button onclick="openDoneModal(${item.id})"
                 class="w-full text-sm bg-green-700 text-white py-2 rounded-lg hover:bg-green-800 transition font-medium">
                 Tandai Selesai
             </button>`;
+    } else if (item.status === 'confirmed' && item.spk_sent_at) {
+        btnAction = `
+            <button onclick="startWork(${item.id})"
+                class="w-full text-sm bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+                Mulai Pekerjaan
+            </button>`;
+    } else {
+        btnAction = `
+            <div class="w-full text-center py-2 rounded-lg bg-amber-50 border border-amber-100">
+                <p class="text-xs text-amber-600 font-medium">⏳ Menunggu SPK dari Admin GA</p>
+                <p class="text-xs text-amber-400 mt-0.5">Kamu bisa mulai setelah SPK dikirimkan</p>
+            </div>`;
+    }
 
     return `
     <div class="bg-white rounded-xl shadow-sm p-4">
@@ -330,7 +341,7 @@ async function confirmSchedule(id) {
         headers: { 'Authorization': 'Bearer ' + token }
     });
 
-    alert('Jadwal dikonfirmasi. Status pekerjaan berubah jadi Sedang Berjalan.');
+    alert('Jadwal dikonfirmasi. Tunggu SPK dari Admin GA sebelum memulai pekerjaan.');
     loadTasks();
 }
 async function startWork(id) {
