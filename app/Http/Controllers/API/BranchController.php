@@ -53,7 +53,6 @@ public function importTemplate()
         $sheet->getColumnDimension($col)->setAutoSize(true);
     }
 
-    // Contoh
     $sheet->setCellValue('A2', 'Kantor Pusat');
     $sheet->setCellValue('B2', 'ho');
     $sheet->setCellValue('A3', 'Cabang Jakarta');
@@ -124,8 +123,6 @@ public function toggle($id)
         : 'active';
 
     $branch->save();
-
-    // 🔥 SYNC USER
     User::where('branch_id', $branch->id)
         ->update([
             'status' => $branch->status === 'active'

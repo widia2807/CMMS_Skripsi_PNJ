@@ -14,8 +14,6 @@ class LiteDashboardController extends Controller
     if (!$user) {
         return response()->json(['message' => 'Unauthenticated'], 401);
     }
-
-    // 🔥 FILTER WAJIB
     $query = User::where('system_type', 'lite')
                  ->where('branch_id', $user->branch_id);
 

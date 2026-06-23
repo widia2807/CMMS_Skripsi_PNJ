@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 
 class BorrowingController extends Controller
 {
-    // GET /api/borrowings/my — PIC lihat pengajuan sendiri
+
     public function my(Request $request)
     {
         $user = auth()->user();
@@ -21,14 +21,13 @@ class BorrowingController extends Controller
                 'destinationBranch',
                 'destinationRoom',
             ])
-            ->where('user_id', $user->id)   // ← filter by user, bukan branch
+            ->where('user_id', $user->id) 
             ->latest()
             ->get()
             ->map(fn($b) => $this->formatItem($b))
         );
     }
 
-    // GET /api/borrowings — Admin GA lihat semua per company
     public function index()
     {
         $user = auth()->user();
@@ -49,8 +48,6 @@ class BorrowingController extends Controller
             ->map(fn($b) => $this->formatItem($b))
         );
     }
-
-    // POST /api/borrowings — PIC ajukan peminjaman
     public function store(Request $request)
     {
         $request->validate([
@@ -66,7 +63,6 @@ class BorrowingController extends Controller
         $user  = auth()->user();
         $asset = \App\Models\Asset::findOrFail($request->asset_id);
 
-        // Cek asset sedang dipinjam
         $isUsed = Borrowing::where('asset_id', $request->asset_id)
             ->whereIn('status', ['approved', 'picked'])
             ->exists();
@@ -95,7 +91,6 @@ class BorrowingController extends Controller
         ], 201);
     }
 
-    // PUT /api/borrowings/{id}/approve — Admin approve
     public function approve(Request $request, $id)
     {
         $borrowing = Borrowing::findOrFail($id);
@@ -109,7 +104,6 @@ class BorrowingController extends Controller
         return response()->json(['message' => 'Peminjaman disetujui']);
     }
 
-    // PUT /api/borrowings/{id}/reject — Admin reject
     public function reject($id)
     {
         $borrowing = Borrowing::findOrFail($id);
@@ -123,7 +117,6 @@ class BorrowingController extends Controller
         return response()->json(['message' => 'Peminjaman ditolak']);
     }
 
-    // PUT /api/borrowings/{id}/pick — Tandai sudah diambil
     public function markPicked($id)
     {
         $borrowing = Borrowing::findOrFail($id);
@@ -137,7 +130,6 @@ class BorrowingController extends Controller
         return response()->json(['message' => 'Asset sudah diambil']);
     }
 
-    // PUT /api/borrowings/{id}/return — Tandai sudah dikembalikan
     public function markReturned($id)
     {
         $borrowing = Borrowing::findOrFail($id);
@@ -151,7 +143,6 @@ class BorrowingController extends Controller
         return response()->json(['message' => 'Asset berhasil dikembalikan']);
     }
 
-    // HELPER — format response
     private function formatItem(Borrowing $b): array
     {
         return [

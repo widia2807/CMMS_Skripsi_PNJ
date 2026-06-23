@@ -11,7 +11,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class AssetController extends Controller
 {
-    // GET /api/assets
+  
     public function index()
     {
         $user = auth()->user();
@@ -24,7 +24,6 @@ class AssetController extends Controller
         );
     }
 
-    // GET /api/assets/{id}
     public function show($id)
     {
         $user  = auth()->user();
@@ -34,8 +33,6 @@ class AssetController extends Controller
 
         return response()->json($asset);
     }
-
-    // POST /api/assets
     public function store(Request $request)
     {
         $request->validate([
@@ -58,7 +55,6 @@ class AssetController extends Controller
         ], 201);
     }
 
-    // POST /api/assets/{id} (dengan _method=PUT)
     public function update(Request $request, $id)
     {
         $user  = auth()->user();
@@ -77,7 +73,6 @@ class AssetController extends Controller
         return response()->json(['message' => 'Asset berhasil diupdate']);
     }
 
-    // DELETE /api/assets/{id}
     public function destroy($id)
     {
         $user  = auth()->user();
@@ -89,7 +84,6 @@ class AssetController extends Controller
         return response()->json(['message' => 'Asset berhasil dihapus']);
     }
 
-    // GET /api/assets/export
     public function export()
     {
         $user   = auth()->user();
@@ -134,8 +128,6 @@ class AssetController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
-
-    // GET /api/assets/import-template
     public function importTemplate()
     {
         $spreadsheet = new Spreadsheet();
@@ -169,8 +161,6 @@ class AssetController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
-
-    // POST /api/assets/import
     public function import(Request $request)
     {
         if (!$request->hasFile('file')) {
@@ -196,8 +186,6 @@ class AssetController extends Controller
                 $errors[] = "Baris " . ($i + 1) . ": Nama dan Kondisi wajib diisi";
                 continue;
             }
-
-            // Cari relasi by name + company
             $branch      = $branchName      ? \App\Models\Branch::where('name', $branchName)->where('company_id', $user->company_id)->first() : null;
             $category    = $categoryName    ? \App\Models\AssetCategory::where('name', $categoryName)->first() : null;
             $subCategory = $subCategoryName ? \App\Models\AssetSubCategory::where('name', $subCategoryName)->first() : null;

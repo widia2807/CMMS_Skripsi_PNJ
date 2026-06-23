@@ -112,8 +112,6 @@ public function show($id)
             'message' => 'Data tidak ditemukan'
         ], 404);
     }
-
-    // kalau PIC → hanya lihat miliknya
     if ($user->role === 'pic' && $req->user_id !== $user->id) {
         return response()->json([
             'message' => 'Tidak punya akses'
@@ -137,13 +135,10 @@ public function show($id)
     'urgency' => $req->urgency,
     'photo' => $req->photo,
     'category_id' => $req->category_id,
-    // 🔥 TAMBAHAN INI
     'branch' => $req->branch->name ?? '-'
 ]);
 }
 
-
-// POST /api/requests/{id}/send-spk
 public function sendSpk($id)
 {
     $request = MaintenanceRequest::with([
@@ -151,7 +146,6 @@ public function sendSpk($id)
         'worker', 'createdBy', 'spkSentBy'
     ])->findOrFail($id);
 
-    // Cek syarat: harus sudah ada tukang dan sudah dijadwalkan
     if (!$request->technician_id) {
         return response()->json(['message' => 'Tukang belum ditentukan'], 422);
     }
@@ -159,7 +153,6 @@ public function sendSpk($id)
         return response()->json(['message' => 'Tukang belum mengatur jadwal'], 422);
     }
 
-    // Generate nomor SPK jika belum ada
     if (!$request->spk_number) {
         $request->spk_number = SpkHelper::generate('repair');
     }
@@ -175,7 +168,6 @@ public function sendSpk($id)
     ]);
 }
 
-// GET /api/requests/{id}/work-order  → data untuk view WO
 public function workOrder($id)
 {
     $wo = MaintenanceRequest::with([
@@ -183,7 +175,7 @@ public function workOrder($id)
         'worker', 'createdBy', 'spkSentBy', 'materials'
     ])->findOrFail($id);
 
-    $wo->type = 'repair'; // tandai tipe
+    $wo->type = 'repair'; 
 
     $company = \App\Models\Company::first();
 
@@ -216,19 +208,14 @@ public function materialRequests(Request $request)
 public function approveMaterial($id)
 {
     $material = \App\Models\MaterialRequest::findOrFail($id);
-
     $material->status = 'approved';
     $material->save();
-
-    // 🔥 cek semua material untuk request ini
     $remaining = \App\Models\MaterialRequest::where('repair_request_id', $material->repair_request_id)
         ->where('status', 'pending')
         ->count();
-
-    // kalau semua sudah approved
     if ($remaining === 0) {
         $req = RequestModel::find($material->repair_request_id);
-        $req->status = 'scheduled'; // atau langsung boleh kerja
+        $req->status = 'scheduled'; 
         $req->save();
     }
 
@@ -262,8 +249,6 @@ public function approve(Request $request, $id)
         'urgency' => 'required|in:low,medium,high',
         'technician_id' => 'nullable|exists:users,id'
     ]);
-
-    // 🔥 ADMIN = global (tidak pakai branch)
     $req = RequestModel::where('company_id', $user->company_id)
     ->findOrFail($id);
     if (!$req) {
@@ -273,13 +258,9 @@ public function approve(Request $request, $id)
     if ($req->status !== 'pending') {
         return response()->json(['message' => 'Sudah diproses'], 400);
     }
-
     $req->status = 'approved';
     $req->urgency = $request->urgency;
     $req->technician_id = $request->technician_id ?? null;
-
-
-
     $req->save();
 
     return response()->json(['message' => 'Berhasil approve']);
@@ -365,9 +346,8 @@ public function assign(Request $request, $id)
 public function getSubCategory($categoryId)
 {
     $data = SubCategory::where('category_id', $categoryId)
-        ->select('id', 'name')  // ← tambah id
-        ->get();                 // ← get() bukan pluck()
-
+        ->select('id', 'name')  
+        ->get();                
     return response()->json($data);
 }
 

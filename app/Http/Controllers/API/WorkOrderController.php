@@ -27,7 +27,6 @@ class WorkOrderController extends Controller
     {
         $user    = auth()->user();
         $company = Company::findOrFail($user->company_id);
-
         return response()->json([
             'id'                => $company->id,
             'name'              => $company->name,
@@ -49,7 +48,6 @@ class WorkOrderController extends Controller
     {
         $user    = auth()->user();
         $company = Company::findOrFail($user->company_id);
-
         $request->validate([
             'name'              => 'sometimes|string|max:255',
             'address'           => 'nullable|string',
@@ -65,7 +63,6 @@ class WorkOrderController extends Controller
         if ($request->filled('phone'))        $company->phone        = $request->phone;
         if ($request->filled('email'))        $company->email        = $request->email;
         if ($request->filled('manager_name')) $company->manager_name = $request->manager_name;
-
         if ($request->hasFile('logo')) {
             $company->logo = $request->file('logo')->store('company', 'public');
         }
@@ -73,9 +70,7 @@ class WorkOrderController extends Controller
             $company->manager_signature = $request->file('manager_signature')
                                                    ->store('signatures', 'public');
         }
-
         $company->save();
-
         return response()->json(['message' => 'Pengaturan berhasil disimpan']);
     }
 
@@ -211,9 +206,7 @@ class WorkOrderController extends Controller
                 ->where('company_id', $user->company_id)
                 ->where('id', $id)      
                 ->firstOrFail();
-
         $company = Company::findOrFail($user->company_id);
-
         return response()->json([
             'wo'        => $wo,
             'company'   => [

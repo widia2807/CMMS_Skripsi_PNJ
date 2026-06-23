@@ -14,7 +14,7 @@ class DashboardController extends Controller
 
 public function index()
 {
-    $user = User::first(); // sementara
+    $user = User::first(); 
 
     $totalCabang = Branch::where('company_id', $user->company_id)->count();
 

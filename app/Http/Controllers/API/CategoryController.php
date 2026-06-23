@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    // GET /api/categories
+
     public function index()
     {
         $categories = Category::where('company_id', auth()->user()->company_id)
@@ -18,7 +18,6 @@ class CategoryController extends Controller
         return response()->json($categories);
     }
 
-    // GET /api/categories/{id}
     public function show($id)
     {
         $category = Category::where('company_id', auth()->user()->company_id)
@@ -27,14 +26,12 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 
-    // POST /api/categories
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
 
-        // Cegah duplikat nama dalam company yang sama
         $exists = Category::where('company_id', auth()->user()->company_id)
             ->where('name', $request->name)
             ->exists();
@@ -51,7 +48,6 @@ class CategoryController extends Controller
         return response()->json($category, 201);
     }
 
-    // PUT /api/categories/{id}
     public function update(Request $request, $id)
     {
         $category = Category::where('company_id', auth()->user()->company_id)
@@ -61,7 +57,6 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        // Cegah duplikat nama (kecuali dirinya sendiri)
         $exists = Category::where('company_id', auth()->user()->company_id)
             ->where('name', $request->name)
             ->where('id', '!=', $id)
@@ -76,13 +71,11 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 
-    // DELETE /api/categories/{id}
     public function destroy($id)
     {
         $category = Category::where('company_id', auth()->user()->company_id)
             ->findOrFail($id);
 
-        // Cegah hapus jika masih dipakai
         $usedInSchedule = \App\Models\ScheduledMaintenance::where('category_id', $id)->exists();
         $usedInRepair   = \App\Models\RepairRequest::where('category_id', $id)->exists();
 

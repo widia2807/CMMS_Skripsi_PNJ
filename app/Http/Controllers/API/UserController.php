@@ -95,15 +95,11 @@ public function index()
 public function update(Request $request, $id)
 {
     $user = User::findOrFail($id);
-
-    // 🚫 protect super admin
     if ($user->role === 'super_admin') {
         return response()->json([
             'message' => 'Super admin tidak bisa diubah'
         ], 403);
     }
-
-    // ✅ VALIDATION WAJIB DI SINI
     $request->validate([
         'name' => 'required',
         'email' => 'required|email|unique:users,email,' . $id,
@@ -111,8 +107,6 @@ public function update(Request $request, $id)
         'branch_id' => 'nullable',
         'category_id' => 'nullable'
     ]);
-
-    // ✅ UPDATE
     $user->update([
         'name' => $request->name,
         'email' => $request->email,
@@ -120,7 +114,6 @@ public function update(Request $request, $id)
         'branch_id' => $request->branch_id,
         'category_id' => 'nullable'
     ]);
-
     return response()->json([
         'message' => 'User updated'
     ]);
@@ -129,14 +122,10 @@ public function update(Request $request, $id)
 
 public function destroy($id)
 {
-    // 🔒 HARUS PALING ATAS
     if (auth()->user()->role !== 'super_admin') {
         return response()->json(['message' => 'Unauthorized'], 403);
     }
-
     $user = User::findOrFail($id);
-
-    // proteksi tambahan (jaga2)
     if ($user->role === 'super_admin') {
         return response()->json([
             'message' => 'Super admin tidak bisa dihapus'

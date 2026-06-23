@@ -21,18 +21,14 @@ public function importBranches(Request $request)
         }
 
         $file = $request->file('file');
-
-        // baca CSV
         $rows = array_map('str_getcsv', file($file));
 
         foreach ($rows as $index => $row) {
 
-            if ($index == 0) continue; // skip header
+            if ($index == 0) continue; 
             if (!isset($row[0])) continue;
 
             $type = strtolower(trim($row[1] ?? 'branch'));
-
-            // mapping
             if (in_array($type, ['cabang', 'branch'])) {
                 $type = 'branch';
             } elseif (in_array($type, ['ho', 'head office'])) {
@@ -41,7 +37,6 @@ public function importBranches(Request $request)
                 $type = 'branch';
             }
 
-            // hindari duplikat
             $exists = Branch::where('name', $row[0])->exists();
             if ($exists) continue;
 

@@ -13,10 +13,7 @@ use App\Helpers\SpkHelper;
 
 class ScheduledMaintenanceController extends Controller
 {
-    /* ═══════════════════════════════════════════
-     *  ADMIN GA — Daftar semua jadwal (dengan filter)
-     *  GET /api/scheduled-maintenances
-     * ═══════════════════════════════════════════ */
+    
     public function index(Request $request)
     {
         $schedules = ScheduledMaintenance::with(['worker:id,name', 'creator:id,name'])
@@ -33,10 +30,7 @@ class ScheduledMaintenanceController extends Controller
         return response()->json($schedules);
     }
 
-    /* ═══════════════════════════════════════════
-     *  TUKANG — Tugas milik tukang yang login
-     *  GET /api/scheduled-maintenances/my-tasks
-     * ═══════════════════════════════════════════ */
+
     public function myTasks(Request $request)
     {
         $schedules = ScheduledMaintenance::with(['creator:id,name'])
@@ -50,10 +44,6 @@ class ScheduledMaintenanceController extends Controller
         return response()->json($schedules);
     }
 
-    /* ═══════════════════════════════════════════
-     *  ADMIN GA — Detail satu jadwal
-     *  GET /api/scheduled-maintenances/{id}
-     * ═══════════════════════════════════════════ */
     public function show($id)
     {
         $item = ScheduledMaintenance::with(['worker:id,name', 'creator:id,name'])
@@ -64,10 +54,6 @@ class ScheduledMaintenanceController extends Controller
         return response()->json($this->formatItem($item));
     }
 
-    /* ═══════════════════════════════════════════
-     *  ADMIN GA — Buat jadwal baru
-     *  POST /api/scheduled-maintenances
-     * ═══════════════════════════════════════════ */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -105,10 +91,6 @@ class ScheduledMaintenanceController extends Controller
         ], 201);
     }
 
-    /* ═══════════════════════════════════════════
-     *  ADMIN GA — Toggle automasi jadwal
-     *  PUT /api/scheduled-maintenances/{id}/toggle-auto
-     * ═══════════════════════════════════════════ */
     public function toggleAuto($id)
     {
         $schedule = ScheduledMaintenance::where('company_id', auth()->user()->company_id)
@@ -125,10 +107,6 @@ class ScheduledMaintenanceController extends Controller
         ]);
     }
 
-    /* ═══════════════════════════════════════════
-     *  ADMIN GA — Ubah tukang (reassign)
-     *  PUT /api/scheduled-maintenances/{id}/assign
-     * ═══════════════════════════════════════════ */
     public function assign(Request $request, $id)
     {
         $request->validate([
@@ -152,10 +130,6 @@ class ScheduledMaintenanceController extends Controller
         return response()->json(['message' => 'Tukang berhasil diperbarui.']);
     }
 
-    /* ═══════════════════════════════════════════
-     *  TUKANG — Konfirmasi jadwal
-     *  PUT /api/scheduled-maintenances/{id}/confirm
-     * ═══════════════════════════════════════════ */
     public function confirm(Request $request, $id)
     {
         $schedule = ScheduledMaintenance::findOrFail($id);
@@ -176,10 +150,6 @@ class ScheduledMaintenanceController extends Controller
         return response()->json(['message' => 'Jadwal berhasil dikonfirmasi.']);
     }
 
-    /* ═══════════════════════════════════════════
-     *  TUKANG — Tandai selesai + upload foto
-     *  POST /api/scheduled-maintenances/{id}/complete
-     * ═══════════════════════════════════════════ */
     public function complete(Request $request, $id)
     {
         $schedule = ScheduledMaintenance::findOrFail($id);
@@ -213,25 +183,15 @@ class ScheduledMaintenanceController extends Controller
             'completion_note'  => $request->completion_note,
             'completion_photo' => $photoPath,
         ]);
-
-        // ── AUTO SCHEDULING ─────────────────────────────────────────
-        // Jika is_auto = true, buat jadwal berikutnya otomatis
         if ($schedule->is_auto) {
             $this->createNextSchedule($schedule);
         }
-        // ────────────────────────────────────────────────────────────
-
         return response()->json(['message' => 'Pekerjaan berhasil dilaporkan selesai.']);
     }
 
-    /* ═══════════════════════════════════════════
-     *  HELPER PRIVAT — Buat jadwal berikutnya
-     * ═══════════════════════════════════════════ */
     private function createNextSchedule(ScheduledMaintenance $prev): void
     {
         $nextDate = $this->calcNextDate($prev->scheduled_date, $prev->period);
-
-        // Cegah duplikat: cek apakah jadwal berikutnya sudah ada
         $alreadyExists = ScheduledMaintenance::where('company_id', $prev->company_id)
             ->where('title', $prev->title)
             ->where('category_id', $prev->category_id)
@@ -255,10 +215,6 @@ class ScheduledMaintenanceController extends Controller
             'parent_id'                 => $prev->id,     // lacak asal jadwal
         ]);
     }
-
-    /* ═══════════════════════════════════════════
-     *  HELPER PRIVAT — Hitung tanggal berikutnya
-     * ═══════════════════════════════════════════ */
     private function calcNextDate($date, string $period): Carbon
     {
         $base = Carbon::parse($date);
@@ -271,11 +227,6 @@ class ScheduledMaintenanceController extends Controller
             default     => $base->addMonth(),
         };
     }
-
-    /* ═══════════════════════════════════════════
-     *  ADMIN GA — Hapus jadwal
-     *  DELETE /api/scheduled-maintenances/{id}
-     * ═══════════════════════════════════════════ */
     public function destroy($id)
     {
         $schedule = ScheduledMaintenance::where('company_id', auth()->user()->company_id)
@@ -290,10 +241,6 @@ class ScheduledMaintenanceController extends Controller
 
         return response()->json(['message' => 'Jadwal berhasil dihapus.']);
     }
-
-    /* ═══════════════════════════════════════════
-     *  POST /api/scheduled-maintenances/{id}/send-spk
-     * ═══════════════════════════════════════════ */
     public function sendSpk($id)
     {
         $scheduled = ScheduledMaintenance::where('company_id', auth()->user()->company_id)
@@ -337,9 +284,6 @@ class ScheduledMaintenanceController extends Controller
         ]);
     }
 
-    /* ═══════════════════════════════════════════
-     *  PUT /api/scheduled-maintenances/{id}/start
-     * ═══════════════════════════════════════════ */
     public function start($id)
     {
         $maintenance = ScheduledMaintenance::findOrFail($id);
@@ -356,9 +300,6 @@ class ScheduledMaintenanceController extends Controller
         return response()->json(['message' => 'Pekerjaan berhasil dimulai']);
     }
 
-    /* ═══════════════════════════════════════════
-     *  HELPER — Format item untuk response JSON
-     * ═══════════════════════════════════════════ */
     private function formatItem(ScheduledMaintenance $item): array
     {
         $woId = null;
@@ -381,8 +322,8 @@ class ScheduledMaintenanceController extends Controller
             'period'                    => $item->period,
             'scheduled_date'            => $item->scheduled_date?->toDateString(),
             'status'                    => $item->status,
-            'is_auto'                   => (bool) $item->is_auto,   // ← baru
-            'parent_id'                 => $item->parent_id,        // ← baru
+            'is_auto'                   => (bool) $item->is_auto,   
+            'parent_id'                 => $item->parent_id,        
             'worker_id'                 => $item->worker_id,
             'worker_name'               => $item->worker?->name,
             'created_by'                => $item->created_by,

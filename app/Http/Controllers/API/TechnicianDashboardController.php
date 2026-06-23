@@ -57,7 +57,6 @@ class TechnicianDashboardController extends Controller
         });
 }
 
-    // ================= ASSIGN =================
     public function assignTechnician(Request $request, $id)
     {
         $request->validate([
@@ -99,9 +98,6 @@ class TechnicianDashboardController extends Controller
     ]);
 
     $needsMaterial = filter_var($request->needs_material, FILTER_VALIDATE_BOOLEAN);
-
-    //$req->inspection_notes = $request->notes;
-
     if ($needsMaterial) {
         $req->status = 'waiting_material';
     } else {
@@ -118,7 +114,7 @@ class TechnicianDashboardController extends Controller
     public function technicians(Request $request)
 {
     try {
-        $user = auth()->user(); // ← ini yang kurang
+        $user = auth()->user(); 
 
         $query = User::where('role', 'technician')
             ->where('company_id', $user->company_id);
@@ -151,13 +147,12 @@ class TechnicianDashboardController extends Controller
     $request->validate(['schedule_date' => 'required|date']);
 
     $req->schedule_date = $request->schedule_date;
-    $req->status = 'scheduled'; // ← fix: was 'material_ready'
+    $req->status = 'scheduled'; 
     $req->save();
 
     return response()->json(['message' => 'Jadwal diset']);
 }
 
-    // ================= START JOB =================
  public function startJob($id)
 {
     $user = auth()->user();
@@ -165,8 +160,6 @@ class TechnicianDashboardController extends Controller
     $req = WorkRequest::where('id', $id)
         ->where('technician_id', $user->id)
         ->first();
-
-    // ← tambah 'material_ready'
     if (!in_array($req->status, ['waiting_material', 'material_ready'])) {
         return response()->json([
             'message' => 'Belum siap dikerjakan'
@@ -179,7 +172,6 @@ class TechnicianDashboardController extends Controller
     return response()->json(['message' => 'Pekerjaan dimulai']);
 }
 
-   // ================= COMPLETE =================
 public function completeJob(Request $request, $id)
 {
     $request->validate([
@@ -187,47 +179,36 @@ public function completeJob(Request $request, $id)
         'completion_photo' => 'required|image|max:5120',
         'material_used'    => 'nullable|string',
     ]);
-
     $user = auth()->user();
-
     $req = WorkRequest::where('id', $id)
         ->where('technician_id', $user->id)
         ->first();
-
     if (!$req) {
         return response()->json(['message' => 'Job tidak ditemukan'], 404);
     }
-
     if ($req->status !== 'on_progress') {
         return response()->json(['message' => 'Pekerjaan belum dimulai'], 400);
     }
-
     $photoPath = $request->file('completion_photo')->store('completion-photos', 'public');
-
     $req->status           = 'done';
     $req->completion_note  = $request->completion_note;
     $req->completion_photo = $photoPath;
     $req->material_used    = $request->material_used;
     $req->completed_at     = now();
     $req->save();
-
     return response()->json(['message' => 'Pekerjaan selesai']);
 }
 
-    // ================= VERIFY (PIC) =================
     public function verifyJob($id)
     {
         $req = WorkRequest::findOrFail($id);
-
         if ($req->status !== 'done') {
             return response()->json([
                 'message' => 'Belum selesai'
             ], 400);
         }
-
         $req->status = 'verified';
         $req->save();
-
         return response()->json([
             'message' => 'Pekerjaan diverifikasi'
         ]);
