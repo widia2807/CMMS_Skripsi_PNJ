@@ -134,8 +134,6 @@
    
 
     <div class="p-6 md:p-8 max-w-2xl mx-auto">
-
-        <!-- INFO BANNER -->
         <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6 flex items-start gap-3">
             <div class="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <i data-feather="info" class="w-4 h-4 text-indigo-600"></i>
@@ -145,8 +143,6 @@
                 <p class="text-xs text-indigo-600 mt-0.5">Isi semua field yang diperlukan, lampirkan foto kondisi kerusakan, lalu klik Submit. Tim akan segera menindaklanjuti.</p>
             </div>
         </div>
-
-        <!-- FORM CARD -->
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
 
             <div class="px-6 py-5 border-b border-slate-50">
@@ -156,7 +152,6 @@
 
             <div class="p-6 space-y-5">
 
-                <!-- Judul -->
                 <div>
                     <div class="flex items-center gap-2 mb-2">
                         <div class="step-badge">1</div>
@@ -166,7 +161,6 @@
                         class="form-input">
                 </div>
 
-                <!-- Kategori & Sub Kategori -->
                 <div>
                     <div class="flex items-center gap-2 mb-2">
                         <div class="step-badge">2</div>
@@ -186,7 +180,6 @@
                     </div>
                 </div>
 
-                <!-- Deskripsi -->
                 <div>
                     <div class="flex items-center gap-2 mb-2">
                         <div class="step-badge">3</div>
@@ -197,7 +190,6 @@
                         class="form-textarea"></textarea>
                 </div>
 
-                <!-- Foto -->
                 <div>
                     <div class="flex items-center gap-2 mb-2">
                         <div class="step-badge">4</div>
@@ -217,19 +209,11 @@
                             <img id="photoPreview" alt="Preview" style="display:none; width:100%; max-height:180px; object-fit:cover; border-radius:10px; border:1px solid #e2e8f0; margin-top:10px;">
                         </div>
                 </div>
-
-                <!-- Divider -->
                 <div class="border-t border-slate-100 pt-2"></div>
-
-                <!-- Submit Button -->
                 <button onclick="submitRequest()" id="submitBtn" class="btn-submit">
-                    <i data-feather="send" class="w-4 h-4"></i>
-                    Submit Pengajuan
-                </button>
-
+                    <i data-feather="send" class="w-4 h-4"></i> Submit Pengajuan</button>
             </div>
         </div>
-
     </div>
 </div>
 </div>
@@ -245,7 +229,6 @@ if (!user || !token) { window.location.href = '/login'; }
 document.getElementById('userInfo').innerText    = user.name + ' · ' + user.role;
 document.getElementById('userInitial').innerText = user.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 
-// ─── LOAD CATEGORIES ─────────────────────────────────────
 async function loadCategories() {
     const select = document.getElementById('category');
     const res    = await fetch('/api/categories', {
@@ -258,35 +241,28 @@ async function loadCategories() {
         data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 }
 
-// ─── UPDATE SUB CATEGORY ─────────────────────────────────
 async function updateSubCategory() {
     const categoryId = document.getElementById('category').value;
     const sub        = document.getElementById('sub_category');
-
     if (!categoryId) {
         sub.innerHTML = '<option value="">Pilih kategori dulu</option>';
         sub.disabled  = true;
         return;
     }
-
     sub.innerHTML = '<option>Memuat...</option>';
     sub.disabled  = true;
-
     const res = await fetch(`/api/request/sub-categories/${categoryId}`, {
         headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' }
     });
-
     if (!res.ok) {
         sub.innerHTML = '<option value="">Gagal memuat data</option>';
         return;
     }
-
     const data = await res.json();
     sub.innerHTML = '<option value="">Pilih Jenis Kerusakan</option>' +
     data.map(item => `<option value="${item.id}">${item.name}</option>`).join(''); 
     sub.disabled = false;
 }
-
 function previewPhoto(event) {
     const file        = event.target.files[0];
     const preview     = document.getElementById('photoPreview');
@@ -296,14 +272,13 @@ function previewPhoto(event) {
         const reader = new FileReader();
         reader.onload = e => {
             preview.src = e.target.result;
-            preview.style.display = 'block';      // ← pakai style, bukan class
+            preview.style.display = 'block';     
             placeholder.style.display = 'none';
         };
         reader.readAsDataURL(file);
     }
 }
 
-// ─── SUBMIT ──────────────────────────────────────────────
 async function submitRequest() {
     const title       = document.getElementById('title').value.trim();
     const description = document.getElementById('description').value.trim();
@@ -355,7 +330,6 @@ async function submitRequest() {
     }
 }
 
-// ─── HELPERS ─────────────────────────────────────────────
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('-translate-x-full');
 }
@@ -367,7 +341,6 @@ function goToDashboard() {
     else window.location.href = '/dashboard-full';
 }
 
-// ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadCategories();

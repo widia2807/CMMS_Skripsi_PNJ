@@ -32,10 +32,9 @@
 <div class="flex min-h-screen">
 <div class="flex-1 md:ml-64">
 
-    <!-- TOPBAR -->
+    
     <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
         <div class="flex items-center gap-3">
-            <!-- Hamburger mobile -->
             <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
                 <i data-feather="menu" class="w-5 h-5"></i>
             </button>
@@ -55,8 +54,6 @@
     </div>
    
     <div class="p-8">
-
-        <!-- WELCOME BANNER -->
         <div class="bg-slate-800 rounded-2xl p-6 mb-8 flex items-center justify-between overflow-hidden relative">
             <div class="absolute right-0 top-0 w-64 h-full opacity-5">
                 <svg viewBox="0 0 200 200" class="w-full h-full">
@@ -76,8 +73,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- STAT CARDS -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div class="stat-card">
                 <div class="flex items-center justify-between mb-3">
@@ -108,11 +103,7 @@
                 <p id="scheduledJob" class="text-3xl font-bold text-cyan-500">0</p>
             </div>
         </div>
-
-        <!-- BOTTOM SECTION -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- PEKERJAAN TERBARU — tanpa tombol lihat semua -->
             <div class="card p-6 lg:col-span-2">
                 <div class="mb-5">
                     <h2 class="font-bold text-slate-800 text-base">Pekerjaan Terbaru</h2>
@@ -133,8 +124,6 @@
                     </table>
                 </div>
             </div>
-
-            <!-- REMINDER saja — tanpa aksi cepat -->
             <div class="card p-6 self-start">
                 <div class="flex items-start gap-3">
                     <div class="icon-box bg-amber-50 shrink-0 mt-0.5">

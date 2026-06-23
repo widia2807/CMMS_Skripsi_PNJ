@@ -49,10 +49,9 @@
 
 <div class="flex min-h-screen">
 <div class="flex-1 md:ml-64">
-  <!-- TOPBAR -->
+
             <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
                 <div class="flex items-center gap-3">
-                    <!-- Hamburger mobile -->
                     <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
                         <i data-feather="menu" class="w-5 h-5"></i>
                     </button>
@@ -74,7 +73,6 @@
 
 <div class="p-8">
 
-<!-- ACTION BAR -->
 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
     <h2 class="text-xl font-bold text-slate-800">Daftar Pengguna</h2>
     <button onclick="openModal()" class="btn flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
@@ -82,7 +80,6 @@
     </button>
 </div>
 
-<!-- TABLE -->
 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
     <div class="overflow-x-auto">
     <table class="w-full text-sm">
@@ -100,7 +97,6 @@
     </table>
     </div>
 
-    <!-- Empty state -->
     <div id="emptyState" class="hidden py-16 text-center">
         <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <i data-feather="users" class="w-8 h-8 text-slate-400"></i>
@@ -113,8 +109,6 @@
 </div>
 </div>
 </div>
-
-<!-- MODAL TAMBAH USER -->
 <div id="modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
 <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-enter max-h-[90vh] overflow-y-auto">
 
@@ -146,14 +140,10 @@
                 <option value="management">Management</option>
             </select>
         </div>
-
-        <!-- SPESIALISASI (technician only) -->
         <div id="categoryWrapper" class="hidden">
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Spesialisasi <span class="text-red-500">*</span></label>
             <select id="category" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm"></select>
         </div>
-
-        <!-- BRANCH -->
         <div id="branchWrapper">
             <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1 block">Tipe Lokasi <span class="text-red-500">*</span></label>
             <select id="branchType" onchange="handleBranchType()" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm mb-2">
@@ -204,8 +194,6 @@ function roleBadge(role) {
     const [cls, label] = map[role] ?? ['badge-super', role];
     return `<span class="px-2.5 py-1 rounded-full text-xs font-semibold ${cls}">${label}</span>`;
 }
-
-// LOAD USERS
 async function loadUsers() {
     const res = await fetch('/api/users', {
         headers: { Authorization: 'Bearer ' + token }

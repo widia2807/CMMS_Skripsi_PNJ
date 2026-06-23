@@ -205,7 +205,7 @@ function openModal() {
 }
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
-// IMPORT MODAL
+
 function openImportModal() {
     document.getElementById('importModal').classList.remove('hidden');
     document.getElementById('importResult').classList.add('hidden');
@@ -213,8 +213,6 @@ function openImportModal() {
     feather.replace();
 }
 function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
-
-// LOAD
 async function loadBranches() {
     const res = await fetch('/api/branches', {
         headers: { Authorization: 'Bearer ' + token }
@@ -262,8 +260,6 @@ async function loadBranches() {
 
     feather.replace();
 }
-
-// CREATE / EDIT
 async function createBranch() {
     const name = document.getElementById('branchName').value;
     const type = document.getElementById('branchType').value;
@@ -308,8 +304,6 @@ async function deleteBranch(id) {
     });
     loadBranches();
 }
-
-// TEMPLATE DOWNLOAD
 async function downloadTemplate() {
     const res = await fetch('/api/branches/import-template', {
         headers: { Authorization: 'Bearer ' + token }
@@ -323,8 +317,6 @@ async function downloadTemplate() {
     a.click();
     URL.revokeObjectURL(url);
 }
-
-// IMPORT
 async function submitImport() {
     const file = document.getElementById('importFile').files[0];
     if (!file) { alert('Pilih file dulu!'); return; }
@@ -361,8 +353,6 @@ function toggleSidebar() {
     sidebar.classList.toggle('-translate-x-full');
     overlay?.classList.toggle('hidden');
 }
-
-// INIT
 loadBranches();
 feather.replace();
 </script>

@@ -101,18 +101,14 @@
 
 <div class="flex min-h-screen">
 
-    <!-- OVERLAY mobile -->
     <div id="overlay"
          class="fixed inset-0 bg-black opacity-40 hidden md:hidden z-20"
          onclick="toggleSidebar()">
     </div>
 
-    <!-- MAIN -->
     <div class="flex-1 md:ml-64">
-        <!-- TOPBAR -->
         <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
             <div class="flex items-center gap-3">
-                <!-- Hamburger mobile -->
                 <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
                     <i data-feather="menu" class="w-5 h-5"></i>
                 </button>
@@ -132,8 +128,6 @@
         </div>
         
         <div class="p-6 md:p-8">
-
-            <!-- WELCOME BANNER -->
             <div id="welcomeCard" class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl p-6 mb-8 flex items-center justify-between overflow-hidden relative fade-in">
                 <div class="absolute right-0 top-0 w-48 h-full opacity-10">
                     <svg viewBox="0 0 200 200" class="w-full h-full"><circle cx="160" cy="40" r="90" fill="white"/><circle cx="40" cy="160" r="70" fill="white"/></svg>
@@ -148,7 +142,6 @@
                 </button>
             </div>
 
-            <!-- STAT CARDS -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
 
                 <div class="stat-card fade-in">
@@ -186,7 +179,6 @@
 
             </div>
 
-            <!-- AKTIVITAS TERBARU -->
             <div id="activityCard" class="card p-6 fade-in">
                 <div class="flex items-center justify-between mb-5">
                     <div>
@@ -198,16 +190,13 @@
                     </button>
                 </div>
 
-                <!-- Loading state -->
                 <div id="activityLoading" class="py-8 text-center">
                     <div class="w-8 h-8 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin mx-auto mb-3"></div>
                     <p class="text-slate-400 text-sm">Memuat aktivitas...</p>
                 </div>
 
-                <!-- List -->
                 <ul id="recentActivity" class="hidden divide-y divide-slate-50"></ul>
 
-                <!-- Empty state -->
                 <div id="activityEmpty" class="hidden py-10 text-center">
                     <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <i data-feather="inbox" class="w-5 h-5 text-slate-400"></i>
@@ -233,7 +222,6 @@ document.getElementById('userInfo').innerText   = user.name + ' · ' + user.role
 document.getElementById('welcomeName').innerText = user.name;
 document.getElementById('userInitial').innerText = user.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 
-// ─── DASHBOARD ───────────────────────────────────────────
 async function loadDashboard() {
     try {
         const res  = await fetch('/api/pic/dashboard', { headers: { Authorization: 'Bearer ' + token } });
@@ -245,8 +233,6 @@ async function loadDashboard() {
         document.getElementById('done').innerText           = data.done     ?? 0;
     } catch (err) { console.error(err); }
 }
-
-// ─── ACTIVITY ────────────────────────────────────────────
 async function loadActivity() {
     try {
         const res  = await fetch('/api/pic/activity', { headers: { Authorization: 'Bearer ' + token } });
@@ -280,8 +266,6 @@ async function loadActivity() {
         console.error(err);
     }
 }
-
-// ─── UI HELPERS ──────────────────────────────────────────
 function closeWelcome() {
     document.getElementById('welcomeCard').style.display = 'none';
 }
@@ -299,8 +283,6 @@ function toggleSidebar() {
 
 function goTo(url) { window.location.href = url; }
 function logout()  { localStorage.clear(); window.location.href = '/login'; }
-
-// ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadDashboard();

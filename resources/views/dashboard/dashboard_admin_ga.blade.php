@@ -144,10 +144,9 @@
 <div class="flex min-h-screen">
 <div class="flex-1 md:ml-64">
 
-    <!-- TOPBAR -->
+
 <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
     <div class="flex items-center gap-3">
-        <!-- Hamburger mobile -->
         <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
             <i data-feather="menu" class="w-5 h-5"></i>
         </button>
@@ -168,7 +167,6 @@
 
     <div class="p-8">
 
-        <!-- WELCOME BANNER -->
         <div class="bg-slate-800 rounded-2xl p-6 mb-8 flex items-center justify-between overflow-hidden relative">
             <div class="absolute right-0 top-0 w-64 h-full opacity-5">
                 <svg viewBox="0 0 200 200" class="w-full h-full"><circle cx="150" cy="50" r="80" fill="white"/><circle cx="50" cy="150" r="60" fill="white"/></svg>
@@ -186,7 +184,6 @@
             </div>
         </div>
 
-        <!-- STAT CARDS -->
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
 
             <div class="stat-card">
@@ -241,10 +238,8 @@
 
         </div>
 
-        <!-- KATEGORI & SUB KATEGORI -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <!-- KATEGORI -->
             <div class="card p-6">
                 <div class="flex items-start justify-between mb-5">
                     <div>
@@ -261,7 +256,6 @@
                     </div>
                 </div>
 
-                <!-- Form -->
                 <div id="categoryForm" class="hidden form-panel slide-down mb-4">
                     <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5 block">Nama Kategori</label>
                     <div class="flex gap-2">
@@ -273,7 +267,6 @@
                     </div>
                 </div>
 
-                <!-- Table -->
                 <div id="categoryTableWrapper" class="hidden">
                     <div class="max-h-56 overflow-y-auto rounded-xl border border-slate-100">
                         <table class="w-full text-sm">
@@ -287,7 +280,6 @@
                     </div>
                 </div>
 
-                <!-- Empty hint -->
                 <div id="categoryEmptyHint" class="text-center py-8">
                     <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <i data-feather="tag" class="w-5 h-5 text-blue-400"></i>
@@ -296,7 +288,6 @@
                 </div>
             </div>
 
-            <!-- SUB KATEGORI -->
             <div class="card p-6">
                 <div class="flex items-start justify-between mb-5">
                     <div>
@@ -313,7 +304,6 @@
                     </div>
                 </div>
 
-                <!-- Form -->
                 <div id="subCategoryForm" class="hidden form-panel slide-down mb-4">
                     <div class="space-y-2">
                         <div>
@@ -333,7 +323,6 @@
                     </div>
                 </div>
 
-                <!-- Table -->
                 <div id="subCategoryTableWrapper" class="hidden">
                     <div class="max-h-56 overflow-y-auto rounded-xl border border-slate-100">
                         <table class="w-full text-sm">
@@ -347,8 +336,6 @@
                         </table>
                     </div>
                 </div>
-
-                <!-- Empty hint -->
                 <div id="subCategoryEmptyHint" class="text-center py-8">
                     <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <i data-feather="layers" class="w-5 h-5 text-purple-400"></i>
@@ -374,14 +361,10 @@ const user  = JSON.parse(getCookie('user') || 'null');
 
 if (!token || !user) { window.location.href = '/login'; }
 
-
-// User info
 document.getElementById('userInfo').innerText = user.name + ' · ' + user.role;
 document.getElementById('welcomeName').innerText = user.name;
 document.getElementById('userInitial').innerText = user.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 document.getElementById('todayDate').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-
-// ─── DASHBOARD ───────────────────────────────────────────
 async function loadDashboard() {
     try {
         const res  = await fetch('/api/requests', { headers: { Authorization: 'Bearer ' + token } });
@@ -397,8 +380,6 @@ async function loadDashboard() {
         document.getElementById('approvedRequest').innerText = data.filter(i => i.status === 'approved').length;
     } catch (err) { console.error(err); }
 }
-
-// ─── CATEGORIES ──────────────────────────────────────────
 async function loadCategories() {
     try {
         const res  = await fetch('/api/categories', { headers: { Authorization: 'Bearer ' + token } });
@@ -454,7 +435,7 @@ function toggleCategoryList() {
     }
 }
 
-// ─── SUB CATEGORIES ──────────────────────────────────────
+
 async function loadSubCategories() {
     try {
         const res  = await fetch('/api/sub-categories', { headers: { Authorization: 'Bearer ' + token } });
@@ -530,7 +511,6 @@ function toggleSubCategoryList() {
 
 function goTo(url) { window.location.href = url; }
 
-// ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadDashboard();

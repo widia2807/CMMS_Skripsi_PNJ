@@ -25,31 +25,22 @@ use App\Models\Category;
 use App\Models\SubCategory;
 use App\Http\Controllers\PIC\DashboardController as PICDashboardController;
 
-//Public
 Route::post('/register', [AuthController::class,'register']);
 Route::post('/login', [AuthController::class,'login']);
-
 Route::get('/test', fn() => 'API OK');
-
-
 Route::middleware('auth:sanctum')->group(function () {
-
-    
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/dashboard/activity', [DashboardController::class, 'activity']);
     Route::get('/lite/dashboard', [LiteDashboardController::class, 'index']);
     Route::get('/pic/dashboard', [PICDashboardController::class, 'index']);
     Route::get('/pic/activity', [PICDashboardController::class, 'activity']);
     Route::put('/company', [CompanyController::class, 'update']);
-
     Route::get('/branches', [BranchController::class, 'index']);
     Route::post('/branches', [BranchController::class, 'store']);
     Route::put('/branches/{id}', [BranchController::class, 'update']);
     Route::delete('/branches/{id}', [BranchController::class, 'destroy']);
     Route::put('/branches/{id}/toggle', [BranchController::class, 'toggle']);
     Route::get('/branches-active', [BranchController::class, 'active']);
-
-    
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
@@ -57,60 +48,41 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/{id}/activate', [UserController::class, 'activate']);
     Route::put('/users/{id}/toggle', [UserController::class, 'toggle']);
     Route::put('/users/{id}/reset-password', [UserController::class, 'resetPassword']);
-
     Route::get('/branches/import-template', [BranchController::class, 'importTemplate']);
     Route::post('/import-branches', [ImportController::class, 'importBranches']);
-
-    
     Route::get('/requests', [RequestController::class, 'index']);
     Route::post('/requests', [RequestController::class, 'store']);
     Route::get('/requests/{id}', [RequestController::class, 'show']);
     Route::get('/categories', function () {
-    return \App\Models\Category::select('id', 'name')->get();
-    });
+    return \App\Models\Category::select('id', 'name')->get(); });
     Route::get('/sub-categories', function () {
-        return \App\Models\SubCategory::with('category')->get();
-    });
+        return \App\Models\SubCategory::with('category')->get(); });
     Route::post('/categories', function (Request $request) {
     return Category::create([
-        'name' => $request->name
-    ]);
-    });
-
-    Route::post('/sub-categories', function (Request $request) {
-        return SubCategory::create([
+        'name' => $request->name]);});
+    Route::post('/sub-categories', function (Request $request) { return SubCategory::create([
             'name' => $request->name,
             'category_id' => $request->category_id
         ]);
     });
     Route::get('/request/sub-categories/{category}', [RequestController::class, 'getSubCategory']);
-
     Route::post('/requests/{id}/approve', [RequestController::class, 'approve']);
     Route::put('/requests/{id}/reject', [RequestController::class, 'reject']);
     Route::post('/requests/{id}/assign-technician', [RequestController::class, 'assignTechnician']);
-
     Route::post('/materials/approve-all/{id}', [RequestController::class, 'approveAllMaterial']);
     Route::get('/materials', [RequestController::class, 'materialRequests']);
     Route::post('/materials/{id}/approve', [RequestController::class, 'approveMaterial']);
-    
-
-   
     Route::get('/assets/export', [AssetController::class, 'export']);
     Route::get('/assets/import-template', [AssetController::class, 'importTemplate']);
     Route::post('/assets/import', [AssetController::class, 'import']);
     Route::apiResource('assets', AssetController::class);
-
     Route::get('/asset/categories', [AssetCategoryController::class, 'index']);
     Route::post('/asset/categories', [AssetCategoryController::class, 'store']);
-
     Route::get('/asset/sub-categories', [AssetSubCategoryController::class, 'index']);
     Route::post('/asset/sub-categories', [AssetSubCategoryController::class, 'store']);
-
-    
     Route::get('/dashboard-technician', [TechnicianDashboardController::class, 'index']);
     Route::get('/technicians', [TechnicianDashboardController::class, 'technicians']);
     Route::get('/technician/jobs', [TechnicianDashboardController::class, 'jobs']);
-
     Route::post('/assign-technician/{id}', [TechnicianDashboardController::class, 'assignTechnician']);
     Route::post('/technician/schedule/{id}', [TechnicianDashboardController::class, 'schedule']);
     Route::post('/technician/start/{id}', [TechnicianDashboardController::class, 'startJob']);
@@ -138,34 +110,22 @@ Route::middleware('auth:sanctum')->group(function () {
             ->orderBy('name')
             ->get();
     });
-
-     Route::get('/borrowings', [BorrowingController::class,'index']); // admin
-    Route::get('/borrowings/my', [BorrowingController::class,'my']); // pic
-
+    Route::get('/borrowings', [BorrowingController::class,'index']); 
+    Route::get('/borrowings/my', [BorrowingController::class,'my']); 
     Route::post('/borrowings', [BorrowingController::class,'store']);
-
     Route::post('/borrowings/{id}/approve', [BorrowingController::class,'approve']);
     Route::post('/borrowings/{id}/reject', [BorrowingController::class,'reject']);
-
-    // Perbaikan Gedung
     Route::post('/requests/{id}/send-spk',   [RequestController::class, 'sendSpk']);
     Route::get('/requests/{id}/work-order',  [RequestController::class, 'workOrder']);
-
-    // Maintenance Terjadwal
     Route::post('/scheduled-maintenances/{id}/send-spk',  [ScheduledMaintenanceController::class, 'sendSpk']);
     Route::get('/scheduled-maintenances/{id}/work-order', [ScheduledMaintenanceController::class, 'workOrder']);
     Route::put('scheduled-maintenances/{id}/toggle-auto', [ScheduledMaintenanceController::class, 'toggleAuto']);
-    // ── COMPANY SETTINGS (logo, alamat, TTD manager) ─────────────────────
     Route::get('/company-settings',  [WorkOrderController::class, 'getSettings']);
     Route::post('/company-settings', [WorkOrderController::class, 'saveSettings']);
-    
-    // ── WORK ORDER ────────────────────────────────────────────────────────
     Route::get('/work-orders', [WorkOrderController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/work-orders/{id}', [WorkOrderController::class, 'show']);
     Route::post('/requests/{id}/send-spk',                [WorkOrderController::class, 'sendRepairSpk']);
     Route::post('/scheduled-maintenances/{id}/send-spk',  [WorkOrderController::class, 'sendScheduledSpk']);
-
-    // optional
     Route::post('/borrowings/{id}/picked', [BorrowingController::class,'markPicked']);
     Route::post('/borrowings/{id}/returned', [BorrowingController::class,'markReturned']);
 

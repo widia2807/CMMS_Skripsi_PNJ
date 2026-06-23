@@ -167,7 +167,6 @@
             </div>
         </div>
 
-        <!-- PROGRESS PER KATEGORI -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <div class="card p-5 md:p-6">
                 <div class="flex items-center gap-3 mb-5">
@@ -185,7 +184,6 @@
             </div>
         </div>
 
-        <!-- TABEL PERBAIKAN -->
         <div class="card">
             <div class="px-5 md:px-6 py-5 border-b border-slate-100 flex justify-between items-center gap-3">
                 <div class="flex items-center gap-3">
@@ -221,7 +219,6 @@
             </div>
         </div>
 
-        <!-- TABEL MAINTENANCE -->
         <div class="card">
             <div class="px-5 md:px-6 py-5 border-b border-slate-100 flex justify-between items-center gap-3">
                 <div class="flex items-center gap-3">
@@ -384,7 +381,6 @@ async function loadMaint() {
     } catch (err) { console.error(err); }
 }
 
-/* ── REPAIR ── */
 function getRepairFiltered() { return repairRaw.filter(r => matchesMonth(r.schedule_date)); }
 
 function renderRepairStats() {
@@ -453,7 +449,6 @@ function renderRepairByCategory() {
     }).join('');
 }
 
-/* ── MAINT ── */
 function getMaintFiltered() { return maintRaw.filter(m => matchesMonth(m.scheduled_date)); }
 
 function renderMaintStats() {
@@ -519,9 +514,6 @@ function renderMaintByCategory() {
     }).join('');
 }
 
-/* ════════════════════════════════════════
-   EXPORT — format dokumen per pengajuan
-════════════════════════════════════════ */
 function exportRepair() {
     const data    = getRepairFiltered();
     const periode = getPeriodeLabel();
@@ -534,7 +526,6 @@ function exportRepair() {
         const statusLabel = STATUS_REPAIR[r.status]?.label ?? r.status;
         const urgencyText = URGENCY_TEXT[r.urgency] ?? r.urgency ?? '-';
 
-        // material dari array materials (setelah controller diupdate)
         let materialHtml = '<span style="color:#94a3b8">Tidak ada</span>';
         const mats = r.materials ?? [];
         if (mats.length > 0) {

@@ -32,10 +32,10 @@
 
 <div class="flex min-h-screen">
 <div class="flex-1 md:ml-64">
-<!-- TOPBAR -->
+
             <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
                 <div class="flex items-center gap-3">
-                    <!-- Hamburger mobile -->
+                    
                     <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
                         <i data-feather="menu" class="w-5 h-5"></i>
                     </button>
@@ -50,7 +50,7 @@
 
 <div class="p-8">
 
-<!-- FILTER TABS -->
+
 <div class="flex flex-wrap gap-2 mb-6">
     <button onclick="filterRequests('all')"         id="tab-all"         class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-white">Semua</button>
     <button onclick="filterRequests('pending')"     id="tab-pending"     class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">Pending</button>
@@ -60,10 +60,9 @@
     <button onclick="filterRequests('rejected')"    id="tab-rejected"    class="tab-btn btn px-4 py-2 rounded-lg text-sm font-semibold bg-white text-slate-500 border border-slate-200">Ditolak</button>
 </div>
 
-<!-- CARD GRID -->
+
 <div id="requestTable" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
 
-<!-- EMPTY STATE -->
 <div id="emptyState" class="hidden text-center py-20">
     <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
         <i data-feather="inbox" class="w-8 h-8 text-slate-400"></i>
@@ -76,7 +75,7 @@
 </div>
 </div>
 
-<!-- DETAIL PANEL -->
+
 <div id="detailPanel"
     class="detail-panel fixed top-0 right-0 w-full sm:w-[440px] h-full bg-white shadow-2xl transform translate-x-full z-50 flex flex-col">
     <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
@@ -89,10 +88,10 @@
     <div id="detailAction" class="p-6 border-t border-slate-100 space-y-2 bg-white"></div>
 </div>
 
-<!-- OVERLAY -->
+
 <div id="overlay" onclick="closeDetail()" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-40"></div>
 
-<!-- IMAGE MODAL -->
+
 <div id="imageModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50">
     <img id="modalImage" class="max-w-[90%] max-h-[85vh] rounded-xl shadow-2xl object-contain">
     <button onclick="closeImage()" class="absolute top-5 right-5 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white">
@@ -100,7 +99,7 @@
     </button>
 </div>
 
-<!-- APPROVE MODAL -->
+
 <div id="approveModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-box">
         <div class="text-center mb-5">
@@ -137,7 +136,7 @@
     </div>
 </div>
 
-<!-- ASSIGN MODAL -->
+
 <div id="assignModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-box">
         <div class="text-center mb-5">
@@ -158,7 +157,7 @@
     </div>
 </div>
 
-<!-- ══ MODAL KONFIRMASI KIRIM SPK ══ -->
+
 <div id="spkConfirmModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl modal-box">
         <div class="text-center mb-5">
@@ -208,20 +207,20 @@ const urgencyStyle = {
     low: 'bg-slate-100 text-slate-500', medium: 'bg-amber-100 text-amber-700', high: 'bg-red-100 text-red-700',
 };
 
-/* ── HELPERS ── */
+
 function formatDate(str) {
     if (!str) return '-';
     return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 function spkEligible(item) {
-    // Syarat kirim SPK: sudah ada tukang & sudah dijadwalkan & belum pernah kirim SPK
+   
     return item.technician_id && item.schedule_date && !item.spk_sent_at;
 }
 function spkAlreadySent(item) {
     return !!item.spk_sent_at;
 }
 
-/* ── FILTER ── */
+
 function filterRequests(status) {
     currentFilter = status;
     document.querySelectorAll('.tab-btn').forEach(b => {
@@ -231,7 +230,6 @@ function filterRequests(status) {
     renderRequests(window.requestData || []);
 }
 
-/* ── RENDER ── */
 function renderRequests(data) {
     const filtered = currentFilter === 'all' ? data : data.filter(i => i.status === currentFilter);
     const grid  = document.getElementById('requestTable');
@@ -246,7 +244,7 @@ function renderRequests(data) {
     empty.classList.add('hidden');
 
     grid.innerHTML = filtered.map(item => {
-        // SPK status badge
+        
         const spkBadge = item.spk_sent_at
             ? `<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold spk-sent">
                    <i data-feather="file-text" class="w-3 h-3"></i> SPK Terkirim
@@ -257,7 +255,7 @@ function renderRequests(data) {
                </div>`
             : '';
 
-                // SPK buttons — hanya admin yang bisa kirim/lihat SPK
+
         const spkButtons = !isAdmin ? '' : item.spk_sent_at
             ? `<button onclick="openWorkOrder(${item.wo_id}, 'repair')"
                 class="btn flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
@@ -331,7 +329,7 @@ function renderRequests(data) {
     feather.replace();
 }
 
-/* ── LOAD ── */
+
 async function loadRequests() {
     const res  = await fetch('/api/requests', { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
@@ -340,7 +338,7 @@ async function loadRequests() {
     renderRequests(data);
 }
 
-/* ── DETAIL PANEL ── */
+
 async function detail(id) {
     const res  = await fetch(`/api/requests/${id}`, { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
@@ -448,7 +446,7 @@ function closeDetail() {
     document.getElementById('overlay').classList.add('hidden');
 }
 
-/* ── MATERIAL REVIEW ── */
+
 async function reviewMaterial(id) {
     const res  = await fetch(`/api/materials?request_id=${id}`, { headers: { Authorization: 'Bearer ' + token } });
     const data = await res.json();
@@ -489,7 +487,7 @@ async function approveAllMaterial(id) {
     loadRequests();
 }
 
-/* ── APPROVE / REJECT / ASSIGN ── */
+
 function approve(id, category) { selectedId = id; selectedCategory = category; document.getElementById('approveModal').classList.remove('hidden'); document.getElementById('approveModal').classList.add('flex'); }
 function closeApproveModal()   { document.getElementById('approveModal').classList.remove('flex'); document.getElementById('approveModal').classList.add('hidden'); }
 
@@ -542,9 +540,6 @@ async function reject(id) {
     loadRequests(); closeDetail();
 }
 
-/* ══════════════════════════════════════
-   SPK — KIRIM & LIHAT
-══════════════════════════════════════ */
 
 function openSpkConfirm(id) {
     spkTargetId = id;
@@ -579,16 +574,15 @@ async function submitSendSpk() {
     closeDetail();
     await loadRequests();
 
-    // Langsung buka WO setelah kirim
     openWorkOrder(data.wo_id, 'repair');
 }
 
-/* Buka halaman WO di tab baru */
+
 function openWorkOrder(id, type) {
     window.open(`/work-order/${type}/${id}`);
 }
 
-/* ── IMAGE ── */
+
 function openImage(src) { document.getElementById('modalImage').src = src; document.getElementById('imageModal').classList.remove('hidden'); document.getElementById('imageModal').classList.add('flex'); }
 function closeImage()   { document.getElementById('imageModal').classList.add('hidden'); document.getElementById('imageModal').classList.remove('flex'); }
 

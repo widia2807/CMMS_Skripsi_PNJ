@@ -12,10 +12,8 @@
 
 <div class="flex h-screen">
 
-    <!-- MAIN -->
     <div class="flex-1 md:ml-64 p-6 overflow-y-auto">
 
-        <!-- HEADER -->
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-xl font-bold">Tugas Maintenance</h1>
@@ -24,7 +22,6 @@
             <span id="userInfo" class="text-sm text-gray-500"></span>
         </div>
 
-        <!-- PROFILE CARD -->
         <div id="profileCard" class="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3 mb-6">
             <div id="avatarCircle"
                 class="w-11 h-11 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-semibold shrink-0">
@@ -39,7 +36,6 @@
             </div>
         </div>
 
-        <!-- TABS -->
         <div class="flex gap-1 bg-gray-100 rounded-xl p-1 mb-5">
             <button id="tabBtnPending"
                 onclick="switchTab('pending')"
@@ -61,13 +57,11 @@
             </button>
         </div>
 
-        <!-- LIST -->
         <div id="taskList" class="space-y-3"></div>
 
     </div>
 </div>
 
-<!-- ===================== MODAL: TANDAI SELESAI ===================== -->
 <div id="doneModal"
      class="fixed inset-0 bg-black bg-opacity-50 z-50"
      style="display: none; align-items: center; justify-content: center;">
@@ -136,20 +130,18 @@ const PERIOD_MAP = {
     yearly:    'Tahunan',
 };
 
-/* ─── INIT ─── */
+
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     renderProfile();
     loadTasks();
 });
 
-/* ─── PROFILE ─── */
+
 function renderProfile() {
     document.getElementById('profileName').innerText = user.name;
     document.getElementById('avatarCircle').innerText = initials(user.name);
 }
-
-/* ─── LOAD TASKS ─── */
 async function loadTasks() {
     const res  = await fetch('/api/scheduled-maintenances/my-tasks', {
         headers: { 'Authorization': 'Bearer ' + token }
@@ -160,7 +152,6 @@ async function loadTasks() {
     renderList();
 }
 
-/* ─── UPDATE BADGE COUNT ─── */
 function updateBadges() {
     const pending = allTasks.filter(t => t.status === 'pending').length;
     const ongoing = allTasks.filter(t => ['confirmed','in_progress'].includes(t.status)).length;
@@ -172,7 +163,6 @@ function updateBadges() {
     document.getElementById('badgeDone').innerText    = done    || '';
 }
 
-/* ─── SWITCH TAB ─── */
 function switchTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
@@ -181,7 +171,6 @@ function switchTab(tab) {
     renderList();
 }
 
-/* ─── RENDER LIST ─── */
 function renderList() {
     const filtered = allTasks.filter(t => {
         if (currentTab === 'pending') return t.status === 'pending';
@@ -213,7 +202,6 @@ function renderList() {
     feather.replace();
 }
 
-/* ─── CARD: PENDING ─── */
 function cardPending(item, period) {
     return `
     <div class="bg-white rounded-xl shadow-sm p-4">
@@ -246,7 +234,6 @@ function cardPending(item, period) {
     </div>`;
 }
 
-/* ─── CARD: ONGOING ─── */
 function cardOngoing(item, period) {
     let btnAction;
     if (item.status === 'in_progress') {
@@ -293,7 +280,6 @@ function cardOngoing(item, period) {
     </div>`;
 }
 
-/* ─── CARD: DONE ─── */
 function cardDone(item, period) {
     return `
     <div class="bg-white rounded-xl shadow-sm p-4">
@@ -357,7 +343,7 @@ async function startWork(id) {
     alert('Pekerjaan dimulai!');
     loadTasks();
 }
-/* ─── MODAL: TANDAI SELESAI ─── */
+
 function openDoneModal(id) {
     selectedId = id;
     document.getElementById('doneNote').value  = '';
@@ -373,7 +359,6 @@ function updatePhotoLabel(input) {
         input.files.length ? input.files[0].name : 'Pilih foto...';
 }
 
-/* ─── SUBMIT DONE (step 4 alur) ─── */
 async function submitDone() {
     const note  = document.getElementById('doneNote').value;
     const photo = document.getElementById('donePhoto').files[0];
@@ -398,7 +383,6 @@ async function submitDone() {
     loadTasks();
 }
 
-/* ─── UTILS ─── */
 function formatDate(str) {
     if (!str) return '-';
     return new Date(str).toLocaleDateString('id-ID', {

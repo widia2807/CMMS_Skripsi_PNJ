@@ -97,10 +97,9 @@
 
 <div class="flex min-h-screen">
 <div class="flex-1 md:ml-64">
-<!-- TOPBAR -->
-            <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+
+    <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
                 <div class="flex items-center gap-3">
-                    <!-- Hamburger mobile -->
                     <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
                         <i data-feather="menu" class="w-5 h-5"></i>
                     </button>
@@ -108,7 +107,7 @@
                         <h1 class="font-bold text-slate-800 text-lg">Status Pengajuan</h1>
                         <p class="text-xs text-slate-400 mt-0.5">Pantau perkembangan pengajuan perbaikan</p>
                     </div>
-                </div>
+    </div>
                 <div class="flex items-center gap-3">
                     <div id="userBadge" class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
                         <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center">
@@ -121,10 +120,8 @@
 
     <div class="p-6 md:p-8">
 
-        <!-- STAT STRIP -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" id="statStrip"></div>
 
-        <!-- TABLE CARD -->
         <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
                 <h2 class="font-bold text-slate-800">Daftar Pengajuan</h2>
@@ -148,7 +145,6 @@
                 </table>
             </div>
 
-            <!-- Empty / Loading state -->
             <div id="emptyState" class="hidden py-16 text-center">
                 <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <i data-feather="file-text" class="w-8 h-8 text-slate-300"></i>
@@ -181,7 +177,6 @@ if (!user || !token) { window.location.href = '/login'; }
 document.getElementById('userInfo').innerText    = user.name + ' · ' + user.role;
 document.getElementById('userInitial').innerText = user.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 
-// ─── STATUS CONFIG ────────────────────────────────────────
 const STATUS = {
     pending:        { label: 'Menunggu',      cls: 'bg-amber-50 text-amber-700',   dot: '#f59e0b' },
     approved:       { label: 'Disetujui',     cls: 'bg-green-50 text-green-700',   dot: '#22c55e' },
@@ -205,7 +200,6 @@ function formatDate(str) {
     return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// ─── STAT STRIP ──────────────────────────────────────────
 function renderStats(data) {
     const total    = data.length;
     const pending  = data.filter(d => d.status === 'pending').length;
@@ -232,7 +226,6 @@ function renderStats(data) {
     `;
 }
 
-// ─── LOAD REQUESTS ───────────────────────────────────────
 async function loadRequests() {
     document.getElementById('loadingState').classList.remove('hidden');
     document.getElementById('emptyState').classList.add('hidden');
@@ -251,7 +244,6 @@ async function loadRequests() {
             feather.replace();
             return;
         }
-
         renderStats(data);
 
         document.getElementById('list').innerHTML = data.map(item => `
@@ -284,9 +276,8 @@ async function loadRequests() {
     }
 }
 
-// ─── SHOW DETAIL ─────────────────────────────────────────
 async function showDetail(id) {
-    // Toggle — kalau sudah terbuka, tutup
+
     const existing = document.getElementById(`detail-${id}`);
     const btn      = document.getElementById(`btn-${id}`);
     if (existing) {
@@ -297,7 +288,6 @@ async function showDetail(id) {
         return;
     }
 
-    // Tutup detail lain
     document.querySelectorAll('[id^="detail-"]').forEach(el => el.remove());
     document.querySelectorAll('[id^="btn-"]').forEach(b => {
         b.classList.remove('active');
@@ -379,7 +369,6 @@ async function showDetail(id) {
     }
 }
 
-// ─── HELPERS ─────────────────────────────────────────────
 function goTo(url) { window.location.href = url; }
 function logout()  { localStorage.clear(); window.location.href = '/login'; }
 function goToDashboard() {
@@ -388,7 +377,6 @@ function goToDashboard() {
     else window.location.href = '/dashboard-full';
 }
 
-// ─── INIT ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadRequests();

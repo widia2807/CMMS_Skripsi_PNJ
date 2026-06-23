@@ -22,11 +22,7 @@ class WorkOrderController extends Controller
                 ->get();
     return response()->json($wos);
 }
-    // ══════════════════════════════════════════════════════════════
-    //  COMPANY SETTINGS  (logo, alamat, TTD manager)
-    // ══════════════════════════════════════════════════════════════
 
-    /** GET /api/company-settings */
     public function getSettings()
     {
         $user    = auth()->user();
@@ -48,7 +44,7 @@ class WorkOrderController extends Controller
         ]);
     }
 
-    /** POST /api/company-settings */
+   
     public function saveSettings(Request $request)
     {
         $user    = auth()->user();
@@ -83,11 +79,7 @@ class WorkOrderController extends Controller
         return response()->json(['message' => 'Pengaturan berhasil disimpan']);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  KIRIM SPK — PERBAIKAN GEDUNG
-    // ══════════════════════════════════════════════════════════════
 
-    /** POST /api/requests/{id}/send-spk */
     public function sendRepairSpk($id)
     {
         $user = auth()->user();
@@ -105,7 +97,7 @@ class WorkOrderController extends Controller
             return response()->json(['message' => 'Tukang belum mengatur jadwal'], 422);
         }
 
-        // Generate nomor SPK jika belum ada
+        
         if (!$req->spk_number) {
             $req->spk_number = SpkHelper::generate('repair', $user->company_id);
         }
@@ -113,7 +105,7 @@ class WorkOrderController extends Controller
         $req->spk_sent_by = $user->id;
         $req->save();
 
-        // Buat / update record di tabel work_orders
+        
         $wo = WorkOrder::updateOrCreate(
             ['repair_request_id' => $req->id],
             [
@@ -133,7 +125,7 @@ class WorkOrderController extends Controller
             ]
         );
 
-        // In-app notification ke tukang
+        
         \App\Models\Notification::create([
             'user_id' => $req->technician_id,
             'title'   => 'SPK Diterima: ' . $req->title,
@@ -150,11 +142,7 @@ class WorkOrderController extends Controller
         ]);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  KIRIM SPK — MAINTENANCE TERJADWAL
-    // ══════════════════════════════════════════════════════════════
-
-    /** POST /api/scheduled-maintenances/{id}/send-spk */
+    
     public function sendScheduledSpk($id)
     {
         $user  = auth()->user();
@@ -207,11 +195,7 @@ class WorkOrderController extends Controller
         ]);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  DATA WORK ORDER (untuk blade template)
-    // ══════════════════════════════════════════════════════════════
-
-    /** GET /api/work-orders/{id} */
+    
     public function show($id)
     {
         $user = auth()->user();

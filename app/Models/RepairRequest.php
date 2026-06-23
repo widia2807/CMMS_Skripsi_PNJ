@@ -47,7 +47,7 @@ public function categoryRelation()
 {
     return $this->belongsTo(Category::class, 'category_id');
 }
-// App\Models\RepairRequest.php
+
 public function category()
 {
     return $this->belongsTo(Category::class, 'category_id');

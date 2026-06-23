@@ -49,11 +49,8 @@
 
 <div class="p-8 space-y-10">
 
-    <!-- ══════════════════════════════════════
-         SECTION 1 — PERBAIKAN GEDUNG
-    ══════════════════════════════════════ -->
     <div>
-        <!-- Section header -->
+
         <div class="flex items-center gap-3 mb-4">
             <div class="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
                 <i data-feather="tool" class="w-4 h-4 text-orange-600"></i>
@@ -64,7 +61,6 @@
             </div>
         </div>
 
-        <!-- Filter tabs perbaikan -->
         <div class="flex gap-2 mb-4 flex-wrap">
             <button onclick="filterRepair('all')" id="rtab-all"
                 class="rtab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white">Semua</button>
@@ -87,14 +83,10 @@
         </div>
     </div>
 
-    <!-- DIVIDER -->
     <div class="border-t border-slate-200"></div>
 
-    <!-- ══════════════════════════════════════
-         SECTION 2 — MAINTENANCE TERJADWAL
-    ══════════════════════════════════════ -->
     <div>
-        <!-- Section header -->
+
         <div class="flex items-center gap-3 mb-4">
             <div class="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
                 <i data-feather="calendar" class="w-4 h-4 text-blue-600"></i>
@@ -105,7 +97,6 @@
             </div>
         </div>
 
-        <!-- Filter tabs scheduled -->
         <div class="flex gap-2 mb-4 flex-wrap">
             <button onclick="filterScheduled('all')" id="stab-all"
                 class="stab btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white">Semua</button>
@@ -132,7 +123,6 @@
 </div>
 </div>
 
-<!-- ══════════════ MODAL DETAIL PERBAIKAN ══════════════ -->
 <div id="detailModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl modal-box max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
@@ -145,7 +135,6 @@
     </div>
 </div>
 
-<!-- ══════════════ MODAL DETAIL SCHEDULED ══════════════ -->
 <div id="scheduledDetailModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl modal-box max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
@@ -160,13 +149,10 @@
             </button>
         </div>
         <div id="scheduledDetailContent" class="p-6 space-y-3"></div>
-
-        <!-- Tombol aksi di footer modal -->
         <div id="scheduledDetailActions" class="px-6 pb-6 space-y-2"></div>
     </div>
 </div>
 
-<!-- ══════════════ MODAL LAPORAN SELESAI SCHEDULED ══════════════ -->
 <div id="completeScheduledModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl modal-box">
         <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
@@ -199,7 +185,7 @@
         </div>
     </div>
 </div>
-<!-- ══════════════ MODAL LAPORAN SELESAI PERBAIKAN ══════════════ -->
+
 <div id="completeRepairModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl modal-box">
         <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
@@ -246,7 +232,7 @@
         </div>
     </div>
 </div>
-<!-- ══════════════ MODAL IMAGE ══════════════ -->
+
 <div id="imageModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50">
     <img id="modalImage" class="max-w-[90%] max-h-[85vh] rounded-xl shadow-2xl object-contain">
     <button onclick="closeImage()" class="absolute top-5 right-5 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors">
@@ -254,7 +240,6 @@
     </button>
 </div>
 
-<!-- ══════════════ MODAL MATERIAL ══════════════ -->
 <div id="materialModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-box max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
@@ -305,7 +290,6 @@ let selectedSchedId   = null;
 let currentRepairFilter    = 'all';
 let currentScheduledFilter = 'all';
 
-/* ── STATUS MAPS ── */
 const repairStatusLabel = {
     approved: 'Disetujui', scheduled: 'Terjadwal',
     waiting_material: 'Menunggu Material', on_progress: 'Sedang Dikerjakan',
@@ -330,10 +314,6 @@ const schedStatusStyle = {
 const PERIOD_MAP = {
     weekly: 'Mingguan', monthly: 'Bulanan', quarterly: 'Triwulan', yearly: 'Tahunan'
 };
-
-/* ══════════════════════════════════════
-   SECTION 1 — PERBAIKAN GEDUNG
-══════════════════════════════════════ */
 
 function filterRepair(status) {
     currentRepairFilter = status;
@@ -367,10 +347,9 @@ function renderRepair(data) {
                 </div>`;
         } else if (job.status === 'scheduled') {
             if (!job.spk_sent_at) {
-                // SPK belum dikirim — tampilkan pesan menunggu
+                
                 action = `<p class="text-xs text-amber-600 font-medium">⏳ Menunggu SPK dari admin GA</p>`;
             } else {
-                // SPK sudah ada — baru boleh mulai
                 action = `
                     <div class="flex gap-2 flex-wrap">
                         <button onclick="inspectJob(${job.id}, false)" class="btn bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1">
@@ -467,10 +446,6 @@ async function loadRepairJobs() {
     } catch (err) { console.error(err); }
 }
 
-/* ══════════════════════════════════════
-   SECTION 2 — MAINTENANCE TERJADWAL
-══════════════════════════════════════ */
-
 function filterScheduled(status) {
     currentScheduledFilter = status;
     document.querySelectorAll('.stab').forEach(b => {
@@ -498,7 +473,6 @@ function renderScheduled(data) {
         const stLbl  = schedStatusLabel[item.status] ?? item.status;
         const period = PERIOD_MAP[item.period] ?? item.period;
 
-        // Tombol aksi per status
         let action = '';
         if (item.status === 'pending') {
             action = `
@@ -580,7 +554,7 @@ async function loadScheduledTasks() {
     } catch (err) { console.error(err); }
 }
 
-/* Konfirmasi tugas scheduled */
+
 async function confirmScheduled(id) {
     const res  = await fetch(`/api/scheduled-maintenances/${id}/confirm`, {
         method: 'PUT',
@@ -592,7 +566,6 @@ async function confirmScheduled(id) {
     loadScheduledTasks();
 }
 
-/* Mulai pekerjaan scheduled — ubah status ke in_progress via confirm jika belum ada endpoint start */
 async function startScheduled(id) {
     const res  = await fetch(`/api/scheduled-maintenances/${id}/start`, {
         method: 'PUT',
@@ -604,7 +577,7 @@ async function startScheduled(id) {
     loadScheduledTasks();
 }
 
-/* Modal laporan selesai */
+
 function openCompleteScheduled(id) {
     selectedSchedId = id;
     document.getElementById('completeNote').value  = '';
@@ -637,7 +610,6 @@ async function submitCompleteScheduled() {
     loadScheduledTasks();
 }
 
-/* Modal detail scheduled */
 function openScheduledDetail(id) {
     const item = (window.scheduledData || []).find(j => j.id === id);
     if (!item) return;
@@ -673,10 +645,6 @@ function closeScheduledDetail() {
     document.getElementById('scheduledDetailModal').classList.add('hidden');
     document.getElementById('scheduledDetailModal').classList.remove('flex');
 }
-
-/* ══════════════════════════════════════
-   PERBAIKAN GEDUNG — ACTIONS
-══════════════════════════════════════ */
 
 function openDetail(id) {
     const job = (window.repairData || []).find(j => j.id === id);
@@ -861,7 +829,6 @@ async function submitMaterial() {
     loadRepairJobs();
 }
 
-/* ── HELPERS ── */
 function formatDate(str) {
     if (!str) return '-';
     return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -871,7 +838,7 @@ function openWorkOrder(id, type) {
     if (!id) return alert('Work Order belum tersedia');
     window.open(`/work-order/${type}/${id}`, '_blank');
 }
-/* ── INIT ── */
+
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadRepairJobs();

@@ -70,7 +70,7 @@
 <div class="flex min-h-screen">
 <div class="flex-1 md:ml-64">
 
-    <!-- TOPBAR -->
+    
     <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
         <div class="flex items-center gap-3">
             <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
@@ -93,7 +93,7 @@
 
     <div class="p-6 md:p-8 space-y-6">
 
-        <!-- WELCOME BANNER -->
+      
         <div class="bg-slate-800 rounded-2xl p-6 flex items-center justify-between overflow-hidden relative">
             <div class="absolute right-0 top-0 w-64 h-full opacity-5">
                 <svg viewBox="0 0 200 200" class="w-full h-full">
@@ -114,7 +114,6 @@
             </div>
         </div>
 
-        <!-- STAT CARDS -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="stat-card">
                 <div class="flex items-center justify-between mb-3">
@@ -150,7 +149,7 @@
             </div>
         </div>
 
-        <!-- PERBAIKAN GEDUNG -->
+       
         <div class="card">
             <div class="px-6 py-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
                 <div class="flex items-center gap-3">
@@ -164,7 +163,6 @@
                 </div>
             </div>
 
-            <!-- Tabel preview 10 data -->
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
@@ -184,7 +182,6 @@
                 </table>
             </div>
 
-            <!-- Footer tombol Lihat Semua -->
             <div id="repairFooter" class="px-6 py-4 border-t border-slate-100 hidden">
                 <button onclick="toggleRepairAll()" id="repairToggleBtn"
                     class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-800 transition-colors">
@@ -193,7 +190,6 @@
                 </button>
             </div>
 
-            <!-- Section Lihat Semua (tersembunyi dulu) -->
             <div id="repairAllSection" class="lihat-semua-section border-t border-slate-100">
                 <div class="px-6 py-4 flex flex-wrap gap-2 items-center bg-slate-50 border-b border-slate-100">
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">Filter:</span>
@@ -224,8 +220,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- MAINTENANCE TERJADWAL -->
         <div class="card">
             <div class="px-6 py-5 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3">
                 <div class="flex items-center gap-3">
@@ -238,8 +232,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Tabel preview 10 data -->
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
@@ -259,7 +251,6 @@
                 </table>
             </div>
 
-            <!-- Footer tombol Lihat Semua -->
             <div id="maintFooter" class="px-6 py-4 border-t border-slate-100 hidden">
                 <button onclick="toggleMaintAll()" id="maintToggleBtn"
                     class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-800 transition-colors">
@@ -267,8 +258,6 @@
                     <span id="maintToggleLabel">Lihat semua maintenance</span>
                 </button>
             </div>
-
-            <!-- Section Lihat Semua -->
             <div id="maintAllSection" class="lihat-semua-section border-t border-slate-100">
                 <div class="px-6 py-4 flex flex-wrap gap-2 items-center bg-slate-50 border-b border-slate-100">
                     <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">Filter:</span>
@@ -299,8 +288,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- DAFTAR ASET (ringkasan + tombol lihat) -->
         <div class="card">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
@@ -317,9 +304,7 @@
                     <i data-feather="list" class="w-3.5 h-3.5"></i>
                     <span id="assetToggleLabel">Lihat Daftar Aset</span>
                 </button>
-            </div>
 
-            <!-- Ringkasan stat aset -->
             <div class="px-6 py-5 grid grid-cols-2 md:grid-cols-4 gap-4" id="assetSummary">
                 <div class="bg-slate-50 rounded-xl p-4 text-center">
                     <p class="text-2xl font-bold text-slate-800" id="assetTotal">-</p>
@@ -339,7 +324,6 @@
                 </div>
             </div>
 
-            <!-- Tabel aset (tersembunyi dulu) -->
             <div id="assetTableSection" class="lihat-semua-section border-t border-slate-100">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -364,8 +348,6 @@
     </div>
 </div>
 </div>
-
-<!-- MODAL DETAIL PERBAIKAN -->
 <div id="detailModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100">
@@ -416,19 +398,16 @@ const CONDITION = {
 
 const REPAIR_ACTIVE = ['approved','on_progress','waiting_material','material_ready','scheduled'];
 const MAINT_ACTIVE  = ['confirmed','in_progress','pending'];
-
 function formatDate(str) {
     if (!str) return '-';
     return new Date(str).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' });
 }
-
 function isThisMonth(dateStr) {
     if (!dateStr) return false;
     const d = new Date(dateStr);
     const now = new Date();
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
 }
-
 function spkBadge(item, type) {
     if (item.spk_sent_at) return `<span class="status-badge spk-sent">✓ Terkirim</span>`;
     if ((type==='repair' && item.technician_id && item.schedule_date) ||
@@ -436,8 +415,6 @@ function spkBadge(item, type) {
         return `<span class="status-badge spk-pending">⏳ Siap Kirim</span>`;
     return `<span class="status-badge spk-none">— Belum</span>`;
 }
-
-/* ─── helper: build top-10 preview ─── */
 function buildPreview(data, activeStatuses) {
     const active = data.filter(i => activeStatuses.includes(i.status));
     const done   = data.filter(i => !activeStatuses.includes(i.status))
@@ -445,12 +422,9 @@ function buildPreview(data, activeStatuses) {
     const preview = [...active, ...done].slice(0, 10);
     return preview;
 }
-
-/* ────── PERBAIKAN ────── */
 let repairData = [];
 let repairAllFilter = 'all';
 let repairAllOpen = false;
-
 function renderRepairPreview() {
     const preview = buildPreview(repairData, REPAIR_ACTIVE);
     const tbody = document.getElementById('repairTable');
@@ -463,7 +437,6 @@ function renderRepairPreview() {
     document.getElementById('repairFooter').classList.toggle('hidden', repairData.length <= 10);
     feather.replace();
 }
-
 function repairRow(item) {
     const st = STATUS_REPAIR[item.status] ?? { label: item.status, cls: 'bg-slate-100 text-slate-500' };
     const isMaterial = item.status === 'waiting_material' || item.status === 'material_ready';
@@ -487,14 +460,12 @@ function repairRow(item) {
         </td>
     </tr>`;
 }
-
 function filterRepairAll(f) {
     repairAllFilter = f;
     document.querySelectorAll('[id^="ra-"]').forEach(b => b.className = 'tab-btn tab-inactive text-xs px-3 py-1.5 rounded-lg font-semibold');
     document.getElementById('ra-' + f).className = 'tab-btn tab-active text-xs px-3 py-1.5 rounded-lg font-semibold';
     renderRepairAll();
 }
-
 function renderRepairAll() {
     let filtered = repairData;
     if (repairAllFilter === 'this_month') {
@@ -510,7 +481,6 @@ function renderRepairAll() {
     tbody.innerHTML = filtered.map(item => repairRow(item)).join('');
     feather.replace();
 }
-
 function toggleRepairAll() {
     repairAllOpen = !repairAllOpen;
     const section = document.getElementById('repairAllSection');
@@ -522,7 +492,6 @@ function toggleRepairAll() {
     if (repairAllOpen) renderRepairAll();
     feather.replace();
 }
-
 async function loadRepair() {
     try {
         const res  = await fetch('/api/requests', { headers: { Authorization: 'Bearer ' + token } });
@@ -532,8 +501,6 @@ async function loadRepair() {
         updateStats();
     } catch(err) { console.error(err); }
 }
-
-/* ────── MAINTENANCE ────── */
 let maintData = [];
 let maintAllFilter = 'all';
 let maintAllOpen = false;
@@ -549,7 +516,6 @@ function renderMaintPreview() {
     document.getElementById('maintFooter').classList.toggle('hidden', maintData.length <= 10);
     feather.replace();
 }
-
 function maintRow(item) {
     const st = STATUS_MAINT[item.status] ?? { label: item.status, cls: 'bg-slate-100 text-slate-500' };
     return `
@@ -566,14 +532,12 @@ function maintRow(item) {
         <td class="px-5 py-3.5">${spkBadge(item,'maint')}</td>
     </tr>`;
 }
-
 function filterMaintAll(f) {
     maintAllFilter = f;
     document.querySelectorAll('[id^="ma-"]').forEach(b => b.className = 'tab-btn tab-inactive text-xs px-3 py-1.5 rounded-lg font-semibold');
     document.getElementById('ma-' + f).className = 'tab-btn tab-active text-xs px-3 py-1.5 rounded-lg font-semibold';
     renderMaintAll();
 }
-
 function renderMaintAll() {
     let filtered = maintData;
     if (maintAllFilter === 'this_month') {
@@ -589,7 +553,6 @@ function renderMaintAll() {
     tbody.innerHTML = filtered.map(item => maintRow(item)).join('');
     feather.replace();
 }
-
 function toggleMaintAll() {
     maintAllOpen = !maintAllOpen;
     const section = document.getElementById('maintAllSection');
@@ -611,8 +574,6 @@ async function loadMaint() {
         updateStats();
     } catch(err) { console.error(err); }
 }
-
-/* ────── ASET ────── */
 let assetTableOpen = false;
 let assetsLoaded   = false;
 
@@ -640,8 +601,6 @@ async function loadAssets() {
         document.getElementById('assetBaik').textContent        = baik;
         document.getElementById('assetRusakRingan').textContent = rusakRingan;
         document.getElementById('assetRusakBerat').textContent  = rusakBerat;
-
-        // simpan untuk tabel
         window._assetsData = assets;
     } catch(err) { console.error(err); }
 }
@@ -677,7 +636,6 @@ function loadAssetTable() {
     }).join('');
 }
 
-/* ────── STATS ────── */
 function updateStats() {
     const allJobs   = [...repairData, ...maintData];
     const ongoing   = repairData.filter(r => REPAIR_ACTIVE.includes(r.status)).length
@@ -698,7 +656,6 @@ function updateStats() {
     document.getElementById('statMaterial').textContent = material;
 }
 
-/* ────── DETAIL MODAL ────── */
 async function openDetail(id, type) {
     const url = type === 'repair' ? `/api/requests/${id}` : `/api/scheduled-maintenances/${id}`;
     const res  = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });

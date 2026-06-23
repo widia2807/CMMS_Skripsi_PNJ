@@ -1,24 +1,16 @@
 <div id="sidebar"
  class="fixed z-50 inset-y-0 left-0 w-64 bg-gray-900 text-white p-5 transform -translate-x-full md:translate-x-0 transition duration-300">
-
-    <!-- CLOSE BUTTON -->
     <button onclick="toggleSidebar()" class="absolute top-4 right-4 text-white md:hidden text-lg">✖</button>
-
-    <!-- TITLE -->
     <h2 class="text-xl font-bold mb-10">
         CMMS - <span id="roleText">USER</span>
     </h2>
-
-    <!-- MENU -->
     <ul class="space-y-2 text-sm">
 
-        <!-- DASHBOARD -->
+        
         <li onclick="goToDashboard()" class="menu-item flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer">
             <i data-feather="home" class="w-5 h-5"></i>
             <span>Dashboard</span>
         </li>
-
-        <!-- ADMIN MENU -->
         <li id="menu-perbaikan" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/request-list')">
             <i data-feather="tool" class="w-5 h-5"></i>
             <span>Perbaikan Gedung</span>
@@ -65,8 +57,6 @@
             <i data-feather="tool" class="w-5 h-5"></i>
             <span>Pekerjaan Saya</span>
         </li> 
-
-        <!-- PIC -->
         <li id="menu-pic" class="menu-item hidden flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-800 cursor-pointer" onclick="goTo('/request')">
             <i data-feather="tool" class="w-5 h-5"></i>
             <span>Ajukan Perbaikan</span>
@@ -76,8 +66,6 @@
             <i data-feather="list" class="w-5 h-5"></i>
             <span>Status</span>
         </li>
-
-        <!-- LOGOUT -->
         <li onclick="logout()" class="mt-6 flex items-center gap-3 px-3 py-2 rounded hover:bg-red-600 cursor-pointer">
             <i data-feather="log-out" class="w-5 h-5"></i>
             <span>Logout</span>

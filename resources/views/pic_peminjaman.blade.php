@@ -304,7 +304,6 @@ let allAssets = [];
 let allBranches = [];
 let allCategories = [];
 
-/* ── STATUS ── */
 function statusBadge(s) {
     const map = {
         requested: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -330,9 +329,6 @@ function formatDate(str) {
     return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-/* ══════════════════════════════════════
-   LOAD DATA
-══════════════════════════════════════ */
 async function loadBorrowings() {
     const res  = await fetch('/api/borrowings/my', { headers: { Authorization: 'Bearer ' + token } });
     const data = await res.json();
@@ -395,7 +391,6 @@ async function loadMasterData() {
     allAssets     = Array.isArray(assets)     ? assets     : [];
     allCategories = Array.isArray(categories) ? categories : [];
 
-    // Isi filter asset list
     const branchFilter = document.getElementById('filterAssetBranch');
     branchFilter.innerHTML = '<option value="">Semua Cabang</option>' +
         allBranches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
@@ -404,7 +399,6 @@ async function loadMasterData() {
     catFilter.innerHTML = '<option value="">Semua Kategori</option>' +
         allCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
-    // Isi dropdown form cabang asal & tujuan
     const branchOptions = '<option value="">Pilih Cabang</option>' +
         allBranches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
     document.getElementById('form_asset_branch').innerHTML = branchOptions;
@@ -412,15 +406,11 @@ async function loadMasterData() {
         '<option value="">Pilih Cabang Tujuan</option>' +
         allBranches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
 
-    // Isi kategori form
     document.getElementById('form_asset_category').innerHTML =
         '<option value="">Pilih Kategori</option>' +
         allCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 }
 
-/* ══════════════════════════════════════
-   MODAL DAFTAR ASET
-══════════════════════════════════════ */
 function openAssetListModal() {
     document.getElementById('assetListModal').classList.remove('hidden');
     document.getElementById('assetListModal').classList.add('flex');
@@ -481,9 +471,6 @@ function renderAssetList(data) {
     feather.replace();
 }
 
-/* ══════════════════════════════════════
-   MODAL AJUKAN PEMINJAMAN — CASCADING DROPDOWN
-══════════════════════════════════════ */
 function openBorrowModal() {
     resetBorrowForm();
     document.getElementById('borrowModal').classList.remove('hidden');
@@ -510,7 +497,6 @@ function resetBorrowForm() {
     document.getElementById('form_dest_room').disabled      = true;
 }
 
-// Step 1: pilih cabang → enable kategori, filter aset
 function onFormBranchChange() {
     const branchId = document.getElementById('form_asset_branch').value;
     const catEl    = document.getElementById('form_asset_category');
@@ -527,7 +513,6 @@ function onFormBranchChange() {
     catEl.disabled = false;
 }
 
-// Step 2: pilih kategori → filter aset berdasarkan cabang + kategori
 function onFormCategoryChange() {
     const branchId   = document.getElementById('form_asset_branch').value;
     const categoryId = document.getElementById('form_asset_category').value;
@@ -549,7 +534,6 @@ function onFormCategoryChange() {
     assetEl.disabled = filtered.length === 0;
 }
 
-// Step 3: pilih cabang tujuan → load ruangan
 async function onFormDestBranchChange() {
     const branchId = document.getElementById('form_dest_branch').value;
     const roomEl   = document.getElementById('form_dest_room');
@@ -611,7 +595,6 @@ async function submitBorrow() {
 
 function goTo(url) { window.location.href = url; }
 
-/* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
     feather.replace();
     loadMasterData();

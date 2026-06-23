@@ -14,7 +14,7 @@
             .no-print { display: none !important; }
         }
 
-        /* ── PRINT BAR ── */
+        
         .print-bar {
             position: fixed; top: 16px; right: 16px; z-index: 100;
             display: flex; gap: 8px;
@@ -29,7 +29,6 @@
         .btn-print:hover { background: #334155; }
         .btn-settings:hover { background: #4f46e5; }
 
-        /* ── SETTINGS PANEL ── */
         .settings-overlay {
             display: none; position: fixed; inset: 0;
             background: rgba(0,0,0,0.5); z-index: 200;
@@ -70,7 +69,6 @@
             border: none; padding: 10px; font-size: 13px; cursor: pointer; margin-top: 4px;
         }
 
-        /* ── DOKUMEN ── */
         .page {
             width: 210mm; min-height: 297mm;
             margin: 20px auto; padding: 2cm 2.5cm;
@@ -78,7 +76,7 @@
         }
         @media print { .page { margin: 0; box-shadow: none; } }
 
-        /* KOP */
+        
         .kop { display: flex; align-items: center; gap: 16px; padding-bottom: 12px; border-bottom: 3px double #111; }
         .kop img.logo { width: 70px; height: 70px; object-fit: contain; }
         .kop-text { flex: 1; text-align: center; }
@@ -86,7 +84,7 @@
         .kop-text .sub      { font-size: 9pt; color: #444; margin-top: 2px; }
         .kop-divider { border: none; border-top: 1px solid #111; margin: 4px 0 16px; }
 
-        /* JUDUL */
+        
         .doc-title { text-align: center; margin-bottom: 14px; }
         .doc-title h1 { font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .type-badge {
@@ -96,20 +94,20 @@
         .badge-repair    { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
         .badge-scheduled { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
 
-        /* META */
+      
         .wo-meta {
             display: flex; justify-content: space-between; font-size: 10pt;
             margin-bottom: 16px; padding: 8px 12px;
             background: #f8f8f8; border: 1px solid #ddd; border-radius: 4px;
         }
 
-        /* SECTION */
+       
         .section-title {
             font-size: 10pt; font-weight: bold; text-transform: uppercase;
             background: #222; color: #fff; padding: 4px 10px; margin: 14px 0 8px;
         }
 
-        /* INFO TABLE */
+        
         .info-table { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
         .info-table td { padding: 4px 6px; vertical-align: top; }
         .info-table td.label { width: 38%; font-weight: bold; color: #333; }
@@ -117,18 +115,18 @@
         .info-table td.value { width: 59%; }
         .info-table tr:nth-child(even) td { background: #fafafa; }
 
-        /* GRID TABLE */
+       
         .grid-table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 8px; }
         .grid-table th, .grid-table td { border: 1px solid #aaa; padding: 5px 8px; }
         .grid-table th { background: #eee; font-weight: bold; text-align: center; }
         .grid-table td.center { text-align: center; }
 
-        /* CHECKLIST */
+        
         .checklist { list-style: none; padding-left: 4px; }
         .checklist li { display: flex; align-items: flex-start; gap: 6px; padding: 2px 0; font-size: 10.5pt; }
         .checklist li::before { content: '☐'; font-size: 12pt; line-height: 1; flex-shrink: 0; }
 
-        /* NOTES */
+        
         .notes-box {
             border: 1px solid #bbb; border-radius: 4px; padding: 8px 10px;
             min-height: 50px; font-size: 10.5pt; color: #333;
@@ -138,7 +136,7 @@
         /* KETENTUAN */
         .ketentuan { font-size: 10.5pt; padding-left: 18px; line-height: 1.7; }
 
-        /* TANDA TANGAN */
+        
         .signature-section {
             margin-top: 24px; display: flex; gap: 0;
             border-top: 1px solid #ddd; padding-top: 16px;
@@ -152,13 +150,12 @@
         .sig-box .sig-name  { font-size: 10pt; font-weight: bold; margin-top: 4px; }
         .sig-empty-space    { height: 60px; } /* ruang kosong TTD tukang */
 
-        /* FOOTER */
         .doc-footer {
             margin-top: 20px; border-top: 1px solid #ccc; padding-top: 8px;
             display: flex; justify-content: space-between; font-size: 8.5pt; color: #888;
         }
 
-        /* STATUS BADGE */
+       \
         .status-badge {
             display: inline-block; font-size: 9pt; font-weight: bold;
             padding: 1px 10px; border-radius: 20px; border: 1px solid #ccc;
@@ -168,16 +165,15 @@
 </head>
 <body>
 
-<!-- ══ PRINT BAR ══ -->
+
 <div class="print-bar no-print">
     <button class="btn-print" onclick="window.print()">🖨 Cetak SPK</button>
     <button class="btn-close" onclick="window.close()">✕ Tutup</button>
 </div>
 
-<!-- ══ DOKUMEN SPK ══ -->
+
 <div class="page" id="woPage">
 
-    <!-- KOP SURAT -->
     <div class="kop">
         <img id="docLogo" class="logo" src="" alt="Logo" style="display:none">
         <div class="kop-text">
@@ -188,26 +184,26 @@
     </div>
     <hr class="kop-divider">
 
-    <!-- JUDUL -->
+    
     <div class="doc-title">
         <h1>Surat Perintah Kerja (Work Order)</h1>
         <div class="type-badge" id="typeBadge"></div>
     </div>
 
-    <!-- META -->
+   
     <div class="wo-meta">
         <div><strong>Nomor WO</strong> &nbsp;:&nbsp; <span id="docWoNumber">-</span></div>
         <div><strong>Tanggal Terbit</strong> &nbsp;:&nbsp; <span id="docCreatedAt">-</span></div>
         <div><strong>Status</strong> &nbsp;:&nbsp; <span class="status-badge" id="docStatus">-</span></div>
     </div>
 
-    <!-- A. INFORMASI PEKERJAAN -->
+   
     <div class="section-title">A. Informasi Pekerjaan</div>
     <table class="info-table" id="infoTable">
         <!-- diisi JS -->
     </table>
 
-    <!-- B. PENUGASAN PELAKSANA -->
+   
     <div class="section-title">B. Penugasan Pelaksana</div>
     <table class="info-table">
         <tr>
@@ -227,11 +223,11 @@
         </tr>
     </table>
 
-    <!-- C. DESKRIPSI & INSTRUKSI -->
+  
     <div class="section-title">C. Deskripsi & Instruksi Pekerjaan</div>
     <div id="docDescription"></div>
 
-    <!-- D. MATERIAL (jika ada) -->
+   
     <div id="materialSection" style="display:none">
         <div class="section-title">D. Kebutuhan Material</div>
         <table class="grid-table">
@@ -247,7 +243,6 @@
         </table>
     </div>
 
-    <!-- E. KETENTUAN -->
     <div class="section-title" id="ketentuanTitle">D. Ketentuan Pelaksanaan</div>
     <ol class="ketentuan">
         <li>Surat Perintah Kerja ini berlaku sejak tanggal diterbitkan hingga pekerjaan dinyatakan selesai.</li>
@@ -257,13 +252,13 @@
         <li>Pekerjaan dinyatakan selesai setelah diverifikasi dan laporan diunggah ke sistem.</li>
     </ol>
 
-    <!-- TANDA TANGAN -->
+    
     <div class="signature-section">
-        <!-- Dibuat Oleh (Admin GA) -->
+       
         <div class="sig-box">
             <div class="sig-title">Dibuat Oleh</div>
             <div class="sig-role">Manager / Penanggung Jawab GA</div>
-            <!-- TTD Manager GA dari database -->
+            
             <img id="docManagerSig" class="sig-img" src="" alt="TTD" style="display:none">
             <div id="docManagerSigEmpty" class="sig-empty-space"></div>
             <div class="sig-line"></div>
@@ -271,7 +266,7 @@
             <div style="font-size:9pt;color:#555">NIP / NIK : ___________________</div>
         </div>
 
-        <!-- Pelaksana (Tukang) — TTD KOSONG untuk tanda tangan manual -->
+        
         <div class="sig-box">
             <div class="sig-title">Pelaksana</div>
             <div class="sig-role">Teknisi / Tukang</div>
@@ -281,7 +276,7 @@
             <div style="font-size:9pt;color:#555">NIP / NIK : ___________________</div>
         </div>
 
-        <!-- Mengetahui -->
+        
         <div class="sig-box">
             <div class="sig-title">Mengetahui</div>
             <div class="sig-role">Pejabat Penanggung Jawab</div>
@@ -292,13 +287,13 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
+    
     <div class="doc-footer">
         <span>Dokumen ini diterbitkan otomatis oleh sistem CMMS &mdash; <span id="footerCompany"></span></span>
         <span id="footerCode">Hal. 1 dari 1</span>
     </div>
 
-</div><!-- end .page -->
+</div>
 
 <script>
 function getCookie(name) {
@@ -319,7 +314,7 @@ if (!woId || isNaN(woId)) {
         '<p style="color:red;text-align:center;margin-top:40px">ID Work Order tidak valid</p>';
     throw new Error('Invalid WO ID: ' + woId);
 }
-// ── LOAD DATA ────────────────────────────────────────────────────────
+
 async function loadWO() {
     const res  = await fetch(`/api/work-orders/${woId}`, {
         headers: { Authorization: 'Bearer ' + token }
@@ -334,7 +329,7 @@ async function loadWO() {
     renderWO(wo, materials);
 }
 
-// ── RENDER PERUSAHAAN ─────────────────────────────────────────────────
+
 function renderCompany(c) {
     if (c.logo_url) {
         const logo = document.getElementById('docLogo');
@@ -361,7 +356,7 @@ function renderCompany(c) {
     }
 }
 
-// ── RENDER WORK ORDER ─────────────────────────────────────────────────
+
 function renderWO(wo, materials) {
     const isRepair    = wo.type === 'repair';
     const typeBadge   = document.getElementById('typeBadge');
@@ -376,7 +371,7 @@ function renderWO(wo, materials) {
     document.getElementById('docCreatedBy').textContent = wo.created_by_user?.name ?? '-';
     document.getElementById('footerCode').textContent   = `WO/${isRepair ? 'REP' : 'SCH'}/${new Date().getFullYear()} — Hal. 1 dari 1`;
 
-    // Informasi Pekerjaan
+  
     const rows = [
         ['Judul Pekerjaan', `<strong>${wo.title}</strong>`],
         ['Kategori', [wo.category?.name, wo.sub_category?.name].filter(Boolean).join(' / ') || '-'],
@@ -398,7 +393,7 @@ function renderWO(wo, materials) {
         </tr>
     `).join('');
 
-    // Deskripsi / instruksi
+    
     const descEl = document.getElementById('docDescription');
     if (isRepair) {
         descEl.innerHTML = `
@@ -432,7 +427,7 @@ function renderWO(wo, materials) {
         `;
     }
 
-    // Material
+   
     if (materials && materials.length > 0) {
         document.getElementById('materialSection').style.display = 'block';
         document.getElementById('ketentuanTitle').textContent = 'E. Ketentuan Pelaksanaan';
@@ -448,7 +443,7 @@ function renderWO(wo, materials) {
 }
 
 
-// ── HELPERS ───────────────────────────────────────────────────────────
+
 function formatDate(str) {
     if (!str) return '-';
     return new Date(str).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -466,7 +461,7 @@ function periodLabel(p) {
     return map[p] ?? p;
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────
+
 loadWO();
 </script>
 </body>

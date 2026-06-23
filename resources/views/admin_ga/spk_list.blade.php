@@ -45,7 +45,7 @@
 
 <div class="flex min-h-screen">
 <div class="flex-1 md:ml-64">
-<!-- TOPBAR -->
+
             <div class="bg-white border-b border-slate-100 px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-30">
     <div class="flex items-center gap-3">
         <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-400">
@@ -60,7 +60,7 @@
 
  <div class="p-4 md:p-8 max-w-5xl mx-auto space-y-6">
 
-<!-- IDENTITAS PERUSAHAAN -->
+
 <div class="section-card">
     <div class="flex items-center gap-3 mb-5">
         <div class="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center">
@@ -100,7 +100,7 @@
     </div>
 </div>
 
-<!-- LOGO & TTD -->
+
 <div class="section-card">
     <div class="flex items-center gap-3 mb-5">
         <div class="w-9 h-9 bg-violet-100 rounded-xl flex items-center justify-center">
@@ -112,7 +112,7 @@
         </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Logo -->
+        
         <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Logo Perusahaan</label>
             <div class="upload-zone rounded-xl p-5 text-center cursor-pointer"
@@ -134,7 +134,7 @@
             <button onclick="clearFile('logo')" id="clearLogo"
                 class="hidden mt-2 text-xs text-red-400 hover:text-red-600 font-medium">✕ Hapus logo</button>
         </div>
-        <!-- TTD -->
+      
         <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                 Tanda Tangan Manager GA
@@ -162,7 +162,7 @@
     </div>
 </div>
 
-<!-- PENOMORAN -->
+
 <div class="section-card">
     <div class="flex items-center gap-3 mb-5">
         <div class="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center">
@@ -210,7 +210,7 @@
     </div>
 </div>
 
-<!-- PREVIEW KOP -->
+
 <div class="section-card">
     <div class="flex items-center gap-3 mb-5">
         <div class="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center">
@@ -236,7 +236,7 @@
         </div>
     </div>
 </div>
-<!-- TOMBOL SIMPAN -->
+
 <div class="flex justify-end">
     <button id="btnSave" onclick="saveSettings()"
         class="btn flex items-center gap-2 bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-slate-700">
@@ -247,7 +247,7 @@
 </div>
 </div>
 
-<!-- TOAST -->
+
 <div class="toast" id="toast">
     <div class="bg-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-semibold">
         <i data-feather="check-circle" class="w-4 h-4 text-green-400"></i>
