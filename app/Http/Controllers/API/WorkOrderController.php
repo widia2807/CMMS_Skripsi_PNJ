@@ -10,6 +10,7 @@ use App\Models\WorkOrder;
 use App\Models\Company;
 use App\Helpers\SpkHelper;
 use Carbon\Carbon;
+use App\Sevices\NotificationService;
 
 class WorkOrderController extends Controller
 {
@@ -128,7 +129,7 @@ class WorkOrderController extends Controller
             'type'    => 'spk',
             'data'    => json_encode(['work_order_id' => $wo->id]),
         ]);
-
+        NotificationService::spkSent($req);
         return response()->json([
             'message'     => 'SPK berhasil dikirim',
             'spk_number'  => $req->spk_number,
@@ -182,7 +183,7 @@ class WorkOrderController extends Controller
             'type'    => 'spk',
             'data'    => json_encode(['work_order_id' => $wo->id]),
         ]);
-
+        NotificationService::scheduledSpkSent($sched);
         return response()->json([
             'message'     => 'SPK berhasil dikirim',
             'spk_number'  => $sched->spk_number,

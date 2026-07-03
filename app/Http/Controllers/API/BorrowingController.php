@@ -84,7 +84,10 @@ class BorrowingController extends Controller
             'reason'                => $request->reason,
             'notes'                 => $request->notes,
         ]);
-
+        NotificationService::borrowingSubmitted(
+        $borrowing->load('asset', 'user'),
+        $user->company_id
+    );
         return response()->json([
             'message' => 'Pengajuan peminjaman berhasil dikirim',
             'data'    => $this->formatItem($borrowing->load(['asset.branch', 'destinationBranch', 'destinationRoom'])),
@@ -100,7 +103,7 @@ class BorrowingController extends Controller
         }
 
         $borrowing->update(['status' => 'approved']);
-
+        NotificationService::borrowingApproved($borrowing->load('asset', 'user'));
         return response()->json(['message' => 'Peminjaman disetujui']);
     }
 
@@ -113,7 +116,7 @@ class BorrowingController extends Controller
         }
 
         $borrowing->update(['status' => 'rejected']);
-
+        NotificationService::borrowingRejected($borrowing->load('asset', 'user'));
         return response()->json(['message' => 'Peminjaman ditolak']);
     }
 

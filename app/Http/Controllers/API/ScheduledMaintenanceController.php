@@ -126,7 +126,7 @@ class ScheduledMaintenanceController extends Controller
             'status'              => 'pending',
             'worker_confirmed_at' => null,
         ]);
-
+        NotificationService::scheduledTechnicianAssigned($schedule->fresh(['worker']));
         return response()->json(['message' => 'Tukang berhasil diperbarui.']);
     }
 
@@ -146,7 +146,7 @@ class ScheduledMaintenanceController extends Controller
             'status'              => 'confirmed',
             'worker_confirmed_at' => Carbon::now(),
         ]);
-
+        NotificationService::scheduleConfirmed($schedule->fresh(['worker']));
         return response()->json(['message' => 'Jadwal berhasil dikonfirmasi.']);
     }
 
@@ -183,6 +183,7 @@ class ScheduledMaintenanceController extends Controller
             'completion_note'  => $request->completion_note,
             'completion_photo' => $photoPath,
         ]);
+        NotificationService::scheduledCompleted($schedule);
         if ($schedule->is_auto) {
             $this->createNextSchedule($schedule);
         }

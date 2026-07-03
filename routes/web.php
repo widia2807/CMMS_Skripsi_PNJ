@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Services\ResendMailer;
 
 Route::get('/login', fn() => view('auth.login'));
 Route::get('/register', fn() => view('auth.register'));
@@ -90,6 +90,8 @@ Route::get('/dashboard-management', function () {
 Route::get('/reports', function () {
     return view('management.laporan');
 });
+
+
 Route::get('/dashboard-lite', fn() => view('dashboard.lite', [
     'user' => auth()->user()
 ]));

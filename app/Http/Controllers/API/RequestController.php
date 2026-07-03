@@ -9,6 +9,7 @@ use App\Models\SubCategory;
 use App\Helpers\SpkHelper;
 use Carbon\Carbon;
 use App\Models\RepairRequest as RequestModel;
+use App\Services\NotificationService;
 
 class RequestController extends Controller
 {
@@ -39,6 +40,7 @@ class RequestController extends Controller
 
     $req = RequestModel::create($data);
 
+    NotificationService::repairRequestSubmitted($req);
     return response()->json([
         'message' => 'Pengajuan berhasil dibuat',
         'data'    => $req
@@ -263,6 +265,8 @@ public function approve(Request $request, $id)
     $req->technician_id = $request->technician_id ?? null;
     $req->save();
 
+    NotificationService::repairRequestApproved($req);
+
     return response()->json(['message' => 'Berhasil approve']);
 }
 
@@ -287,7 +291,7 @@ public function assignTechnician(Request $request, $id)
 
     $req->technician_id = $request->technician_id;
     $req->save();
-
+    NotificationService::technicianAssigned($req->fresh(['technician']));
     return response()->json(['message' => 'Tukang berhasil ditentukan']);
 }
 
