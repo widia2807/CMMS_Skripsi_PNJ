@@ -7,17 +7,35 @@ use App\Models\User;
 class NotificationService
 {
     protected static function sendToUser($user, string $subject, string $body): void
-    {
-        if (!$user || !$user->email) return;
-        ResendMailer::send($user->email, $subject, $body);
+{
+    \Illuminate\Support\Facades\Log::info('DEBUG sendToUser dipanggil', [
+        'user_id' => $user ? $user->id : 'NULL',
+        'email'   => $user->email ?? 'NULL',
+    ]);
+
+    if (!$user || !$user->email) {
+        \Illuminate\Support\Facades\Log::info('DEBUG sendToUser: SKIP karena user atau email kosong');
+        return;
     }
 
-    protected static function sendToUsers($users, string $subject, string $body): void
-    {
-        foreach ($users as $user) {
-            self::sendToUser($user, $subject, $body);
-        }
+    $result = ResendMailer::send($user->email, $subject, $body);
+
+    \Illuminate\Support\Facades\Log::info('DEBUG hasil kirim email', [
+        'to'      => $user->email,
+        'success' => $result,
+    ]);
+}
+
+protected static function sendToUsers($users, string $subject, string $body): void
+{
+    \Illuminate\Support\Facades\Log::info('DEBUG sendToUsers dipanggil', [
+        'jumlah_user' => count($users),
+    ]);
+
+    foreach ($users as $user) {
+        self::sendToUser($user, $subject, $body);
     }
+}
 
     protected static function getGaUsers(int $companyId)
     {
