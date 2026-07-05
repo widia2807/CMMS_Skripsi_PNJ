@@ -91,6 +91,15 @@ Route::get('/reports', function () {
     return view('management.laporan');
 });
 
+Route::get('/debug-resend-key', function () {
+    $key = config('services.resend.key');
+    return [
+        'ada_key' => $key ? true : false,
+        'panjang' => $key ? strlen($key) : 0,
+        'awalan'  => $key ? substr($key, 0, 6) : null,
+        'akhiran' => $key ? substr($key, -4) : null,
+    ];
+});
 
 Route::get('/dashboard-lite', fn() => view('dashboard.lite', [
     'user' => auth()->user()
