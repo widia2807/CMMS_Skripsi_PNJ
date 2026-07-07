@@ -68,8 +68,10 @@ protected static function sendToUsers($users, string $subject, string $body): vo
     {
         self::sendToUser($req->technician,
             'Penugasan Baru: ' . $req->title,
-            "<p>Anda ditugaskan untuk pekerjaan '<b>{$req->title}/n https://cmmsskripsipnj-production.up.railway.app/login</b>'.</p>"
-        );
+        "<p>Anda ditugaskan untuk pekerjaan '<b>{$req->title}</b>' di cabang <b>{$req->branch->name}</b>.</p>
+         <p>Silakan cek detail dan jadwal pengerjaan melalui link berikut:</p>
+         <p><a href='https://cmmsskripsipnj-production.up.railway.app/login'>https://cmmsskripsipnj-production.up.railway.app/login</a></p>"
+    );
     }
 
     public static function spkSent($req): void
