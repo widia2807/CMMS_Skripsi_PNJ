@@ -68,7 +68,7 @@ protected static function sendToUsers($users, string $subject, string $body): vo
     {
         self::sendToUser($req->technician,
             'Penugasan Baru: ' . $req->title,
-            "<p>Anda ditugaskan untuk pekerjaan '<b>{$req->title}</b>'.</p>"
+            "<p>Anda ditugaskan untuk pekerjaan '<b>{$req->title}/n https://cmmsskripsipnj-production.up.railway.app/login</b>'.</p>"
         );
     }
 
