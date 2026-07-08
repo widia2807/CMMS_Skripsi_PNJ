@@ -70,7 +70,7 @@ protected static function sendToUsers($users, string $subject, string $body): vo
             'Penugasan Baru: ' . $req->title,
         "<p>Anda ditugaskan untuk pekerjaan '<b>{$req->title}</b>' di cabang <b>{$req->branch->name}</b>.</p>
          <p>Silakan cek detail dan jadwal pengerjaan melalui link berikut:</p>
-         <p><a href='https://cmmsskripsipnj-production.up.railway.app/login'>https://cmmsskripsipnj-production.up.railway.app/login</a></p>"
+         <p><a href='https://cmmsskripsipnj-production-ba65.up.railway.app/login'>https://cmmsskripsipnj-production.up.railway.app/login</a></p>"
     );
     }
 
